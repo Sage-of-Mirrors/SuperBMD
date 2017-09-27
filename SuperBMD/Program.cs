@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SuperBMD
 {
@@ -6,7 +10,13 @@ namespace SuperBMD
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Assimp.Scene test = LoadAssimpScene(args[0]);
+        }
+
+        static Assimp.Scene LoadAssimpScene(string fileName)
+        {
+            Assimp.AssimpContext cont = new Assimp.AssimpContext();
+            return cont.ImportFile(fileName, Assimp.PostProcessSteps.Triangulate);
         }
     }
 }
