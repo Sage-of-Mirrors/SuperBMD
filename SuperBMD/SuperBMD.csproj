@@ -111,6 +111,9 @@
     <Compile Include="source\Materials\TexCoordGen.cs" />
     <Compile Include="source\Materials\TexMatrix.cs" />
     <Compile Include="source\Materials\ZMode.cs" />
+    <Compile Include="source\Util\Color.cs" />
+    <Compile Include="source\Util\Color32.cs" />
+    <Compile Include="source\Util\J3DUtility.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenTK.dll.config" />
