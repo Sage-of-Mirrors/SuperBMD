@@ -56,6 +56,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>lib\EndianBinaryStreams.dll</HintPath>
     </Reference>
+    <Reference Include="OpenTK, Version=2.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -67,6 +70,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="source\Materials\AlphaCompare.cs" />
+    <Compile Include="source\Materials\BlendMode.cs" />
+    <Compile Include="source\Materials\ChannelControl.cs" />
     <Compile Include="source\Materials\Enums\AlphaOp.cs" />
     <Compile Include="source\Materials\Enums\BlendMode.cs" />
     <Compile Include="source\Materials\Enums\BlendModeControl.cs" />
@@ -91,8 +97,23 @@
     <Compile Include="source\Materials\Enums\TexGenSrc.cs" />
     <Compile Include="source\Materials\Enums\TexGenType.cs" />
     <Compile Include="source\Materials\Enums\TexMatrix.cs" />
+    <Compile Include="source\Materials\Fog.cs" />
+    <Compile Include="source\Materials\IndirectTevOrder.cs" />
+    <Compile Include="source\Materials\IndirectTexMatrix.cs" />
+    <Compile Include="source\Materials\IndirectTexScale.cs" />
+    <Compile Include="source\Materials\IndirectTexturing.cs" />
+    <Compile Include="source\Materials\Material.cs" />
+    <Compile Include="source\Materials\NBTScale.cs" />
+    <Compile Include="source\Materials\TevOrder.cs" />
+    <Compile Include="source\Materials\TevStage.cs" />
+    <Compile Include="source\Materials\TevSwapMode.cs" />
+    <Compile Include="source\Materials\TevSwapModeTable.cs" />
+    <Compile Include="source\Materials\TexCoordGen.cs" />
+    <Compile Include="source\Materials\TexMatrix.cs" />
+    <Compile Include="source\Materials\ZMode.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

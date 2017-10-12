@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SuperBMD.source.Materials.Enums
+namespace SuperBMD.Materials.Enums
 {
     public enum CombineColorInput
     {
