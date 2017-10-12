@@ -67,13 +67,36 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="source\Materials\Enums\AlphaOp.cs" />
+    <Compile Include="source\Materials\Enums\BlendMode.cs" />
+    <Compile Include="source\Materials\Enums\BlendModeControl.cs" />
+    <Compile Include="source\Materials\Enums\ColorSrc.cs" />
+    <Compile Include="source\Materials\Enums\CombineAlphaInput.cs" />
+    <Compile Include="source\Materials\Enums\CombineColorInput.cs" />
+    <Compile Include="source\Materials\Enums\CompareType.cs" />
+    <Compile Include="source\Materials\Enums\CullMode.cs" />
+    <Compile Include="source\Materials\Enums\DiffuseFn.cs" />
+    <Compile Include="source\Materials\Enums\GXAttenuationFn.cs" />
+    <Compile Include="source\Materials\Enums\GXColorChannelID.cs" />
+    <Compile Include="source\Materials\Enums\J3DAttenuationFn.cs" />
+    <Compile Include="source\Materials\Enums\J3DColorChannelID.cs" />
+    <Compile Include="source\Materials\Enums\KonstAlphaSel.cs" />
+    <Compile Include="source\Materials\Enums\KonstColorSel.cs" />
+    <Compile Include="source\Materials\Enums\LightID.cs" />
+    <Compile Include="source\Materials\Enums\LogicOp.cs" />
+    <Compile Include="source\Materials\Enums\TevBias.cs" />
+    <Compile Include="source\Materials\Enums\TevOp.cs" />
+    <Compile Include="source\Materials\Enums\TevScale.cs" />
+    <Compile Include="source\Materials\Enums\TexCoordSlot.cs" />
+    <Compile Include="source\Materials\Enums\TexGenSrc.cs" />
+    <Compile Include="source\Materials\Enums\TexGenType.cs" />
+    <Compile Include="source\Materials\Enums\TexMatrix.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
-    <Folder Include="source\" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
