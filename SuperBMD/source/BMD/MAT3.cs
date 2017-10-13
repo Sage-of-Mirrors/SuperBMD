@@ -37,7 +37,8 @@ namespace SuperBMD.BMD
         private List<TevSwapModeTable> m_SwapTableBlock;
         private List<Fog> m_FogBlock;
         private List<AlphaCompare> m_AlphaCompBlock;
-        private List<BlendMode> m_blendModeBlock;
+        private List<Materials.BlendMode> m_blendModeBlock;
+        private List<NBTScale> m_NBTScaleBlock;
 
         private List<ZMode> m_zModeBlock;
         private List<bool> m_zCompLocBlock;
@@ -45,7 +46,7 @@ namespace SuperBMD.BMD
 
         private List<byte> NumColorChannelsBlock;
         private List<byte> NumTexGensBlock;
-        private List<byte> NumTevSTagesBlock;
+        private List<byte> NumTevStagesBlock;
 
         public MAT3(EndianBinaryReader reader, int offset)
         {
@@ -58,6 +59,11 @@ namespace SuperBMD.BMD
             for (Mat3OffsetIndex i = 0; i <= Mat3OffsetIndex.NBTScaleData; ++i)
             {
                 int sectionOffset = reader.ReadInt32();
+
+                if (sectionOffset == 0)
+                    continue;
+
+                long curReaderPos = reader.BaseStream.Position;
                 int nextOffset = reader.PeekReadInt32();
                 int sectionSize = 0;
 
@@ -75,11 +81,18 @@ namespace SuperBMD.BMD
 
                     reader.BaseStream.Position = saveReaderPos;
                 }
+                else if (i == Mat3OffsetIndex.NBTScaleData)
+                    sectionSize = mat3Size - sectionOffset;
                 else
                     sectionSize = nextOffset - sectionOffset;
 
+                reader.BaseStream.Position = (offset - 4) + sectionOffset;
+
                 switch (i)
                 {
+                    case Mat3OffsetIndex.MaterialData:
+                        //reader.BaseStream.Position += sectionSize;
+                        break;
                     case Mat3OffsetIndex.IndexData:
                         m_RemapIndices = new List<int>();
 
@@ -141,7 +154,63 @@ namespace SuperBMD.BMD
                             m_TexRemapBlock.Add(reader.ReadInt16());
 
                         break;
+                    case Mat3OffsetIndex.TevOrderData:
+                        m_TevOrderBlock = TevOrderIO.Load(reader, sectionOffset, sectionSize);
+                        break;
+                    case Mat3OffsetIndex.TevColorData:
+                        m_TevColorBlock = ColorIO.Load(reader, sectionOffset, sectionSize);
+                        break;
+                    case Mat3OffsetIndex.TevKColorData:
+                        m_TevKonstColorBlock = ColorIO.Load(reader, sectionOffset, sectionSize);
+                        break;
+                    case Mat3OffsetIndex.TevStageCount:
+                        NumTevStagesBlock = new List<byte>();
+
+                        for (int tevStageNo = 0; tevStageNo < sectionSize; tevStageNo++)
+                            NumTevStagesBlock.Add(reader.ReadByte());
+
+                        break;
+                    case Mat3OffsetIndex.TevStageData:
+                        m_TevStageBlock = TevStageIO.Load(reader, sectionOffset, sectionSize);
+                        break;
+                    case Mat3OffsetIndex.TevSwapModeData:
+                        m_SwapModeBlock = TevSwapModeIO.Load(reader, sectionOffset, sectionSize);
+                        break;
+                    case Mat3OffsetIndex.TevSwapModeTable:
+                        m_SwapTableBlock = TevSwapModeTableIO.Load(reader, sectionOffset, sectionSize);
+                        break;
+                    case Mat3OffsetIndex.FogData:
+                        m_FogBlock = FogIO.Load(reader, sectionOffset, sectionSize);
+                        break;
+                    case Mat3OffsetIndex.AlphaCompareData:
+                        m_AlphaCompBlock = AlphaCompareIO.Load(reader, sectionOffset, sectionSize);
+                        break;
+                    case Mat3OffsetIndex.BlendData:
+                        m_blendModeBlock = BlendModeIO.Load(reader, sectionOffset, sectionSize);
+                        break;
+                    case Mat3OffsetIndex.ZModeData:
+                        m_zModeBlock = ZModeIO.Load(reader, sectionOffset, sectionSize);
+                        break;
+                    case Mat3OffsetIndex.ZCompLoc:
+                        m_zCompLocBlock = new List<bool>();
+
+                        for (int zcomp = 0; zcomp < sectionSize; zcomp++)
+                            m_zCompLocBlock.Add(reader.ReadBoolean());
+
+                        break;
+                    case Mat3OffsetIndex.DitherData:
+                        m_ditherBlock = new List<bool>();
+
+                        for (int dith = 0; dith < sectionSize; dith++)
+                            m_ditherBlock.Add(reader.ReadBoolean());
+
+                        break;
+                    case Mat3OffsetIndex.NBTScaleData:
+                        m_NBTScaleBlock = NBTScaleIO.Load(reader, sectionOffset, sectionSize);
+                        break;
                 }
+
+                reader.BaseStream.Position = curReaderPos;
             }
         }
     }

@@ -14,7 +14,7 @@ namespace SuperBMD.Materials.IO
         {
             List<string> names = new List<string>();
 
-            reader.BaseStream.Position = offset;
+            long baseOffset = reader.BaseStream.Position;
 
             short stringCount = reader.ReadInt16();
             reader.SkipInt16();
@@ -24,7 +24,7 @@ namespace SuperBMD.Materials.IO
                 reader.SkipInt16();
                 short nameOffset = reader.ReadInt16();
                 long saveReaderPos = reader.BaseStream.Position;
-                reader.BaseStream.Position = offset + nameOffset;
+                reader.BaseStream.Position = baseOffset + nameOffset;
 
                 names.Add(reader.ReadStringUntil('\0'));
 

@@ -29,6 +29,7 @@ namespace SuperBMD.Materials
             EffectTranslation = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
             Scale = new Vector2(reader.ReadSingle(), reader.ReadSingle());
             Rotation = reader.ReadInt16() * (180 / 32768f);
+            reader.SkipInt16();
             Translation = new Vector2(reader.ReadSingle(), reader.ReadSingle());
 
             ProjectionMatrix = new Matrix4(

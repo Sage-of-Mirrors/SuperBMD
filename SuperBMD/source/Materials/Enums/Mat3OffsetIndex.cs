@@ -35,7 +35,8 @@ namespace SuperBMD.Materials.Enums
         AlphaCompareData =  24,
         BlendData =         25,
         ZModeData =         26,
-        DitherData =        27,
-        NBTScaleData =      28
+        ZCompLoc =          27,
+        DitherData =        28,
+        NBTScaleData =      29
     }
 }

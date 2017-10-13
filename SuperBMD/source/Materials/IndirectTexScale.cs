@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SuperBMD.Materials
 {
-    class IndirectTexScale
+    public class IndirectTexScale
     {
         /// <summary>
         /// Scale value for the source texture coordinates' S (U) component

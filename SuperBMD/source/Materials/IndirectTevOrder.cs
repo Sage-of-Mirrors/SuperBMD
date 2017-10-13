@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SuperBMD.Materials
 {
-    class IndirectTevOrder
+    public class IndirectTevOrder
     {
         public byte TevStageID;
         public byte IndTexFormat;

@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SuperBMD.Materials.Enums;
+using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    class ZMode
+    public class ZMode
     {
         /// <summary> If false, ZBuffering is disabled and the Z buffer is not updated. </summary>
         public bool Enable;
@@ -21,5 +22,13 @@ namespace SuperBMD.Materials
         /// Example: Disabling this would prevent a write to the Z buffer, useful for UI elements or other things
         /// that shouldn't write to Z Buffer. See glDepthMask. </summary>
         public bool UpdateEnable;
+
+        public ZMode(EndianBinaryReader reader)
+        {
+            Enable = reader.ReadBoolean();
+            Function = (CompareType)reader.ReadByte();
+            UpdateEnable = reader.ReadBoolean();
+            reader.SkipByte();
+        }
     }
 }

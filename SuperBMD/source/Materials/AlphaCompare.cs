@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SuperBMD.Materials.Enums;
+using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    class AlphaCompare
+    public class AlphaCompare
     {
         /// <summary> subfunction 0 </summary>
         public CompareType Comp0;
@@ -19,5 +20,14 @@ namespace SuperBMD.Materials
         public CompareType Comp1;
         /// <summary> Reference value for subfunction 1. </summary>
         public byte Reference1;
+
+        public AlphaCompare(EndianBinaryReader reader)
+        {
+            Comp0 = (CompareType)reader.ReadByte();
+            Reference0 = reader.ReadByte();
+            Operation = (AlphaOp)reader.ReadByte();
+            Comp1 = (CompareType)reader.ReadByte();
+            Reference1 = reader.ReadByte();
+        }
     }
 }

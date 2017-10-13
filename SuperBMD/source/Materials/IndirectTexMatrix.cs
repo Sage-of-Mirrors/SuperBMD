@@ -7,7 +7,7 @@ using OpenTK;
 
 namespace SuperBMD.Materials
 {
-    class IndirectTexMatrix
+    public class IndirectTexMatrix
     {
         /// <summary>
         /// The floats that make up the matrix
