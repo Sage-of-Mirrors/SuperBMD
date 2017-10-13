@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SuperBMD.Materials
 {
-    class IndirectTexturing
+    public class IndirectTexturing
     {
         /// <summary>
         /// Determines if an indirect texture lookup is to take place

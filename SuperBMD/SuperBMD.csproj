@@ -70,6 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="source\BMD\MAT3.cs" />
     <Compile Include="source\Materials\AlphaCompare.cs" />
     <Compile Include="source\Materials\BlendMode.cs" />
     <Compile Include="source\Materials\ChannelControl.cs" />
@@ -90,6 +91,7 @@
     <Compile Include="source\Materials\Enums\KonstColorSel.cs" />
     <Compile Include="source\Materials\Enums\LightID.cs" />
     <Compile Include="source\Materials\Enums\LogicOp.cs" />
+    <Compile Include="source\Materials\Enums\Mat3OffsetIndex.cs" />
     <Compile Include="source\Materials\Enums\TevBias.cs" />
     <Compile Include="source\Materials\Enums\TevOp.cs" />
     <Compile Include="source\Materials\Enums\TevScale.cs" />
@@ -102,6 +104,13 @@
     <Compile Include="source\Materials\IndirectTexMatrix.cs" />
     <Compile Include="source\Materials\IndirectTexScale.cs" />
     <Compile Include="source\Materials\IndirectTexturing.cs" />
+    <Compile Include="source\Materials\IO\ColorChannelIO.cs" />
+    <Compile Include="source\Materials\IO\CullModeIO.cs" />
+    <Compile Include="source\Materials\IO\IndirectTexturingIO.cs" />
+    <Compile Include="source\Materials\IO\ColorIO.cs" />
+    <Compile Include="source\Materials\IO\NameTableIO.cs" />
+    <Compile Include="source\Materials\IO\TexCoordGenIO.cs" />
+    <Compile Include="source\Materials\IO\TexMatrixIO.cs" />
     <Compile Include="source\Materials\Material.cs" />
     <Compile Include="source\Materials\NBTScale.cs" />
     <Compile Include="source\Materials\TevOrder.cs" />

@@ -8,7 +8,7 @@ using SuperBMD.Util;
 
 namespace SuperBMD.Materials
 {
-    class Material
+    public class Material
     {
         public string Name;
         public byte Flag;
