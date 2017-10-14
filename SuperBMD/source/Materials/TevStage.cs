@@ -55,7 +55,7 @@ namespace SuperBMD.Materials
 
             for (int i = 0; i < 4; i++)
             {
-                ret += $"Color In { i }: { ColorIn[i] }\n";
+                ret += $"Color In { (Char)('A' + i) }: { ColorIn[i] }\n";
             }
 
             ret += '\n';
@@ -70,7 +70,7 @@ namespace SuperBMD.Materials
 
             for (int i = 0; i < 4; i++)
             {
-                ret += $"Alpha In { i }: { AlphaIn[i] }\n";
+                ret += $"Alpha In { (Char)('A' + i) }: { AlphaIn[i] }\n";
             }
 
             ret += '\n';
