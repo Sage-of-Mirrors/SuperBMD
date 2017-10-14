@@ -48,5 +48,42 @@ namespace SuperBMD.Materials
 
             reader.SkipByte();
         }
+
+        public override string ToString()
+        {
+            string ret = "";
+
+            for (int i = 0; i < 4; i++)
+            {
+                ret += $"Color In { i }: { ColorIn[i] }\n";
+            }
+
+            ret += '\n';
+
+            ret += $"Color Op: { ColorOp }\n";
+            ret += $"Color Bias: { ColorBias }\n";
+            ret += $"Color Scale: { ColorScale }\n";
+            ret += $"Color Clamp: { ColorClamp }\n";
+            ret += $"Color Reg ID: { ColorRegId }\n";
+
+            ret += '\n';
+
+            for (int i = 0; i < 4; i++)
+            {
+                ret += $"Alpha In { i }: { AlphaIn[i] }\n";
+            }
+
+            ret += '\n';
+
+            ret += $"Alpha Op: { AlphaOp }\n";
+            ret += $"Alpha Bias: { AlphaBias }\n";
+            ret += $"Alpha Scale: { AlphaScale }\n";
+            ret += $"Alpha Clamp: { AlphaClamp }\n";
+            ret += $"Alpha Reg ID: { AlphaRegId }\n";
+
+            ret += '\n';
+
+            return ret;
+        }
     }
 }

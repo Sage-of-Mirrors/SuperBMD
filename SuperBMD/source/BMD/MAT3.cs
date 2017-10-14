@@ -387,7 +387,7 @@ namespace SuperBMD.BMD
             mat.AlphCompare = m_AlphaCompBlock[reader.ReadInt16()];
             mat.BMode = m_blendModeBlock[reader.ReadInt16()];
             mat.NBTScale = m_NBTScaleBlock[reader.ReadInt16()];
-
+            mat.Debug_Print();
             m_Materials.Add(mat);
         }
     }

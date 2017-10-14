@@ -62,5 +62,19 @@ namespace SuperBMD.Materials
             SwapModes = new TevSwapMode[16];
             SwapTables = new TevSwapModeTable[16];
         }
+
+        public void Debug_Print()
+        {
+            Console.WriteLine($"TEV stage count: { NumTevStagesCount }\n\n");
+
+            for (int i = 0; i < 16; i++)
+            {
+                if (TevStages[i] == null)
+                    continue;
+
+                Console.WriteLine($"Stage { i }:");
+                Console.WriteLine(TevStages[i].ToString());
+            }
+        }
     }
 }
