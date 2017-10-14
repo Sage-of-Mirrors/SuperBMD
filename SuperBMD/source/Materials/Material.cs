@@ -17,10 +17,10 @@ namespace SuperBMD.Materials
         public byte NumTevStagesCount;
         public IndirectTexturing IndTexEntry;
         public CullMode CullMode;
-        public Color?[] MaterialColors;
+        public Color[] MaterialColors;
         public ChannelControl[] ChannelControls;
-        public Color?[] AmbientColors;
-        public Color?[] LightingColors;
+        public Color[] AmbientColors;
+        public Color[] LightingColors;
         public TexCoordGen[] TexCoord1Gens;
         public TexCoordGen[] TexCoord2Gens;
         public TexMatrix[] TexMatrix1;
@@ -29,8 +29,8 @@ namespace SuperBMD.Materials
         public TevOrder[] TevOrders;
         public KonstColorSel[] ColorSels;
         public KonstAlphaSel[] AlphaSels;
-        public Color?[] TevColors;
-        public Color?[] KonstColors;
+        public Color[] TevColors;
+        public Color[] KonstColors;
         public TevStage[] TevStages;
         public TevSwapMode[] SwapModes;
         public TevSwapModeTable[] SwapTables;
@@ -40,5 +40,27 @@ namespace SuperBMD.Materials
         public ZMode ZMode;
         public bool ZCompLoc;
         public bool Dither;
+        public NBTScale NBTScale;
+
+        public Material()
+        {
+            MaterialColors = new Color[2];
+            ChannelControls = new ChannelControl[4];
+            AmbientColors = new Color[2];
+            LightingColors = new Color[8];
+            TexCoord1Gens = new TexCoordGen[8];
+            TexCoord2Gens = new TexCoordGen[8];
+            TexMatrix1 = new TexMatrix[10];
+            TexMatrix2 = new TexMatrix[20];
+            Textures = new BinaryTextureImage[8];
+            KonstColors = new Color[4];
+            ColorSels = new KonstColorSel[16];
+            AlphaSels = new KonstAlphaSel[16];
+            TevOrders = new TevOrder[16];
+            TevColors = new Color[16];
+            TevStages = new TevStage[16];
+            SwapModes = new TevSwapMode[16];
+            SwapTables = new TevSwapModeTable[16];
+        }
     }
 }

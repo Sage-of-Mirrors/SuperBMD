@@ -13,8 +13,10 @@ namespace SuperBMD.Materials.IO
         public static List<IndirectTexturing> Load(EndianBinaryReader reader, int offset, int size)
         {
             List<IndirectTexturing> indirects = new List<IndirectTexturing>();
+            int count = size / 312;
 
-
+            for (int i = 0; i < count; i++)
+                indirects.Add(new IndirectTexturing(reader));
 
             return indirects;
         }

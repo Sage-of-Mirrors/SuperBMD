@@ -87,6 +87,7 @@
     <Compile Include="source\Materials\Enums\DiffuseFn.cs" />
     <Compile Include="source\Materials\Enums\GXAttenuationFn.cs" />
     <Compile Include="source\Materials\Enums\GXColorChannelID.cs" />
+    <Compile Include="source\Materials\Enums\IndirectTexturingEnums.cs" />
     <Compile Include="source\Materials\Enums\J3DAttenuationFn.cs" />
     <Compile Include="source\Materials\Enums\J3DColorChannelID.cs" />
     <Compile Include="source\Materials\Enums\KonstAlphaSel.cs" />
@@ -102,7 +103,7 @@
     <Compile Include="source\Materials\Enums\TexGenType.cs" />
     <Compile Include="source\Materials\Enums\TexMatrix.cs" />
     <Compile Include="source\Materials\Fog.cs" />
-    <Compile Include="source\Materials\IndirectTevOrder.cs" />
+    <Compile Include="source\Materials\IndirectTevStage.cs" />
     <Compile Include="source\Materials\IndirectTexMatrix.cs" />
     <Compile Include="source\Materials\IndirectTexScale.cs" />
     <Compile Include="source\Materials\IndirectTexturing.cs" />

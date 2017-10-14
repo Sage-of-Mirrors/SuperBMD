@@ -54,6 +54,7 @@ namespace SuperBMD.BMD
 
             int mat3Size = reader.ReadInt32();
             int matCount = reader.ReadInt16();
+            long matInitOffset = 0;
             reader.SkipInt16();
 
             for (Mat3OffsetIndex i = 0; i <= Mat3OffsetIndex.NBTScaleData; ++i)
@@ -91,7 +92,7 @@ namespace SuperBMD.BMD
                 switch (i)
                 {
                     case Mat3OffsetIndex.MaterialData:
-                        //reader.BaseStream.Position += sectionSize;
+                        matInitOffset = reader.BaseStream.Position;
                         break;
                     case Mat3OffsetIndex.IndexData:
                         m_RemapIndices = new List<int>();
@@ -212,6 +213,182 @@ namespace SuperBMD.BMD
 
                 reader.BaseStream.Position = curReaderPos;
             }
+
+            int highestMatIndex = 0;
+
+            for (int i = 0; i < matCount; i++)
+            {
+                if (m_RemapIndices[i] > highestMatIndex)
+                    highestMatIndex = m_RemapIndices[i];
+            }
+
+            reader.BaseStream.Position = matInitOffset;
+            m_Materials = new List<Material>();
+            for (int i = 0; i <= highestMatIndex; i++)
+            {
+                LoadInitData(reader, m_MaterialNames[i]);
+            }
+
+            List<Material> tempList = new List<Material>(m_Materials);
+            m_Materials.Clear();
+
+            for (int i = 0; i < matCount; i++)
+            {
+                m_Materials.Add(tempList[m_RemapIndices[i]]);
+            }
+        }
+
+        private void LoadInitData(EndianBinaryReader reader, string name)
+        {
+            Material mat = new Material();
+            mat.Name = name;
+
+            mat.Flag = reader.ReadByte();
+            mat.CullMode = m_CullModeBlock[reader.ReadByte()];
+
+            mat.ColorChannelControlsCount = NumColorChannelsBlock[reader.ReadByte()];
+            mat.NumTexGensCount = NumTexGensBlock[reader.ReadByte()];
+            mat.NumTevStagesCount = NumTevStagesBlock[reader.ReadByte()];
+
+            mat.ZCompLoc = m_zCompLocBlock[reader.ReadByte()];
+            mat.ZMode = m_zModeBlock[reader.ReadByte()];
+            mat.Dither = m_ditherBlock[reader.ReadByte()];
+
+            mat.MaterialColors[0] = m_MaterialColorBlock[reader.ReadInt16()];
+            mat.MaterialColors[1] = m_MaterialColorBlock[reader.ReadInt16()];
+
+            for (int i = 0; i < 4; i++)
+            {
+                int chanIndex = reader.ReadInt16();
+                if (chanIndex == -1)
+                    continue;
+                else
+                    mat.ChannelControls[i] = m_ChannelControlBlock[chanIndex];
+            }
+
+            mat.AmbientColors[0] = m_AmbientColorBlock[reader.ReadInt16()];
+            mat.AmbientColors[1] = m_AmbientColorBlock[reader.ReadInt16()];
+
+            for (int i = 0; i  < 8; i++)
+            {
+                int lightIndex = reader.ReadInt16();
+                if (lightIndex == -1)
+                    continue;
+                else
+                    mat.LightingColors[i] = m_LightingColorBlock[lightIndex];
+            }
+
+            for (int i = 0; i < 8; i++)
+            {
+                int texGenIndex = reader.ReadInt16();
+                if (texGenIndex == -1)
+                    continue;
+                else
+                    mat.TexCoord1Gens[i] = m_TexCoord1GenBlock[texGenIndex];
+            }
+
+            for (int i = 0; i < 8; i++)
+            {
+                int texGenIndex = reader.ReadInt16();
+                if (texGenIndex == -1)
+                    continue;
+                else
+                    mat.TexCoord2Gens[i] = m_TexCoord2GenBlock[texGenIndex];
+            }
+
+            for (int i = 0; i < 10; i++)
+            {
+                int texMatIndex = reader.ReadInt16();
+                if (texMatIndex == -1)
+                    continue;
+                else
+                    mat.TexMatrix1[i] = m_TexMatrix1Block[texMatIndex];
+            }
+
+            for (int i = 0; i < 20; i++)
+            {
+                int texMatIndex = reader.ReadInt16();
+                if (texMatIndex == -1)
+                    continue;
+                else
+                    mat.TexMatrix2[i] = m_TexMatrix2Block[texMatIndex];
+            }
+
+            for (int i = 0; i < 8; i++)
+            {
+                reader.SkipInt16();
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                int tevKColor = reader.ReadInt16();
+                if (tevKColor == -1)
+                    continue;
+                else
+                    mat.KonstColors[i] = m_TevKonstColorBlock[tevKColor];
+            }
+
+            for (int i = 0; i < 16; i++)
+            {
+                mat.ColorSels[i] =  (KonstColorSel)reader.ReadByte();
+            }
+
+            for (int i = 0; i < 16; i++)
+            {
+                mat.AlphaSels[i] = (KonstAlphaSel)reader.ReadByte();
+            }
+
+            for (int i = 0; i < 16; i++)
+            {
+                int tevOrderIndex = reader.ReadInt16();
+                if (tevOrderIndex == -1)
+                    continue;
+                else
+                    mat.TevOrders[i] = m_TevOrderBlock[tevOrderIndex];
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                int tevColor = reader.ReadInt16();
+                if (tevColor == -1)
+                    continue;
+                else
+                    mat.TevColors[i] = m_TevColorBlock[tevColor];
+            }
+
+            for (int i = 0; i < 16; i++)
+            {
+                int tevStageIndex = reader.ReadInt16();
+                if (tevStageIndex == -1)
+                    continue;
+                else
+                    mat.TevStages[i] = m_TevStageBlock[tevStageIndex];
+            }
+
+            for (int i = 0; i < 16; i++)
+            {
+                int tevSwapModeIndex = reader.ReadInt16();
+                if (tevSwapModeIndex == -1)
+                    continue;
+                else
+                    mat.SwapModes[i] = m_SwapModeBlock[tevSwapModeIndex];
+            }
+
+            for (int i = 0; i < 16; i++)
+            {
+                int tevSwapModeTableIndex = reader.ReadInt16();
+                if (tevSwapModeTableIndex == -1)
+                    continue;
+                else
+                    mat.SwapTables[i] = m_SwapTableBlock[tevSwapModeTableIndex];
+            }
+
+            mat.FogInfo = m_FogBlock[reader.ReadInt16()];
+            mat.AlphCompare = m_AlphaCompBlock[reader.ReadInt16()];
+            mat.BMode = m_blendModeBlock[reader.ReadInt16()];
+            mat.NBTScale = m_NBTScaleBlock[reader.ReadInt16()];
+
+            m_Materials.Add(mat);
         }
     }
 }
