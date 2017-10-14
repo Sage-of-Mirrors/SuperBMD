@@ -72,6 +72,7 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="source\BMD\MAT3.cs" />
+    <Compile Include="source\BMD\VTX1.cs" />
     <Compile Include="source\Geometry\Enums\GXColorDataType.cs" />
     <Compile Include="source\Geometry\Enums\GXDataType.cs" />
     <Compile Include="source\Geometry\Enums\GXPrimitiveType.cs" />

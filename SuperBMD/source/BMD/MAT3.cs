@@ -316,7 +316,11 @@ namespace SuperBMD.BMD
 
             for (int i = 0; i < 8; i++)
             {
-                reader.SkipInt16();
+                int texIndex = reader.ReadInt16();
+                if (texIndex == -1)
+                    continue;
+                else
+                    mat.TextureIndices[i] = m_TexRemapBlock[texIndex];
             }
 
             for (int i = 0; i < 4; i++)

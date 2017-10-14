@@ -25,7 +25,7 @@ namespace SuperBMD.Materials
         public TexCoordGen[] TexCoord2Gens;
         public TexMatrix[] TexMatrix1;
         public TexMatrix[] TexMatrix2;
-        public BinaryTextureImage[] Textures;
+        public int[] TextureIndices;
         public TevOrder[] TevOrders;
         public KonstColorSel[] ColorSels;
         public KonstAlphaSel[] AlphaSels;
@@ -52,7 +52,7 @@ namespace SuperBMD.Materials
             TexCoord2Gens = new TexCoordGen[8];
             TexMatrix1 = new TexMatrix[10];
             TexMatrix2 = new TexMatrix[20];
-            Textures = new BinaryTextureImage[8];
+            TextureIndices = new int[8];
             KonstColors = new Color[4];
             ColorSels = new KonstColorSel[16];
             AlphaSels = new KonstAlphaSel[16];
