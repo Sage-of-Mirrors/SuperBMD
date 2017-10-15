@@ -88,7 +88,7 @@ namespace SuperBMD.BMD
                 else
                     sectionSize = nextOffset - sectionOffset;
 
-                reader.BaseStream.Position = (offset - 4) + sectionOffset;
+                reader.BaseStream.Position = (offset) + sectionOffset;
 
                 switch (i)
                 {

@@ -19,7 +19,8 @@ namespace SuperBMD
             {
                 EndianBinaryReader reader = new EndianBinaryReader(str, Endian.Big);
 
-                VTX1 test = new VTX1(reader, 0x340);
+                //VTX1 test = new VTX1(reader, 0x100);
+                MAT3 testMat = new MAT3(reader, 0x5B00);
             }
         }
 
