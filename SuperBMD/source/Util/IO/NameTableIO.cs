@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using SuperBMD.Materials;
 using GameFormatReader.Common;
 
-namespace SuperBMD.Materials.IO
+namespace SuperBMD.Util
 {
     public static class NameTableIO
     {

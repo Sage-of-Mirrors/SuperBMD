@@ -71,6 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="source\BMD\JNT1.cs" />
     <Compile Include="source\BMD\MAT3.cs" />
     <Compile Include="source\BMD\VTX1.cs" />
     <Compile Include="source\Geometry\ActiveVertexAttributes.cs" />
@@ -122,7 +123,7 @@
     <Compile Include="source\Materials\IO\FogIO.cs" />
     <Compile Include="source\Materials\IO\IndirectTexturingIO.cs" />
     <Compile Include="source\Materials\IO\ColorIO.cs" />
-    <Compile Include="source\Materials\IO\NameTableIO.cs" />
+    <Compile Include="source\Util\IO\NameTableIO.cs" />
     <Compile Include="source\Materials\IO\NBTScaleIO.cs" />
     <Compile Include="source\Materials\IO\TevOrderIO.cs" />
     <Compile Include="source\Materials\IO\TevStageIO.cs" />
@@ -140,6 +141,7 @@
     <Compile Include="source\Materials\TexCoordGen.cs" />
     <Compile Include="source\Materials\TexMatrix.cs" />
     <Compile Include="source\Materials\ZMode.cs" />
+    <Compile Include="source\Rigging\Bone.cs" />
     <Compile Include="source\Util\Color.cs" />
     <Compile Include="source\Util\Color32.cs" />
     <Compile Include="source\Util\J3DUtility.cs" />
