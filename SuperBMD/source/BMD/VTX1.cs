@@ -39,15 +39,17 @@ namespace SuperBMD.BMD
                 reader.Skip(3);
                 long curPos = reader.BaseStream.Position;
 
-                int attribOffset = GetAttributeDataOffset(attribDataOffsets, attrib);
-                Attributes.SetAttributeData(attrib, LoadAttributeData(reader, attribOffset, fractionalBitCount, attrib, componentType, componentCount));
+                int attribDataSize = 0;
+                int attribOffset = GetAttributeDataOffset(attribDataOffsets, vtx1Size, attrib, out attribDataSize);
+                int attribCount = GetAttributeDataCount(attribDataSize, attrib, componentType, componentCount);
+                Attributes.SetAttributeData(attrib, LoadAttributeData(reader, offset + attribOffset, attribCount, fractionalBitCount, attrib, componentType, componentCount));
 
                 reader.BaseStream.Seek(curPos, System.IO.SeekOrigin.Begin);
                 attrib = (GXVertexAttribute)reader.ReadInt32();
             }
         }
 
-        public object LoadAttributeData(EndianBinaryReader reader, int offset, byte frac, GXVertexAttribute attribute, GXDataType dataType, GXComponentCount compCount)
+        public object LoadAttributeData(EndianBinaryReader reader, int offset, int count, byte frac, GXVertexAttribute attribute, GXDataType dataType, GXComponentCount compCount)
         {
             reader.BaseStream.Seek(offset, System.IO.SeekOrigin.Begin);
             object final = null;
@@ -58,10 +60,10 @@ namespace SuperBMD.BMD
                     switch (compCount)
                     {
                         case GXComponentCount.Position_XY:
-                            final = LoadVec2Data(reader, frac, 0, dataType);
+                            final = LoadVec2Data(reader, frac, count, dataType);
                             break;
                         case GXComponentCount.Position_XYZ:
-                            final = LoadVec3Data(reader, frac, 0, dataType);
+                            final = LoadVec3Data(reader, frac, count, dataType);
                             break;
                     }
                     break;
@@ -69,7 +71,7 @@ namespace SuperBMD.BMD
                     switch (compCount)
                     {
                         case GXComponentCount.Normal_XYZ:
-                            final = LoadVec3Data(reader, frac, 0, dataType);
+                            final = LoadVec3Data(reader, frac, count, dataType);
                             break;
                         case GXComponentCount.Normal_NBT:
                             break;
@@ -79,7 +81,7 @@ namespace SuperBMD.BMD
                     break;
                 case GXVertexAttribute.Color0:
                 case GXVertexAttribute.Color1:
-                    final = LoadColorData(reader, 0, dataType);
+                    final = LoadColorData(reader, count, dataType);
                     break;
                 case GXVertexAttribute.Tex0:
                 case GXVertexAttribute.Tex1:
@@ -92,10 +94,10 @@ namespace SuperBMD.BMD
                     switch (compCount)
                     {
                         case GXComponentCount.TexCoord_S:
-                            final = LoadSingleFloat(reader, frac, 0, dataType);
+                            final = LoadSingleFloat(reader, frac, count, dataType);
                             break;
                         case GXComponentCount.TexCoord_ST:
-                            final = LoadVec2Data(reader, frac, 0, dataType);
+                            final = LoadVec2Data(reader, frac, count, dataType);
                             break;
                     }
                     break;
@@ -258,6 +260,7 @@ namespace SuperBMD.BMD
                         byte r8 = reader.ReadByte();
                         byte g8 = reader.ReadByte();
                         byte b8 = reader.ReadByte();
+                        reader.SkipByte();
                         colorList.Add(new Color((float)r8 / 255.0f, (float)g8 / 255.0f, (float)b8 / 255.0f));
                         break;
                     case GXDataType.RGBX8:
@@ -296,37 +299,158 @@ namespace SuperBMD.BMD
             return colorList;
         }
 
-        private int GetAttributeDataOffset(int[] offsets, GXVertexAttribute attribute)
+        private int GetAttributeDataOffset(int[] offsets, int vtx1Size, GXVertexAttribute attribute, out int size)
         {
+            int offset = 0;
+            size = 0;
+            Vtx1OffsetIndex start = Vtx1OffsetIndex.PositionData;
+
             switch (attribute)
             {
                 case GXVertexAttribute.Position:
-                    return offsets[(int)Vtx1OffsetIndex.PositionData];
+                    start = Vtx1OffsetIndex.PositionData;
+                    offset = offsets[(int)Vtx1OffsetIndex.PositionData];
+                    break;
                 case GXVertexAttribute.Normal:
-                    return offsets[(int)Vtx1OffsetIndex.NormalData];
+                    start = Vtx1OffsetIndex.NormalData;
+                    offset = offsets[(int)Vtx1OffsetIndex.NormalData];
+                    break;
                 case GXVertexAttribute.Color0:
-                    return offsets[(int)Vtx1OffsetIndex.Color0Data];
+                    start = Vtx1OffsetIndex.Color0Data;
+                    offset = offsets[(int)Vtx1OffsetIndex.Color0Data];
+                    break;
                 case GXVertexAttribute.Color1:
-                    return offsets[(int)Vtx1OffsetIndex.Color1Data];
+                    start = Vtx1OffsetIndex.Color1Data;
+                    offset = offsets[(int)Vtx1OffsetIndex.Color1Data];
+                    break;
                 case GXVertexAttribute.Tex0:
-                    return offsets[(int)Vtx1OffsetIndex.TexCoord0Data];
+                    start = Vtx1OffsetIndex.TexCoord0Data;
+                    offset = offsets[(int)Vtx1OffsetIndex.TexCoord0Data];
+                    break;
                 case GXVertexAttribute.Tex1:
-                    return offsets[(int)Vtx1OffsetIndex.TexCoord1Data];
+                    start = Vtx1OffsetIndex.TexCoord1Data;
+                    offset = offsets[(int)Vtx1OffsetIndex.TexCoord1Data];
+                    break;
                 case GXVertexAttribute.Tex2:
-                    return offsets[(int)Vtx1OffsetIndex.TexCoord2Data];
+                    start = Vtx1OffsetIndex.TexCoord2Data;
+                    offset = offsets[(int)Vtx1OffsetIndex.TexCoord2Data];
+                    break;
                 case GXVertexAttribute.Tex3:
-                    return offsets[(int)Vtx1OffsetIndex.TexCoord3Data];
+                    start = Vtx1OffsetIndex.TexCoord3Data;
+                    offset = offsets[(int)Vtx1OffsetIndex.TexCoord3Data];
+                    break;
                 case GXVertexAttribute.Tex4:
-                    return offsets[(int)Vtx1OffsetIndex.TexCoord4Data];
+                    start = Vtx1OffsetIndex.TexCoord4Data;
+                    offset = offsets[(int)Vtx1OffsetIndex.TexCoord4Data];
+                    break;
                 case GXVertexAttribute.Tex5:
-                    return offsets[(int)Vtx1OffsetIndex.TexCoord5Data];
+                    start = Vtx1OffsetIndex.TexCoord5Data;
+                    offset = offsets[(int)Vtx1OffsetIndex.TexCoord5Data];
+                    break;
                 case GXVertexAttribute.Tex6:
-                    return offsets[(int)Vtx1OffsetIndex.TexCoord6Data];
+                    start = Vtx1OffsetIndex.TexCoord6Data;
+                    offset = offsets[(int)Vtx1OffsetIndex.TexCoord6Data];
+                    break;
                 case GXVertexAttribute.Tex7:
-                    return offsets[(int)Vtx1OffsetIndex.TexCoord7Data];
+                    start = Vtx1OffsetIndex.TexCoord7Data;
+                    offset = offsets[(int)Vtx1OffsetIndex.TexCoord7Data];
+                    break;
                 default:
                     throw new ArgumentException("attribute");
             }
+
+            for (int i = (int)start + 1; i < 13; i++)
+            {
+                if (i == 12)
+                {
+                    size = vtx1Size - offset;
+                    break;
+                }
+
+                int nextOffset = offsets[i];
+
+                if (nextOffset == 0)
+                    continue;
+                else
+                {
+                    size = nextOffset - offset;
+                    break;
+                }
+            }
+
+            return offset;
+        }
+
+        private int GetAttributeDataCount(int size, GXVertexAttribute attribute, GXDataType dataType, GXComponentCount compCount)
+        {
+            int compCnt = 0;
+            int compStride = 0;
+
+            if (attribute == GXVertexAttribute.Color0 || attribute == GXVertexAttribute.Color1)
+            {
+                switch (dataType)
+                {
+                    case GXDataType.RGB565:
+                    case GXDataType.RGBA4:
+                        compCnt = 1;
+                        compStride = 2;
+                        break;
+                    case GXDataType.RGB8:
+                    case GXDataType.RGBX8:
+                    case GXDataType.RGBA6:
+                    case GXDataType.RGBA8:
+                        compCnt = 4;
+                        compStride = 1;
+                        break;
+                }
+            }
+
+            else
+            {
+                switch (dataType)
+                {
+                    case GXDataType.Unsigned8:
+                    case GXDataType.Signed8:
+                        compStride = 1;
+                        break;
+                    case GXDataType.Unsigned16:
+                    case GXDataType.Signed16:
+                        compStride = 2;
+                        break;
+                    case GXDataType.Float32:
+                        compStride = 4;
+                        break;
+                }
+
+                switch (attribute)
+                {
+                    case GXVertexAttribute.Position:
+                        if (compCount == GXComponentCount.Position_XY)
+                            compCnt = 2;
+                        else if (compCount == GXComponentCount.Position_XYZ)
+                            compCnt = 3;
+                        break;
+                    case GXVertexAttribute.Normal:
+                        if (compCount == GXComponentCount.Normal_XYZ)
+                            compCnt = 3;
+                        break;
+                    case GXVertexAttribute.Tex0:
+                    case GXVertexAttribute.Tex1:
+                    case GXVertexAttribute.Tex2:
+                    case GXVertexAttribute.Tex3:
+                    case GXVertexAttribute.Tex4:
+                    case GXVertexAttribute.Tex5:
+                    case GXVertexAttribute.Tex6:
+                    case GXVertexAttribute.Tex7:
+                        if (compCount == GXComponentCount.TexCoord_S)
+                            compCnt = 1;
+                        else if (compCount == GXComponentCount.TexCoord_ST)
+                            compCnt = 2;
+                        break;
+                }
+            }
+
+            return size / (compCnt * compStride);
         }
     }
 }

@@ -13,14 +13,14 @@ namespace SuperBMD
     {
         static void Main(string[] args)
         {
-            Assimp.Scene test = LoadAssimpScene(args[0]);
+            //Assimp.Scene test = LoadAssimpScene(args[0]);
 
-            /*using (FileStream str = new FileStream(args[0], FileMode.Open, FileAccess.Read))
+            using (FileStream str = new FileStream(args[0], FileMode.Open, FileAccess.Read))
             {
                 EndianBinaryReader reader = new EndianBinaryReader(str, Endian.Big);
 
-                MAT3 test = new MAT3(reader, 0x18424);
-            }*/
+                VTX1 test = new VTX1(reader, 0x340);
+            }
         }
 
         static Assimp.Scene LoadAssimpScene(string fileName)
