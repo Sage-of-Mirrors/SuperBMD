@@ -79,7 +79,7 @@ namespace SuperBMD.BMD
                     break;
                 case GXVertexAttribute.Color0:
                 case GXVertexAttribute.Color1:
-                    LoadColorData(reader, 0, dataType);
+                    final = LoadColorData(reader, 0, dataType);
                     break;
                 case GXVertexAttribute.Tex0:
                 case GXVertexAttribute.Tex1:
@@ -95,7 +95,7 @@ namespace SuperBMD.BMD
                             final = LoadSingleFloat(reader, frac, 0, dataType);
                             break;
                         case GXComponentCount.TexCoord_ST:
-                            LoadVec2Data(reader, frac, 0, dataType);
+                            final = LoadVec2Data(reader, frac, 0, dataType);
                             break;
                     }
                     break;
