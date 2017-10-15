@@ -13,7 +13,8 @@ namespace SuperBMD
     {
         static void Main(string[] args)
         {
-            //Assimp.Scene test = LoadAssimpScene(args[0]);
+            Assimp.Scene test = LoadAssimpScene(args[0]);
+            JNT1 assimptest = new JNT1(test);
 
             using (FileStream str = new FileStream(args[0], FileMode.Open, FileAccess.Read))
             {
@@ -21,7 +22,7 @@ namespace SuperBMD
 
                 //VTX1 test = new VTX1(reader, 0x100);
                 //MAT3 testMat = new MAT3(reader, 0x5B00);
-                JNT1 testJnt = new JNT1(reader, 0xBCE0);
+                //JNT1 testJnt = new JNT1(reader, 0xBCE0);
             }
         }
 
