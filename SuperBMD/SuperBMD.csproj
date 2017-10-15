@@ -74,11 +74,12 @@
     <Compile Include="source\BMD\MAT3.cs" />
     <Compile Include="source\BMD\VTX1.cs" />
     <Compile Include="source\Geometry\ActiveVertexAttributes.cs" />
-    <Compile Include="source\Geometry\Enums\GXColorDataType.cs" />
+    <Compile Include="source\Geometry\Enums\GXComponentCount.cs" />
     <Compile Include="source\Geometry\Enums\GXDataType.cs" />
     <Compile Include="source\Geometry\Enums\GXPrimitiveType.cs" />
     <Compile Include="source\Geometry\Enums\GXVertexAttribute.cs" />
     <Compile Include="source\Geometry\Enums\VertexInputType.cs" />
+    <Compile Include="source\Geometry\Enums\Vtx1OffsetIndex.cs" />
     <Compile Include="source\Materials\AlphaCompare.cs" />
     <Compile Include="source\Materials\BinaryTextureImage.cs" />
     <Compile Include="source\Materials\BlendMode.cs" />

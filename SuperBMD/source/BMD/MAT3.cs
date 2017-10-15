@@ -52,6 +52,7 @@ namespace SuperBMD.BMD
         {
             reader.BaseStream.Seek(offset, System.IO.SeekOrigin.Begin);
 
+            reader.SkipInt32();
             int mat3Size = reader.ReadInt32();
             int matCount = reader.ReadInt16();
             long matInitOffset = 0;
