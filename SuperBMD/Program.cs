@@ -22,13 +22,17 @@ namespace SuperBMD
 
                 //VTX1 test = new VTX1(reader, 0x100);
                 //MAT3 testMat = new MAT3(reader, 0x5B00);
-                //JNT1 testJnt = new JNT1(reader, 0xBCE0);
+                JNT1 testJnt = new JNT1(reader, 0x8980);
             }
         }
 
         static Assimp.Scene LoadAssimpScene(string fileName)
         {
             Assimp.AssimpContext cont = new Assimp.AssimpContext();
+
+            // AssImp adds dummy nodes for pivots from FBX, so we'll force them off
+            cont.SetConfig(new Assimp.Configs.FBXPreservePivotsConfig(false));
+            cont.ZAxisRotation = -90.0f;
             return cont.ImportFile(fileName, Assimp.PostProcessSteps.Triangulate);
         }
     }

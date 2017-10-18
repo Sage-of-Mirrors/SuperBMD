@@ -60,78 +60,35 @@ namespace SuperBMD.BMD
 
         public JNT1(Assimp.Scene scene)
         {
-            List<string> boneNames = new List<string>();
+            FlatSkeleton = new List<Rigging.Bone>();
+            Assimp.Node root = null;
 
-            for (int i = 0; i < scene.MeshCount; i++)
+            for (int i = 0; i < scene.RootNode.ChildCount; i++)
             {
-                for (int j = 0; j < scene.Meshes[i].BoneCount; j++)
+                if (scene.RootNode.Children[i].Name.ToLowerInvariant() == "skeleton_root")
                 {
-                    if (!boneNames.Contains(scene.Meshes[i].Bones[j].Name))
-                        boneNames.Add(scene.Meshes[i].Bones[j].Name);
+                    root = scene.RootNode.Children[i].Children[0];
+                    break;
                 }
             }
 
-            List<Assimp.Node> masterNodeList = new List<Node>();
-            GetAssimpNodesRecursive(scene.RootNode, masterNodeList);
+            if (root == null)
+                throw new Exception("Skeleton root was not found. Please make sure the root is under a node called \"skeleton_root.\"");
 
-            List<Assimp.Node> testlist = new List<Node>();
-
-            for (int i = 0; i < masterNodeList.Count; i++)
-            {
-                if (boneNames.Contains(masterNodeList[i].Name))
-                {
-                    if (!testlist.Contains(masterNodeList[i]))
-                        testlist.Add(masterNodeList[i]);
-                }
-            }
-
-            List<Assimp.Node> testList2 = new List<Node>();
-
-            foreach (Assimp.Node node in testlist)
-            {
-                GetNodesRecursive(node, testList2);
-            }
-
-            Assimp.Node root;
-
-            foreach (Assimp.Node node in testList2)
-            {
-                for (int i = 0; i < node.ChildCount; i++)
-                {
-                    if (!testList2.Contains(node.Children[i]))
-                    {
-                        for (int j = 0; j < node.ChildCount; j++)
-                        {
-                            if (testList2.Contains(node.Children[j]))
-                            {
-                                root = node.Children[j];
-                                break;
-                            }
-                        }
-
-                        break;
-                    }
-                }
-            }
+            SkeletonRoot = AssimpNodesToBonesRecursive(root, null, FlatSkeleton);
         }
 
-        private void GetAssimpNodesRecursive(Assimp.Node root, List<Assimp.Node> nodes)
+        private Rigging.Bone AssimpNodesToBonesRecursive(Assimp.Node node, Rigging.Bone parent, List<Rigging.Bone> boneList)
         {
-            nodes.Add(root);
+            Rigging.Bone newBone = new Rigging.Bone(node, parent);
+            boneList.Add(newBone);
 
-            for (int i = 0; i < root.ChildCount; i++)
-                GetAssimpNodesRecursive(root.Children[i], nodes);
-        }
+            for (int i = 0; i < node.ChildCount; i++)
+            {
+                newBone.Children.Add(AssimpNodesToBonesRecursive(node.Children[i], newBone, boneList));
+            }
 
-        private void GetNodesRecursive(Assimp.Node node, List<Assimp.Node> list)
-        {
-            if (node.Parent == null)
-                return;
-
-            list.Add(node);
-
-            if (node.Parent != null && !list.Contains(node.Parent))
-                GetNodesRecursive(node.Parent, list);
+            return newBone;
         }
     }
 }

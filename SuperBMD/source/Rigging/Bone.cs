@@ -12,6 +12,7 @@ namespace SuperBMD.Rigging
     {
         public string Name { get; private set; }
         public Bone Parent { get; private set; }
+        public List<Bone> Children { get; private set; }
         public Matrix4 InverseBindMatrix { get; private set; }
         public Matrix4 TransformationMatrix { get; private set; }
 
@@ -27,6 +28,8 @@ namespace SuperBMD.Rigging
 
         public Bone(EndianBinaryReader reader, string name)
         {
+            Children = new List<Bone>();
+
             Name = name;
             m_MatrixType = reader.ReadInt16();
             m_UnknownIndex = reader.ReadByte();
@@ -48,6 +51,24 @@ namespace SuperBMD.Rigging
             m_BoundsRadius = reader.ReadSingle();
             m_MinimumBounds = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
             m_MaximumBounds = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+        }
+
+        public Bone(Assimp.Node node, Rigging.Bone parent)
+        {
+            Children = new List<Bone>();
+
+            Name = node.Name;
+            Parent = parent;
+
+            TransformationMatrix = new Matrix4(
+                node.Transform.A1, node.Transform.A2, node.Transform.A3, node.Transform.A4,
+                node.Transform.B1, node.Transform.B2, node.Transform.B3, node.Transform.B4,
+                node.Transform.C1, node.Transform.C2, node.Transform.C3, node.Transform.C4,
+                node.Transform.D1, node.Transform.D2, node.Transform.D3, node.Transform.D4);
+
+            m_Scale = TransformationMatrix.ExtractScale();
+            m_Rotation = TransformationMatrix.ExtractRotation();
+            m_Translation = TransformationMatrix.Column3.Xyz;
         }
     }
 }
