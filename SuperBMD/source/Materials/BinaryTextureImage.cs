@@ -8,6 +8,8 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using GameFormatReader.Common;
+using SuperBMD.Util;
+using Chadsoft.CTools.Image;
 
 namespace SuperBMD.Materials
 {
@@ -172,6 +174,49 @@ namespace SuperBMD.Materials
             m_rgbaImageData = DecodeData(stream, Width, Height, Format, m_imagePalette, PaletteFormat);
         }
 
+        public void Load(Assimp.TextureSlot texture, string modelDirectory)
+        {
+            Format = TextureFormats.RGBA32;
+            AlphaSetting = 0;
+            WrapS = texture.WrapModeU.ToGXWrapMode();
+            WrapT = texture.WrapModeV.ToGXWrapMode();
+            PaletteFormat = PaletteFormats.IA8;
+            PaletteCount = 0;
+            EmbeddedPaletteOffset = 0;
+            MinFilter = FilterMode.Linear;
+            MagFilter = FilterMode.Linear;
+            MipMapCount = 0;
+            LodBias = 0;
+
+            Bitmap texData = null;
+
+            if (File.Exists(texture.FilePath))
+            {
+                texData = new Bitmap(texture.FilePath);
+            }
+            else
+            {
+                Console.WriteLine($"Texture was not found at path \"{ texture.FilePath }\". Searching the model's directory...");
+                string fileName = Path.GetFileName(texture.FilePath);
+                string texPath = Path.Combine(modelDirectory, fileName);
+
+                if (!File.Exists(texPath))
+                    throw new Exception($"Cannot find texture \"{ fileName }\". Make sure it exists and that it is in the same directory as the model file.");
+
+                texData = new Bitmap(texPath);
+            }
+
+            Width = (ushort)texData.Width;
+            Height = (ushort)texData.Height;
+
+            m_rgbaImageData = new byte[Width * Height * 4];
+            BitmapData dat = texData.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            Marshal.Copy(dat.Scan0, m_rgbaImageData, 0, m_rgbaImageData.Length);
+            texData.UnlockBits(dat);
+
+            texData.Dispose();
+        }
+
         public void SaveImageToDisk(string outputFile)
         {
             using (Bitmap bmp = CreateBitmap())
@@ -230,6 +275,43 @@ namespace SuperBMD.Materials
                 bitmap.UnlockBits(bmpData);
                 m_rgbaImageData = data;
             }
+        }
+
+        public void WriteHeader(EndianBinaryWriter writer)
+        {
+            writer.Write((byte)Format);
+            writer.Write(AlphaSetting);
+            writer.Write(Width);
+            writer.Write(Height);
+            writer.Write((byte)WrapS);
+            writer.Write((byte)WrapT);
+
+            // This is an unknown
+            writer.Write((byte)0);
+
+            writer.Write((byte)PaletteFormat);
+            writer.Write((short)PaletteCount);
+
+            // This is a placeholder for PaletteDataOffset
+            writer.Write((int)0);
+
+            writer.Write(EmbeddedPaletteOffset);
+
+            writer.Write((byte)MinFilter);
+            writer.Write((byte)MagFilter);
+
+            // This is an unknown
+            writer.Write((short)0);
+
+            writer.Write((byte)MipMapCount);
+
+            // This is an unknown
+            writer.Write((byte)0);
+
+            writer.Write((short)LodBias);
+
+            // This is a placeholder for ImageDataOffset
+            writer.Write((int)0);
         }
 
         #region Decoding
@@ -850,6 +932,25 @@ namespace SuperBMD.Materials
             dest[destOffset + 1] = g;
             dest[destOffset + 2] = r;
             dest[destOffset + 3] = a;
+        }
+        #endregion
+
+        #region Encoding
+        public byte[] EncodeData(TextureFormats format)
+        {
+            switch (format)
+            {
+                case TextureFormats.I4:
+                    return ImageDataFormat.I4.ConvertTo(m_rgbaImageData, Width, Height, null);
+                case TextureFormats.RGB5A3:
+                    return ImageDataFormat.RGB5A3.ConvertTo(m_rgbaImageData, Width, Height, null);
+                case TextureFormats.RGBA32:
+                    return ImageDataFormat.Rgba32.ConvertTo(m_rgbaImageData, Width, Height, null);
+                case TextureFormats.CMPR:
+                    return ImageDataFormat.Cmpr.ConvertTo(m_rgbaImageData, Width, Height, null);
+                default:
+                    return new byte[0];
+            }
         }
         #endregion
     }

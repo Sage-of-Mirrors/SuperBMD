@@ -73,6 +73,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="source\BMD\JNT1.cs" />
     <Compile Include="source\BMD\MAT3.cs" />
+    <Compile Include="source\BMD\TEX1.cs" />
     <Compile Include="source\BMD\VTX1.cs" />
     <Compile Include="source\Geometry\ActiveVertexAttributes.cs" />
     <Compile Include="source\Geometry\Enums\GXComponentCount.cs" />
@@ -112,6 +113,7 @@
     <Compile Include="source\Materials\Enums\TexGenType.cs" />
     <Compile Include="source\Materials\Enums\TexMatrix.cs" />
     <Compile Include="source\Materials\Fog.cs" />
+    <Compile Include="source\Materials\ImageDataFormat.cs" />
     <Compile Include="source\Materials\IndirectTevStage.cs" />
     <Compile Include="source\Materials\IndirectTexMatrix.cs" />
     <Compile Include="source\Materials\IndirectTexScale.cs" />
@@ -146,6 +148,7 @@
     <Compile Include="source\Util\Color32.cs" />
     <Compile Include="source\Util\J3DUtility.cs" />
     <Compile Include="source\Util\VectorUtility.cs" />
+    <Compile Include="source\Util\WrapModeUtility.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenTK.dll.config" />
