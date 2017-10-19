@@ -145,6 +145,7 @@
     <Compile Include="source\Util\Color.cs" />
     <Compile Include="source\Util\Color32.cs" />
     <Compile Include="source\Util\J3DUtility.cs" />
+    <Compile Include="source\Util\VectorUtility.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenTK.dll.config" />

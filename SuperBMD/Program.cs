@@ -14,7 +14,7 @@ namespace SuperBMD
         static void Main(string[] args)
         {
             Assimp.Scene test = LoadAssimpScene(args[0]);
-            JNT1 assimptest = new JNT1(test);
+            VTX1 assimptest = new VTX1(test);
 
             using (FileStream str = new FileStream(args[0], FileMode.Open, FileAccess.Read))
             {

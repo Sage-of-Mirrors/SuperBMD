@@ -49,6 +49,48 @@ namespace SuperBMD.BMD
             }
         }
 
+        public VTX1(Assimp.Scene scene)
+        {
+            Attributes = new ActiveVertexAttributes();
+
+            foreach (Assimp.Mesh mesh in scene.Meshes)
+            {
+                if (mesh.HasVertices)
+                {
+                    SetAssimpPositionAttribute(mesh);
+                }
+                else
+                    throw new Exception($"Mesh \"{ mesh.Name }\" has no vertices!");
+                if (mesh.HasNormals)
+                {
+                    SetAssimpNormalAttribute(mesh);
+                }
+                else
+                    Console.WriteLine($"Mesh \"{ mesh.Name }\" has no normals.");
+                if (mesh.HasVertexColors(0))
+                {
+                    SetAssimpColorAttribute(0, GXVertexAttribute.Color0, mesh);
+                }
+                else
+                    Console.WriteLine($"Mesh \"{ mesh.Name }\" has no colors on channel 0.");
+                if (mesh.HasVertexColors(1))
+                {
+                    SetAssimpColorAttribute(1, GXVertexAttribute.Color1, mesh);
+                }
+                else
+                    Console.WriteLine($"Mesh \"{ mesh.Name }\" has no colors on channel 1.");
+                for (int texCoords = 0; texCoords < 8; texCoords++)
+                {
+                    if (mesh.HasTextureCoords(texCoords))
+                    {
+                        SetAssimpTexCoordAttribute(texCoords, GXVertexAttribute.Tex0 + texCoords, mesh);
+                    }
+                    else
+                        Console.WriteLine($"Mesh \"{ mesh.Name }\" has no texture coordinates on channel { texCoords }.");
+                }
+            }
+        }
+
         public object LoadAttributeData(EndianBinaryReader reader, int offset, int count, byte frac, GXVertexAttribute attribute, GXDataType dataType, GXComponentCount compCount)
         {
             reader.BaseStream.Seek(offset, System.IO.SeekOrigin.Begin);
@@ -451,6 +493,98 @@ namespace SuperBMD.BMD
             }
 
             return size / (compCnt * compStride);
+        }
+
+        private void SetAssimpPositionAttribute(Assimp.Mesh mesh)
+        {
+            List<Vector3> tempList = new List<Vector3>();
+
+            for (int vec = 0; vec < mesh.VertexCount; vec++)
+                tempList.Add(mesh.Vertices[vec].ToOpenTKVector3());
+
+            if (!Attributes.CheckAttribute(GXVertexAttribute.Position))
+                Attributes.SetAttributeData(GXVertexAttribute.Position, tempList);
+            else
+            {
+                List<Vector3> attribData = (List<Vector3>)Attributes.GetAttributeData(GXVertexAttribute.Position);
+
+                foreach (Vector3 vec in tempList)
+                {
+                    if (!attribData.Contains(vec))
+                        attribData.Add(vec);
+                }
+
+                Attributes.SetAttributeData(GXVertexAttribute.Position, attribData);
+            }
+        }
+
+        private void SetAssimpNormalAttribute(Assimp.Mesh mesh)
+        {
+            List<Vector3> tempList = new List<Vector3>();
+
+            for (int vec = 0; vec < mesh.Normals.Count; vec++)
+                tempList.Add(mesh.Normals[vec].ToOpenTKVector3());
+
+            if (!Attributes.CheckAttribute(GXVertexAttribute.Normal))
+                Attributes.SetAttributeData(GXVertexAttribute.Normal, tempList);
+            else
+            {
+                List<Vector3> attribData = (List<Vector3>)Attributes.GetAttributeData(GXVertexAttribute.Normal);
+
+                foreach (Vector3 vec in tempList)
+                {
+                    if (!attribData.Contains(vec))
+                        attribData.Add(vec);
+                }
+
+                Attributes.SetAttributeData(GXVertexAttribute.Normal, attribData);
+            }
+        }
+
+        private void SetAssimpColorAttribute(int channel, GXVertexAttribute colorAttrib, Assimp.Mesh mesh)
+        {
+            List<Color> tempList = new List<Color>();
+
+            for (int col = 0; col < mesh.VertexColorChannels[channel].Count; col++)
+                tempList.Add(mesh.VertexColorChannels[channel][col].ToSuperBMDColorRGBA());
+
+            if (!Attributes.CheckAttribute(colorAttrib))
+                Attributes.SetAttributeData(colorAttrib, tempList);
+            else
+            {
+                List<Color> attribData = (List<Color>)Attributes.GetAttributeData(colorAttrib);
+
+                foreach (Color col in tempList)
+                {
+                    if (!attribData.Contains(col))
+                        attribData.Add(col);
+                }
+
+                Attributes.SetAttributeData(colorAttrib, attribData);
+            }
+        }
+
+        private void SetAssimpTexCoordAttribute(int channel, GXVertexAttribute texCoordAttrib, Assimp.Mesh mesh)
+        {
+            List<Vector2> tempList = new List<Vector2>();
+
+            for (int vec = 0; vec < mesh.TextureCoordinateChannels[channel].Count; vec++)
+                tempList.Add(mesh.TextureCoordinateChannels[channel][vec].ToOpenTKVector2());
+
+            if (!Attributes.CheckAttribute(texCoordAttrib))
+                Attributes.SetAttributeData(texCoordAttrib, tempList);
+            else
+            {
+                List<Vector2> attribData = (List<Vector2>)Attributes.GetAttributeData(texCoordAttrib);
+
+                foreach (Vector2 vec in tempList)
+                {
+                    if (!attribData.Contains(vec))
+                        attribData.Add(vec);
+                }
+
+                Attributes.SetAttributeData(texCoordAttrib, attribData);
+            }
         }
     }
 }
