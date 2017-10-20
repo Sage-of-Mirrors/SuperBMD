@@ -86,6 +86,7 @@
     <Compile Include="source\Geometry\Enums\VertexInputType.cs" />
     <Compile Include="source\Geometry\Enums\Vtx1OffsetIndex.cs" />
     <Compile Include="source\Geometry\Shape.cs" />
+    <Compile Include="source\Geometry\ShapeVertexDescriptor.cs" />
     <Compile Include="source\Materials\AlphaCompare.cs" />
     <Compile Include="source\Materials\BinaryTextureImage.cs" />
     <Compile Include="source\Materials\BlendMode.cs" />
@@ -130,6 +131,7 @@
     <Compile Include="source\Materials\IO\IndirectTexturingIO.cs" />
     <Compile Include="source\Materials\IO\ColorIO.cs" />
     <Compile Include="source\Rigging\Weight.cs" />
+    <Compile Include="source\Util\BoundingVolume.cs" />
     <Compile Include="source\Util\IO\NameTableIO.cs" />
     <Compile Include="source\Materials\IO\NBTScaleIO.cs" />
     <Compile Include="source\Materials\IO\TevOrderIO.cs" />
