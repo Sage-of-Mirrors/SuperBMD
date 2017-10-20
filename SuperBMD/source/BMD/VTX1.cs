@@ -13,11 +13,11 @@ namespace SuperBMD.BMD
 {
     public class VTX1
     {
-        public ActiveVertexAttributes Attributes { get; private set; }
+        public VertexData Attributes { get; private set; }
 
         public VTX1(EndianBinaryReader reader, int offset)
         {
-            Attributes = new ActiveVertexAttributes();
+            Attributes = new VertexData();
 
             reader.BaseStream.Seek(offset, System.IO.SeekOrigin.Begin);
             reader.SkipInt32();
@@ -51,7 +51,7 @@ namespace SuperBMD.BMD
 
         public VTX1(Assimp.Scene scene)
         {
-            Attributes = new ActiveVertexAttributes();
+            Attributes = new VertexData();
 
             foreach (Assimp.Mesh mesh in scene.Meshes)
             {

@@ -23,6 +23,21 @@ namespace SuperBMD.BMD
             Shapes = new List<Shape>();
 
             reader.BaseStream.Seek(offset, System.IO.SeekOrigin.Begin);
+            reader.SkipInt32();
+            int shp1Size = reader.ReadInt32();
+            int entryCount = reader.ReadInt16();
+            reader.SkipInt16();
+
+            int shapeHeaderDataOffset = reader.ReadInt32();
+            int shapeRemapTableOffset = reader.ReadInt32();
+            int unusedOffset = reader.ReadInt32();
+            int attributeDataOffset = reader.ReadInt32();
+            int matrixIndexDataOffset = reader.ReadInt32();
+            int primitiveDataOffset = reader.ReadInt32();
+            int matrixDataOffset = reader.ReadInt32();
+            int PacketInfoDataOffset = reader.ReadInt32();
+
+
         }
 
         public static SHP1 Create(EndianBinaryReader reader, int offset)

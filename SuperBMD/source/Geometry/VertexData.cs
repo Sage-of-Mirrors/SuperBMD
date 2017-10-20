@@ -9,7 +9,7 @@ using OpenTK;
 
 namespace SuperBMD.Geometry
 {
-    public class ActiveVertexAttributes
+    public class VertexData
     {
         List<GXVertexAttribute> m_Attributes;
 
@@ -26,7 +26,7 @@ namespace SuperBMD.Geometry
         List<Vector2> TexCoord_6;
         List<Vector2> TexCoord_7;
 
-        public ActiveVertexAttributes()
+        public VertexData()
         {
             m_Attributes = new List<GXVertexAttribute>();
             Positions = new List<Vector3>();
