@@ -13,8 +13,8 @@ namespace SuperBMD.BMD
 {
     public class JNT1
     {
-        List<Rigging.Bone> FlatSkeleton;
-        Rigging.Bone SkeletonRoot;
+        public List<Rigging.Bone> FlatSkeleton { get; private set; }
+        public Rigging.Bone SkeletonRoot { get; private set; }
 
         public JNT1(EndianBinaryReader reader, int offset)
         {
@@ -55,6 +55,14 @@ namespace SuperBMD.BMD
             for (int i = 0; i < jointCount; i++)
             {
                 FlatSkeleton.Add(tempList[remapTable[i]]);
+            }
+        }
+
+        public void SetInverseBindMatrices(List<Matrix3x4> matrices)
+        {
+            for (int i = 0; i < FlatSkeleton.Count; i++)
+            {
+                FlatSkeleton[i].SetInverseBindMatrix(new Matrix4(matrices[i].Row0, matrices[i].Row1, matrices[i].Row2, new Vector4(0, 0, 0, 1)));
             }
         }
 

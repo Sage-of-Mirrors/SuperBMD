@@ -71,8 +71,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="source\BMD\DRW1.cs" />
+    <Compile Include="source\BMD\EVP1.cs" />
     <Compile Include="source\BMD\JNT1.cs" />
     <Compile Include="source\BMD\MAT3.cs" />
+    <Compile Include="source\BMD\SHP1.cs" />
     <Compile Include="source\BMD\TEX1.cs" />
     <Compile Include="source\BMD\VTX1.cs" />
     <Compile Include="source\Geometry\ActiveVertexAttributes.cs" />
@@ -82,6 +85,7 @@
     <Compile Include="source\Geometry\Enums\GXVertexAttribute.cs" />
     <Compile Include="source\Geometry\Enums\VertexInputType.cs" />
     <Compile Include="source\Geometry\Enums\Vtx1OffsetIndex.cs" />
+    <Compile Include="source\Geometry\Shape.cs" />
     <Compile Include="source\Materials\AlphaCompare.cs" />
     <Compile Include="source\Materials\BinaryTextureImage.cs" />
     <Compile Include="source\Materials\BlendMode.cs" />
@@ -125,6 +129,7 @@
     <Compile Include="source\Materials\IO\FogIO.cs" />
     <Compile Include="source\Materials\IO\IndirectTexturingIO.cs" />
     <Compile Include="source\Materials\IO\ColorIO.cs" />
+    <Compile Include="source\Rigging\Weight.cs" />
     <Compile Include="source\Util\IO\NameTableIO.cs" />
     <Compile Include="source\Materials\IO\NBTScaleIO.cs" />
     <Compile Include="source\Materials\IO\TevOrderIO.cs" />

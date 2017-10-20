@@ -60,5 +60,28 @@ namespace SuperBMD.BMD
                 }
             }
         }
+
+        public BinaryTextureImage this[int i]
+        {
+            get
+            {
+                if (Textures != null && Textures.Count > i)
+                {
+                    return Textures[i];
+                }
+                else
+                {
+                    Console.WriteLine($"Could not retrieve texture at index { i }.");
+                    return null;
+                }
+            }
+            set
+            {
+                if (Textures == null)
+                    Textures = new List<BinaryTextureImage>();
+
+                Textures[i] = value;
+            }
+        }
     }
 }

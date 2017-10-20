@@ -70,5 +70,10 @@ namespace SuperBMD.Rigging
             m_Rotation = TransformationMatrix.ExtractRotation();
             m_Translation = TransformationMatrix.Column3.Xyz;
         }
+
+        public void SetInverseBindMatrix(Matrix4 matrix)
+        {
+            InverseBindMatrix = matrix;
+        }
     }
 }
