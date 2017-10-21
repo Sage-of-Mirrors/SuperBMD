@@ -17,20 +17,27 @@ namespace SuperBMD.Geometry
         public BoundingVolume Bounds { get; private set; }
 
         public List<Primitive> Primitives { get; private set; }
+        public List<int> MatrixDataIndices { get; private set; }
 
         public Shape()
         {
             AttributeData = new VertexData();
             Descriptor = new ShapeVertexDescriptor();
             Primitives = new List<Primitive>();
+            MatrixDataIndices = new List<int>();
         }
 
-        public Shape(ShapeVertexDescriptor desc, BoundingVolume bounds, List<Primitive> prims, int matrixType)
+        public Shape(ShapeVertexDescriptor desc, BoundingVolume bounds, List<Primitive> prims, List<int[]> matrixIndices, int matrixType)
         {
+            MatrixDataIndices = new List<int>();
+
             Descriptor = desc;
             Bounds = bounds;
             Primitives = prims;
             matrixType = (byte)matrixType;
+
+            for (int i = 0; i < matrixIndices.Count; i++)
+                MatrixDataIndices.AddRange(matrixIndices[i]);
         }
     }
 }

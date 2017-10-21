@@ -9,38 +9,38 @@ namespace SuperBMD.Geometry
 {
     public class Vertex
     {
-        public int PositionMatrixIDxIndex { get; private set; }
-        public int PositionIndex { get; private set; }
-        public int NormalIndex { get; private set; }
-        public int Color0Index { get; private set; }
-        public int Color1Index { get; private set; }
-        public int TexCoord0Index { get; private set; }
-        public int TexCoord1Index { get; private set; }
-        public int TexCoord2Index { get; private set; }
-        public int TexCoord3Index { get; private set; }
-        public int TexCoord4Index { get; private set; }
-        public int TexCoord5Index { get; private set; }
-        public int TexCoord6Index { get; private set; }
-        public int TexCoord7Index { get; private set; }
+        public uint PositionMatrixIDxIndex { get; private set; }
+        public uint PositionIndex { get; private set; }
+        public uint NormalIndex { get; private set; }
+        public uint Color0Index { get; private set; }
+        public uint Color1Index { get; private set; }
+        public uint TexCoord0Index { get; private set; }
+        public uint TexCoord1Index { get; private set; }
+        public uint TexCoord2Index { get; private set; }
+        public uint TexCoord3Index { get; private set; }
+        public uint TexCoord4Index { get; private set; }
+        public uint TexCoord5Index { get; private set; }
+        public uint TexCoord6Index { get; private set; }
+        public uint TexCoord7Index { get; private set; }
 
         public Vertex()
         {
-            PositionMatrixIDxIndex = -1;
-            PositionIndex = -1;
-            NormalIndex = -1;
-            Color0Index = -1;
-            Color1Index = -1;
-            TexCoord0Index = -1;
-            TexCoord1Index = -1;
-            TexCoord2Index = -1;
-            TexCoord3Index = -1;
-            TexCoord4Index = -1;
-            TexCoord5Index = -1;
-            TexCoord6Index = -1;
-            TexCoord7Index = -1;
+            PositionMatrixIDxIndex = uint.MaxValue;
+            PositionIndex = uint.MaxValue;
+            NormalIndex = uint.MaxValue;
+            Color0Index = uint.MaxValue;
+            Color1Index = uint.MaxValue;
+            TexCoord0Index = uint.MaxValue;
+            TexCoord1Index = uint.MaxValue;
+            TexCoord2Index = uint.MaxValue;
+            TexCoord3Index = uint.MaxValue;
+            TexCoord4Index = uint.MaxValue;
+            TexCoord5Index = uint.MaxValue;
+            TexCoord6Index = uint.MaxValue;
+            TexCoord7Index = uint.MaxValue;
         }
 
-        public int GetAttributeIndex(GXVertexAttribute attribute)
+        public uint GetAttributeIndex(GXVertexAttribute attribute)
         {
             switch (attribute)
             {
@@ -75,7 +75,7 @@ namespace SuperBMD.Geometry
             }
         }
 
-        public void SetAttributeIndex(GXVertexAttribute attribute, int index)
+        public void SetAttributeIndex(GXVertexAttribute attribute, uint index)
         {
             switch (attribute)
             {
@@ -123,9 +123,9 @@ namespace SuperBMD.Geometry
             }
         }
 
-        public int[] ToEBO(List<GXVertexAttribute> activeAttribs)
+        public uint[] ToEBO(List<GXVertexAttribute> activeAttribs)
         {
-            int[] ebo = new int[activeAttribs.Count];
+            uint[] ebo = new uint[activeAttribs.Count];
 
             for (int i = 0; i < activeAttribs.Count; i++)
             {
@@ -174,7 +174,7 @@ namespace SuperBMD.Geometry
                         throw new ArgumentException("attribute");
                 }
 
-                if (ebo[i] == -1)
+                if (ebo[i] == uint.MaxValue)
                     throw new Exception("Tried to add nonexistant index to vertex ebo!");
             }
 

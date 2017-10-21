@@ -62,6 +62,14 @@ namespace SuperBMD.Geometry
                 throw new ArgumentException("attribute");
         }
 
+        public VertexInputType GetAttributeType(GXVertexAttribute attribute)
+        {
+            if (CheckAttribute(attribute))
+                return Attributes[attribute].Item1;
+            else
+                throw new ArgumentException("attribute");
+        }
+
         public int CalculateStride()
         {
             int stride = 0;

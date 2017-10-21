@@ -59,5 +59,18 @@ namespace SuperBMD.Util
 
             throw new ArgumentOutOfRangeException("fn");
         }
+
+        public static int GetHighestValue(List<int> input)
+        {
+            int highest = int.MinValue;
+
+            for (int i = 0; i < input.Count; i++)
+            {
+                if (input[i] > highest)
+                    highest = input[i];
+            }
+
+            return highest;
+        }
     }
 }

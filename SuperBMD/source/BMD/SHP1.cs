@@ -14,15 +14,18 @@ namespace SuperBMD.BMD
     public class SHP1
     {
         public List<Shape> Shapes { get; private set; }
+        public List<int> RemapTable { get; private set; }
 
         private SHP1()
         {
             Shapes = new List<Shape>();
+            RemapTable = new List<int>();
         }
 
         private SHP1(EndianBinaryReader reader, int offset)
         {
             Shapes = new List<Shape>();
+            RemapTable = new List<int>();
 
             reader.BaseStream.Seek(offset, System.IO.SeekOrigin.Begin);
             reader.SkipInt32();
@@ -39,6 +42,15 @@ namespace SuperBMD.BMD
             int matrixDataOffset = reader.ReadInt32();
             int PacketInfoDataOffset = reader.ReadInt32();
 
+            reader.BaseStream.Seek(offset + shapeRemapTableOffset, System.IO.SeekOrigin.Begin);
+
+            // Remap table
+            for (int i = 0; i < entryCount; i++)
+                RemapTable.Add(reader.ReadInt16());
+
+            int highestIndex = J3DUtility.GetHighestValue(RemapTable);
+
+            // Packet data
             List<Tuple<int, int>> packetData = new List<Tuple<int, int>>(); // <packet size, packet offset>
             int packetDataCount = (shp1Size - PacketInfoDataOffset) / 8;
             reader.BaseStream.Seek(PacketInfoDataOffset + offset, System.IO.SeekOrigin.Begin);
@@ -48,8 +60,35 @@ namespace SuperBMD.BMD
                 packetData.Add(new Tuple<int, int>(reader.ReadInt32(), reader.ReadInt32()));
             }
 
+            // Matrix data
+            List<Tuple<int, int>> matrixData = new List<Tuple<int, int>>(); // <index count, start index>
+            List<int[]> matrixIndices = new List<int[]>();
+
+            int matrixDataCount = (PacketInfoDataOffset - matrixDataOffset) / 8;
+            reader.BaseStream.Seek(matrixDataOffset + offset, System.IO.SeekOrigin.Begin);
+
+            for (int i = 0; i < matrixDataCount; i++)
+            {
+                reader.SkipInt16();
+                matrixData.Add(new Tuple<int, int>(reader.ReadInt16(), reader.ReadInt32()));
+            }
+
+            for (int i = 0; i < matrixDataCount; i++)
+            {
+                reader.BaseStream.Seek(offset + matrixIndexDataOffset + (matrixData[i].Item2 * 2), System.IO.SeekOrigin.Begin);
+                int[] indices = new int[matrixData[i].Item1];
+
+                for (int j = 0; j < matrixData[i].Item1; j++)
+                    indices[j] = reader.ReadInt16();
+
+                matrixIndices.Add(indices);
+            }
+
+            // Shape data
+            List<Shape> tempShapeList = new List<Shape>();
             reader.BaseStream.Seek(offset + shapeHeaderDataOffset, System.IO.SeekOrigin.Begin);
-            for (int i = 0; i < entryCount; i++)
+
+            for (int i = 0; i < highestIndex + 1; i++)
             {
                 byte matrixType = reader.ReadByte();
                 reader.SkipByte();
@@ -70,11 +109,14 @@ namespace SuperBMD.BMD
                     int packetSize = packetData[j + firstPacketIndex].Item1;
                     int packetOffset = packetData[j + firstPacketIndex].Item2;
 
-                    shapePrims.AddRange(LoadPacketPrimitives(reader, descriptor.GetActiveAttributes(), packetSize, offset + primitiveDataOffset + packetOffset));
+                    shapePrims.AddRange(LoadPacketPrimitives(reader, descriptor, packetSize, offset + primitiveDataOffset + packetOffset));
                 }
 
-                Shapes.Add(new Shape(descriptor, shapeVol, shapePrims, matrixType));
+                tempShapeList.Add(new Shape(descriptor, shapeVol, shapePrims, matrixIndices.GetRange(shapeMatrixDataIndex, packetCount), matrixType));
             }
+
+            for (int i = 0; i < entryCount; i++)
+                Shapes.Add(tempShapeList[RemapTable[i]]);
         }
 
         public static SHP1 Create(EndianBinaryReader reader, int offset)
@@ -90,14 +132,18 @@ namespace SuperBMD.BMD
             return shp1;
         }
 
-        private List<Primitive> LoadPacketPrimitives(EndianBinaryReader reader, List<GXVertexAttribute> attibuteList, int size, int offset)
+        private List<Primitive> LoadPacketPrimitives(EndianBinaryReader reader, ShapeVertexDescriptor desc, int size, int offset)
         {
             List<Primitive> prims = new List<Primitive>();
+            reader.BaseStream.Seek(offset, System.IO.SeekOrigin.Begin);
 
-            int bytesRead = 0;
-            while (bytesRead < size)
+            while(true)
             {
-                
+                Primitive prim = new Primitive(reader, desc);
+                prims.Add(prim);
+
+                if (reader.PeekReadByte() == 0 || reader.BaseStream.Position > size + offset)
+                    break;
             }
 
             return prims;
