@@ -36,7 +36,8 @@ namespace SuperBMD
                 //JNT1 testJnt = new JNT1(reader, 0x8980);
                 //TEX1 testTex = new TEX1(reader, 0x1A220);
                 //EVP1 testEvp = new EVP1(reader, 0xA940);
-                DRW1 testDrw = new DRW1(reader, 0xB9E0);
+                //DRW1 testDrw = new DRW1(reader, 0xB9E0);
+                SHP1 testShp = SHP1.Create(reader, 0xD140);
             }
         }
 

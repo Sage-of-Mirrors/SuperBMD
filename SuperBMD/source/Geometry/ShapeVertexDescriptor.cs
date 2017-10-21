@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GameFormatReader.Common;
 using SuperBMD.Geometry.Enums;
+using GameFormatReader.Common;
 
 namespace SuperBMD.Geometry
 {
@@ -15,6 +16,23 @@ namespace SuperBMD.Geometry
         public ShapeVertexDescriptor()
         {
             Attributes = new SortedDictionary<GXVertexAttribute, Tuple<VertexInputType, int>>();
+        }
+
+        public ShapeVertexDescriptor(EndianBinaryReader reader, int offset)
+        {
+            Attributes = new SortedDictionary<GXVertexAttribute, Tuple<VertexInputType, int>>();
+            reader.BaseStream.Seek(offset, System.IO.SeekOrigin.Begin);
+
+            int index = 0;
+            GXVertexAttribute attrib = (GXVertexAttribute)reader.ReadInt32();
+
+            while (attrib != GXVertexAttribute.Null)
+            {
+                Attributes.Add(attrib, new Tuple<VertexInputType, int>((VertexInputType)reader.ReadInt32(), index));
+
+                index++;
+                attrib = (GXVertexAttribute)reader.ReadInt32();
+            }
         }
 
         public bool CheckAttribute(GXVertexAttribute attribute)
