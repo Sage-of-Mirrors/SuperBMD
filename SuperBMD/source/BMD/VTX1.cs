@@ -20,6 +20,7 @@ namespace SuperBMD.BMD
             Attributes = new VertexData();
 
             reader.BaseStream.Seek(offset, System.IO.SeekOrigin.Begin);
+
             reader.SkipInt32();
             int vtx1Size = reader.ReadInt32();
             int attributeHeaderOffset = reader.ReadInt32();
@@ -47,6 +48,8 @@ namespace SuperBMD.BMD
                 reader.BaseStream.Seek(curPos, System.IO.SeekOrigin.Begin);
                 attrib = (GXVertexAttribute)reader.ReadInt32();
             }
+
+            reader.BaseStream.Seek(offset + vtx1Size, System.IO.SeekOrigin.Begin);
         }
 
         public VTX1(Assimp.Scene scene)

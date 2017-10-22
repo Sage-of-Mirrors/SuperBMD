@@ -73,8 +73,10 @@
     <Compile Include="Program.cs" />
     <Compile Include="source\BMD\DRW1.cs" />
     <Compile Include="source\BMD\EVP1.cs" />
+    <Compile Include="source\BMD\INF1.cs" />
     <Compile Include="source\BMD\JNT1.cs" />
     <Compile Include="source\BMD\MAT3.cs" />
+    <Compile Include="source\BMD\Model.cs" />
     <Compile Include="source\BMD\SHP1.cs" />
     <Compile Include="source\BMD\TEX1.cs" />
     <Compile Include="source\BMD\VTX1.cs" />
@@ -133,6 +135,8 @@
     <Compile Include="source\Materials\IO\IndirectTexturingIO.cs" />
     <Compile Include="source\Materials\IO\ColorIO.cs" />
     <Compile Include="source\Rigging\Weight.cs" />
+    <Compile Include="source\Scenegraph\Enums\NodeType.cs" />
+    <Compile Include="source\Scenegraph\SceneNode.cs" />
     <Compile Include="source\Util\BoundingVolume.cs" />
     <Compile Include="source\Util\IO\NameTableIO.cs" />
     <Compile Include="source\Materials\IO\NBTScaleIO.cs" />

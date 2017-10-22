@@ -103,7 +103,7 @@ namespace SuperBMD.BMD
 
                         break;
                     case Mat3OffsetIndex.NameTable:
-                        m_MaterialNames = NameTableIO.Load(reader, sectionOffset);
+                        m_MaterialNames = NameTableIO.Load(reader, offset + sectionOffset);
                         break;
                     case Mat3OffsetIndex.IndirectData:
                         m_IndirectTexBlock = IndirectTexturingIO.Load(reader, sectionOffset, sectionSize);
@@ -237,6 +237,8 @@ namespace SuperBMD.BMD
             {
                 m_Materials.Add(tempList[m_RemapIndices[i]]);
             }
+
+            reader.BaseStream.Seek(offset + mat3Size, System.IO.SeekOrigin.Begin);
         }
 
         private void LoadInitData(EndianBinaryReader reader, string name)

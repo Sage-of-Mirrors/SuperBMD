@@ -45,6 +45,8 @@ namespace SuperBMD.BMD
                 else
                     FullWeightIndices.Add(indices[i]);
             }
+
+            reader.BaseStream.Seek(offset + drw1Size, System.IO.SeekOrigin.Begin);
         }
 
         public DRW1(Scene scene)

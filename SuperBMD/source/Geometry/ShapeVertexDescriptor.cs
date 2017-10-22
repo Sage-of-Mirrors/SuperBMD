@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using GameFormatReader.Common;
 using SuperBMD.Geometry.Enums;
-using GameFormatReader.Common;
 
 namespace SuperBMD.Geometry
 {

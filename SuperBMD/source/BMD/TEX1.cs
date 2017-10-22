@@ -27,7 +27,7 @@ namespace SuperBMD.BMD
             int textureHeaderOffset = reader.ReadInt32();
             int textureNameTableOffset = reader.ReadInt32();
 
-            List<string> names = NameTableIO.Load(reader, textureNameTableOffset + offset);
+            List<string> names = NameTableIO.Load(reader, offset + textureNameTableOffset);
 
             reader.BaseStream.Seek(textureHeaderOffset + offset, System.IO.SeekOrigin.Begin);
 
@@ -37,9 +37,6 @@ namespace SuperBMD.BMD
 
                 BinaryTextureImage img = new BinaryTextureImage();
                 img.Load(reader, (offset + 0x20 + (0x20 * i)));
-
-                img.SaveImageToDisk($"D:\\SZS Tools\\SuperBMD\\textures\\{ names[i] }_{ i }.bmp");
-
                 Textures.Add(img);
             }
         }

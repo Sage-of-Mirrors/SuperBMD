@@ -83,6 +83,8 @@ namespace SuperBMD.BMD
 
                 InverseBindMatrices.Add(invBind);
             }
+
+            reader.BaseStream.Seek(offset + evp1Size, System.IO.SeekOrigin.Begin);
         }
 
         public EVP1(Scene scene, List<Rigging.Bone> flatSkeleton)

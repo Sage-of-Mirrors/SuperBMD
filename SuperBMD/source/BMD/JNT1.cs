@@ -30,8 +30,7 @@ namespace SuperBMD.BMD
             int internTableOffset = reader.ReadInt32();
             int nameTableOffset = reader.ReadInt32();
 
-            reader.BaseStream.Seek(nameTableOffset + offset, System.IO.SeekOrigin.Begin);
-            List<string> names = NameTableIO.Load(reader, nameTableOffset);
+            List<string> names = NameTableIO.Load(reader, offset + nameTableOffset);
 
             int highestRemap = 0;
             List<int> remapTable = new List<int>();
@@ -56,6 +55,8 @@ namespace SuperBMD.BMD
             {
                 FlatSkeleton.Add(tempList[remapTable[i]]);
             }
+
+            reader.BaseStream.Seek(offset + jnt1Size, System.IO.SeekOrigin.Begin);
         }
 
         public void SetInverseBindMatrices(List<Matrix3x4> matrices)

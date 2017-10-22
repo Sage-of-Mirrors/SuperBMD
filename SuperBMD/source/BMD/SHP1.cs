@@ -117,6 +117,8 @@ namespace SuperBMD.BMD
 
             for (int i = 0; i < entryCount; i++)
                 Shapes.Add(tempShapeList[RemapTable[i]]);
+
+            reader.BaseStream.Seek(offset + shp1Size, System.IO.SeekOrigin.Begin);
         }
 
         public static SHP1 Create(EndianBinaryReader reader, int offset)
