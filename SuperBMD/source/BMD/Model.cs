@@ -59,6 +59,7 @@ namespace SuperBMD.BMD
         {
             VertexData = new VTX1(scene);
             Joints = new JNT1(scene);
+            Scenegraph = new INF1(scene, Joints);
             Textures = new TEX1(scene, modelDirectory);
         }
 

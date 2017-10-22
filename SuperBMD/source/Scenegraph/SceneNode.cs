@@ -34,6 +34,9 @@ namespace SuperBMD.Scenegraph
             Index = index;
             Parent = parent;
 
+            if (Parent != null)
+                Parent.Children.Add(this);
+
             Children = new List<SceneNode>();
         }
 
