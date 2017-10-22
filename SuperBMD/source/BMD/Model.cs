@@ -55,9 +55,11 @@ namespace SuperBMD.BMD
             }
         }
 
-        public Model(Scene scene)
+        public Model(Scene scene, string modelDirectory)
         {
-
+            VertexData = new VTX1(scene);
+            Joints = new JNT1(scene);
+            Textures = new TEX1(scene, modelDirectory);
         }
 
         public void Render()

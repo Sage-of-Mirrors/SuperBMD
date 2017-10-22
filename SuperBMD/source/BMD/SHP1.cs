@@ -150,5 +150,31 @@ namespace SuperBMD.BMD
 
             return prims;
         }
+
+        public void DistributeWeights(EVP1 envelopes, DRW1 partialWeights)
+        {
+            foreach (Shape shape in Shapes)
+            {
+                foreach (Primitive prim in shape.Primitives)
+                {
+                    foreach (Vertex vert in prim.Vertices)
+                    {
+                        uint drw1Index = vert.GetAttributeIndex(GXVertexAttribute.PositionMatrixIdx);
+
+                        if (partialWeights.WeightTypeCheck[(int)drw1Index])
+                        {
+                            vert.SetWeight(envelopes.Weights[partialWeights.Indices[(int)drw1Index]]);
+                        }
+                        else
+                        {
+                            Rigging.Weight newWeight = new Rigging.Weight();
+                            newWeight.AddWeight(1.0f, partialWeights.Indices[(int)drw1Index]);
+
+                            vert.SetWeight(newWeight);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

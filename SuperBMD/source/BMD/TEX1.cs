@@ -51,8 +51,7 @@ namespace SuperBMD.BMD
                 {
                     BinaryTextureImage img = new BinaryTextureImage();
                     img.Load(mat.TextureDiffuse, modelDirectory);
-                    img.SaveImageToDisk($"D:\\SZS Tools\\SuperBMD\\textures\\{mat.Name}_tex.bmp");
-
+                    img.SaveImageToDisk($"D:\\SZS Tools\\SuperBMD\\textures\\{ mat.Name }.bmp");
                     Textures.Add(img);
                 }
             }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SuperBMD.Geometry.Enums;
+using SuperBMD.Rigging;
 
 namespace SuperBMD.Geometry
 {
@@ -22,6 +23,11 @@ namespace SuperBMD.Geometry
         public uint TexCoord5Index { get; private set; }
         public uint TexCoord6Index { get; private set; }
         public uint TexCoord7Index { get; private set; }
+
+        public uint PositionMatrixIndex { get; set; }
+        public uint NormalMatrixIndex { get; set; }
+
+        public Weight VertexWeight { get; private set; }
 
         public Vertex()
         {
@@ -121,6 +127,11 @@ namespace SuperBMD.Geometry
                 default:
                     throw new ArgumentException("attribute");
             }
+        }
+
+        public void SetWeight(Weight weight)
+        {
+            VertexWeight = weight;
         }
 
         public uint[] ToEBO(List<GXVertexAttribute> activeAttribs)

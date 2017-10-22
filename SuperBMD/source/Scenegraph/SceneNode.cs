@@ -28,6 +28,15 @@ namespace SuperBMD.Scenegraph
             Index = reader.ReadInt16();
         }
 
+        public SceneNode(NodeType type, int index, SceneNode parent)
+        {
+            Type = type;
+            Index = index;
+            Parent = parent;
+
+            Children = new List<SceneNode>();
+        }
+
         public override string ToString()
         {
             return $"{ Type } : { Index }";

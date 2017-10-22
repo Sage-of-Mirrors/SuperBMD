@@ -13,9 +13,6 @@ namespace SuperBMD
     {
         static void Main(string[] args)
         {
-            //SuperBMD.Materials.BinaryTextureImage img = new Materials.BinaryTextureImage();
-            //img.LoadImageFromDisk(@"D:\SZS Tools\SuperBMD\succ.png");
-
             //using (FileStream strm = new FileStream(@"D:\SZS Tools\SuperBMD\test.bti", FileMode.Create, FileAccess.Write))
             //{
                 //EndianBinaryWriter writer = new EndianBinaryWriter(strm, Endian.Big);
@@ -23,9 +20,8 @@ namespace SuperBMD
                 //writer.Write(img.EncodeData(Materials.BinaryTextureImage.TextureFormats.RGBA32));
             //}
 
-            //Assimp.Scene test = LoadAssimpScene(args[0]);
-            //JNT1 testJnt = new JNT1(test);
-            //EVP1 testEvp = new EVP1(test, testJnt.FlatSkeleton);
+            Assimp.Scene test = LoadAssimpScene(args[0]);
+            Model mod = new Model(test, Path.GetDirectoryName(args[0]));
 
             using (FileStream str = new FileStream(args[0], FileMode.Open, FileAccess.Read))
             {
