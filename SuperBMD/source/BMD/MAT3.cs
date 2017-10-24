@@ -296,7 +296,7 @@ namespace SuperBMD.BMD
                 if (texGenIndex == -1)
                     continue;
                 else
-                    mat.TexCoord2Gens[i] = m_TexCoord2GenBlock[texGenIndex];
+                    mat.PostTexMatrix[i] = m_TexCoord2GenBlock[texGenIndex];
             }
 
             for (int i = 0; i < 10; i++)
@@ -396,6 +396,51 @@ namespace SuperBMD.BMD
             mat.NBTScale = m_NBTScaleBlock[reader.ReadInt16()];
             mat.Debug_Print();
             m_Materials.Add(mat);
+        }
+
+        public MAT3(Assimp.Scene scene, TEX1 textures)
+        {
+            foreach (Assimp.Mesh mesh in scene.Meshes)
+            {
+                Assimp.Material meshMat = scene.Materials[mesh.MaterialIndex];
+                Materials.Material bmdMaterial = new Material();
+
+                if (meshMat.HasTextureDiffuse)
+                {
+                    bmdMaterial.AddTexGen(TexGenType.Matrix2x4, TexGenSrc.TexCoord0, Materials.Enums.TexMatrix.Identity);
+                    bmdMaterial.AddTevStage(SetUpTevStageParametersForTexture());
+                }
+            }
+        }
+
+        private TevStageParameters SetUpTevStageParametersForTexture()
+        {
+            TevStageParameters parameters = new TevStageParameters
+            {
+                ColorInA = CombineColorInput.TexColor,
+                ColorInB = CombineColorInput.TexColor,
+                ColorInC = CombineColorInput.Zero,
+                ColorInD = CombineColorInput.Zero,
+
+                ColorOp = TevOp.Add,
+                ColorBias = TevBias.Zero,
+                ColorScale = TevScale.Scale_1,
+                ColorClamp = true,
+                ColorRegId = TevRegisterId.TevPrev,
+
+                AlphaInA = CombineAlphaInput.TexAlpha,
+                AlphaInB = CombineAlphaInput.TexAlpha,
+                AlphaInC = CombineAlphaInput.Zero,
+                AlphaInD = CombineAlphaInput.Zero,
+
+                AlphaOp = TevOp.Add,
+                AlphaBias = TevBias.Zero,
+                AlphaScale = TevScale.Scale_1,
+                AlphaClamp = true,
+                AlphaRegId = TevRegisterId.TevPrev
+            };
+
+            return parameters;
         }
     }
 }

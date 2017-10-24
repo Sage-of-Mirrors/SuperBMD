@@ -22,5 +22,12 @@ namespace SuperBMD.Materials
 
             reader.SkipByte();
         }
+
+        public TexCoordGen(TexGenType type, TexGenSrc src, Enums.TexMatrix mtrx)
+        {
+            Type = type;
+            Source = src;
+            TexMatrixSource = mtrx;
+        }
     }
 }

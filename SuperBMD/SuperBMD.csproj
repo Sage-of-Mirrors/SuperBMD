@@ -116,6 +116,7 @@
     <Compile Include="source\Materials\Enums\Mat3OffsetIndex.cs" />
     <Compile Include="source\Materials\Enums\TevBias.cs" />
     <Compile Include="source\Materials\Enums\TevOp.cs" />
+    <Compile Include="source\Materials\Enums\TevRegisterId.cs" />
     <Compile Include="source\Materials\Enums\TevScale.cs" />
     <Compile Include="source\Materials\Enums\TexCoordSlot.cs" />
     <Compile Include="source\Materials\Enums\TexGenSrc.cs" />

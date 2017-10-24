@@ -8,55 +8,117 @@ using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    public class TevStage
+    public struct TevStageParameters
     {
-        public CombineColorInput[] ColorIn; // 4
+        public CombineColorInput ColorInA;
+        public CombineColorInput ColorInB;
+        public CombineColorInput ColorInC;
+        public CombineColorInput ColorInD;
+
         public TevOp ColorOp;
         public TevBias ColorBias;
         public TevScale ColorScale;
         public bool ColorClamp;
-        public byte ColorRegId;
-        public CombineAlphaInput[] AlphaIn; // 4
+        public TevRegisterId ColorRegId;
+
+        public CombineAlphaInput AlphaInA;
+        public CombineAlphaInput AlphaInB;
+        public CombineAlphaInput AlphaInC;
+        public CombineAlphaInput AlphaInD;
+
         public TevOp AlphaOp;
         public TevBias AlphaBias;
         public TevScale AlphaScale;
         public bool AlphaClamp;
-        public byte AlphaRegId;
+        public TevRegisterId AlphaRegId;
+    }
+
+    public class TevStage
+    {
+        public CombineColorInput ColorInA;
+        public CombineColorInput ColorInB;
+        public CombineColorInput ColorInC;
+        public CombineColorInput ColorInD;
+
+        public TevOp ColorOp;
+        public TevBias ColorBias;
+        public TevScale ColorScale;
+        public bool ColorClamp;
+        public TevRegisterId ColorRegId;
+
+        public CombineAlphaInput AlphaInA;
+        public CombineAlphaInput AlphaInB;
+        public CombineAlphaInput AlphaInC;
+        public CombineAlphaInput AlphaInD;
+
+        public TevOp AlphaOp;
+        public TevBias AlphaBias;
+        public TevScale AlphaScale;
+        public bool AlphaClamp;
+        public TevRegisterId AlphaRegId;
 
         public TevStage(EndianBinaryReader reader)
         {
-            ColorIn = new CombineColorInput[4];
-            AlphaIn = new CombineAlphaInput[4];
-
             reader.SkipByte();
 
-            for (int i = 0; i < 4; i++)
-                ColorIn[i] = (CombineColorInput)reader.ReadByte();
+            ColorInA = (CombineColorInput)reader.ReadByte();
+            ColorInB = (CombineColorInput)reader.ReadByte();
+            ColorInC = (CombineColorInput)reader.ReadByte();
+            ColorInD = (CombineColorInput)reader.ReadByte();
+
             ColorOp = (TevOp)reader.ReadByte();
             ColorBias = (TevBias)reader.ReadByte();
             ColorScale = (TevScale)reader.ReadByte();
             ColorClamp = reader.ReadBoolean();
-            ColorRegId = reader.ReadByte();
+            ColorRegId = (TevRegisterId)reader.ReadByte();
 
-            for (int i = 0; i < 4; i++)
-                AlphaIn[i] = (CombineAlphaInput)reader.ReadByte();
+            AlphaInA = (CombineAlphaInput)reader.ReadByte();
+            AlphaInB = (CombineAlphaInput)reader.ReadByte();
+            AlphaInC = (CombineAlphaInput)reader.ReadByte();
+            AlphaInD = (CombineAlphaInput)reader.ReadByte();
+
             AlphaOp = (TevOp)reader.ReadByte();
             AlphaBias = (TevBias)reader.ReadByte();
             AlphaScale = (TevScale)reader.ReadByte();
             AlphaClamp = reader.ReadBoolean();
-            AlphaRegId = reader.ReadByte();
+            AlphaRegId = (TevRegisterId)reader.ReadByte();
 
             reader.SkipByte();
+        }
+
+        public TevStage(TevStageParameters parameters)
+        {
+            ColorInA = parameters.ColorInA;
+            ColorInB = parameters.ColorInB;
+            ColorInC = parameters.ColorInC;
+            ColorInD = parameters.ColorInD;
+
+            ColorOp = parameters.ColorOp;
+            ColorBias = parameters.ColorBias;
+            ColorScale = parameters.ColorScale;
+            ColorClamp = parameters.ColorClamp;
+            ColorRegId = parameters.ColorRegId;
+
+            AlphaInA = parameters.AlphaInA;
+            AlphaInB = parameters.AlphaInB;
+            AlphaInC = parameters.AlphaInC;
+            AlphaInD = parameters.AlphaInD;
+
+            AlphaOp = parameters.AlphaOp;
+            AlphaBias = parameters.AlphaBias;
+            AlphaScale = parameters.AlphaScale;
+            AlphaClamp = parameters.AlphaClamp;
+            AlphaRegId = parameters.AlphaRegId;
         }
 
         public override string ToString()
         {
             string ret = "";
 
-            for (int i = 0; i < 4; i++)
-            {
-                ret += $"Color In { (Char)('A' + i) }: { ColorIn[i] }\n";
-            }
+            ret += $"Color In A: { ColorInA }\n";
+            ret += $"Color In B: { ColorInB }\n";
+            ret += $"Color In C: { ColorInC }\n";
+            ret += $"Color In D: { ColorInD }\n";
 
             ret += '\n';
 
@@ -68,10 +130,10 @@ namespace SuperBMD.Materials
 
             ret += '\n';
 
-            for (int i = 0; i < 4; i++)
-            {
-                ret += $"Alpha In { (Char)('A' + i) }: { AlphaIn[i] }\n";
-            }
+            ret += $"Alpha In A: { AlphaInA }\n";
+            ret += $"Alpha In B: { AlphaInB }\n";
+            ret += $"Alpha In C: { AlphaInC }\n";
+            ret += $"Alpha In D: { AlphaInD }\n";
 
             ret += '\n';
 

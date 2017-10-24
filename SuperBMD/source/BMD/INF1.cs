@@ -57,6 +57,7 @@ namespace SuperBMD.BMD
 
         public INF1(Scene scene, JNT1 skeleton)
         {
+            FlatNodes = new List<SceneNode>();
             Root = new SceneNode(NodeType.Joint, 0, null);
             FlatNodes.Add(Root);
 

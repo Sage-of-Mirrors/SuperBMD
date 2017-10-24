@@ -61,6 +61,7 @@ namespace SuperBMD.BMD
             Joints = new JNT1(scene);
             Scenegraph = new INF1(scene, Joints);
             Textures = new TEX1(scene, modelDirectory);
+            Materials = new MAT3(scene, Textures);
         }
 
         public void Render()

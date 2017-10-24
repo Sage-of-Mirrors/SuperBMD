@@ -22,7 +22,7 @@ namespace SuperBMD.Materials
         public Color[] AmbientColors;
         public Color[] LightingColors;
         public TexCoordGen[] TexCoord1Gens;
-        public TexCoordGen[] TexCoord2Gens;
+        public TexCoordGen[] PostTexMatrix;
         public TexMatrix[] TexMatrix1;
         public TexMatrix[] TexMatrix2;
         public int[] TextureIndices;
@@ -49,7 +49,7 @@ namespace SuperBMD.Materials
             AmbientColors = new Color[2];
             LightingColors = new Color[8];
             TexCoord1Gens = new TexCoordGen[8];
-            TexCoord2Gens = new TexCoordGen[8];
+            PostTexMatrix = new TexCoordGen[8];
             TexMatrix1 = new TexMatrix[10];
             TexMatrix2 = new TexMatrix[20];
             TextureIndices = new int[8];
@@ -61,6 +61,38 @@ namespace SuperBMD.Materials
             TevStages = new TevStage[16];
             SwapModes = new TevSwapMode[16];
             SwapTables = new TevSwapModeTable[16];
+        }
+
+        public void AddTexGen(TexGenType genType, TexGenSrc genSrc, Enums.TexMatrix mtrx)
+        {
+            TexCoordGen newGen = new TexCoordGen(genType, genSrc, mtrx);
+
+            for (int i = 0; i < 8; i++)
+            {
+                if (TexCoord1Gens[i] == null)
+                {
+                    TexCoord1Gens[i] = newGen;
+                    break;
+                }
+
+                if (i == 7)
+                    throw new Exception($"TexGen array for material \"{ Name }\" is full!");
+            }
+        }
+
+        public void AddTevStage(TevStageParameters parameters)
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                if (TevStages[i] == null)
+                {
+                    TevStages[i] = new TevStage(parameters);
+                    break;
+                }
+
+                if (i == 15)
+                    throw new Exception($"TevStage array for material \"{ Name }\" is full!");
+            }
         }
 
         public void Debug_Print()
