@@ -19,11 +19,24 @@ namespace SuperBMD.Materials
         /// </summary>
         public IndirectScale ScaleT;
 
+        public IndirectTexScale()
+        {
+            ScaleS = IndirectScale.ITS_1;
+            ScaleT = IndirectScale.ITS_1;
+        }
+
         public IndirectTexScale(EndianBinaryReader reader)
         {
             ScaleS = (IndirectScale)reader.ReadByte();
             ScaleT = (IndirectScale)reader.ReadByte();
             reader.SkipInt16();
+        }
+
+        public void Write(EndianBinaryWriter writer)
+        {
+            writer.Write((byte)ScaleS);
+            writer.Write((byte)ScaleT);
+            writer.Write((short)-1);
         }
     }
 }

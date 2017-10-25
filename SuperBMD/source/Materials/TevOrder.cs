@@ -10,14 +10,14 @@ namespace SuperBMD.Materials
 {
     public class TevOrder
     {
-        public TexCoordSlot TexCoordId;
-        public byte TexMap;
+        public TexCoordId TexCoord;
+        public TexMapId TexMap;
         public J3DColorChannelId ChannelId;
 
         public TevOrder(EndianBinaryReader reader)
         {
-            TexCoordId = (TexCoordSlot)reader.ReadByte();
-            TexMap = reader.ReadByte();
+            TexCoord = (TexCoordId)reader.ReadByte();
+            TexMap = (TexMapId)reader.ReadByte();
             ChannelId = (J3DColorChannelId)reader.ReadByte();
             reader.SkipByte();
         }

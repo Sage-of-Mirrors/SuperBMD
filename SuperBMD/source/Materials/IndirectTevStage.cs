@@ -10,7 +10,7 @@ namespace SuperBMD.Materials
 {
     public class IndirectTevStage
     {
-        public byte TevStageID;
+        public TevStageId TevStage;
         public IndirectFormat IndTexFormat;
         public IndirectBias IndTexBiasSel;
         public IndirectMatrix IndTexMtxId;
@@ -20,9 +20,14 @@ namespace SuperBMD.Materials
         public bool UtcLod;
         public IndirectAlpha AlphaSel;
 
+        public IndirectTevStage()
+        {
+
+        }
+
         public IndirectTevStage(EndianBinaryReader reader)
         {
-            TevStageID = reader.ReadByte();
+            TevStage = (TevStageId)reader.ReadByte();
             IndTexFormat = (IndirectFormat)reader.ReadByte();
             IndTexBiasSel = (IndirectBias)reader.ReadByte();
             IndTexMtxId = (IndirectMatrix)reader.ReadByte();
@@ -32,6 +37,21 @@ namespace SuperBMD.Materials
             UtcLod = reader.ReadBoolean();
             AlphaSel = (IndirectAlpha)reader.ReadByte();
             reader.Skip(3);
+        }
+
+        public void Write(EndianBinaryWriter writer)
+        {
+            writer.Write((byte)TevStage);
+            writer.Write((byte)IndTexFormat);
+            writer.Write((byte)IndTexBiasSel);
+            writer.Write((byte)IndTexMtxId);
+            writer.Write((byte)IndTexWrapS);
+            writer.Write((byte)IndTexWrapT);
+            writer.Write(AddPrev);
+            writer.Write(UtcLod);
+            writer.Write((byte)AlphaSel);
+
+            writer.Write(new byte[] { 0xFF, 0xFF, 0xFF });
         }
     }
 }

@@ -19,6 +19,15 @@ namespace SuperBMD.Materials
         /// </summary>
         public byte Exponent;
 
+        public IndirectTexMatrix()
+        {
+            Matrix = new Matrix2x3(
+                0.5f, 0.0f, 0.0f,
+                0.0f, 0.5f, 0.0f);
+
+            Exponent = 1;
+        }
+
         public IndirectTexMatrix(EndianBinaryReader reader)
         {
             Matrix = new Matrix2x3(
@@ -28,6 +37,19 @@ namespace SuperBMD.Materials
             Exponent = reader.ReadByte();
 
             reader.Skip(3);
+        }
+
+        public void Write(EndianBinaryWriter writer)
+        {
+            writer.Write(Matrix.M11);
+            writer.Write(Matrix.M12);
+            writer.Write(Matrix.M13);
+
+            writer.Write(Matrix.M21);
+            writer.Write(Matrix.M22);
+            writer.Write(Matrix.M23);
+
+            writer.Write((byte)Exponent);
         }
     }
 }

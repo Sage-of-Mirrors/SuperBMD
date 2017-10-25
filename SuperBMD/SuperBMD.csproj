@@ -118,12 +118,15 @@
     <Compile Include="source\Materials\Enums\TevOp.cs" />
     <Compile Include="source\Materials\Enums\TevRegisterId.cs" />
     <Compile Include="source\Materials\Enums\TevScale.cs" />
-    <Compile Include="source\Materials\Enums\TexCoordSlot.cs" />
+    <Compile Include="source\Materials\Enums\TevStageId.cs" />
+    <Compile Include="source\Materials\Enums\TexCoordId.cs" />
     <Compile Include="source\Materials\Enums\TexGenSrc.cs" />
     <Compile Include="source\Materials\Enums\TexGenType.cs" />
+    <Compile Include="source\Materials\Enums\TexMapId.cs" />
     <Compile Include="source\Materials\Enums\TexMatrix.cs" />
     <Compile Include="source\Materials\Fog.cs" />
     <Compile Include="source\Materials\ImageDataFormat.cs" />
+    <Compile Include="source\Materials\IndirectTevOrder.cs" />
     <Compile Include="source\Materials\IndirectTevStage.cs" />
     <Compile Include="source\Materials\IndirectTexMatrix.cs" />
     <Compile Include="source\Materials\IndirectTexScale.cs" />

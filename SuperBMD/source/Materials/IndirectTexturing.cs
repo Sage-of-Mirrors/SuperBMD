@@ -17,14 +17,9 @@ namespace SuperBMD.Materials
         /// The number of indirect texturing stages to use
         /// </summary>
         public byte IndTexStageNum;
-        /// <summary>
-        /// Unknown value 1. Related to TevOrders.
-        /// </summary>
-        public byte Unknown1;
-        /// <summary>
-        /// Unknown value 2. Related to TevOrders.
-        /// </summary>
-        public byte Unknown2;
+
+        public IndirectTevOrder[] TevOrders;
+
         /// <summary>
         /// The dynamic 2x3 matrices to use when transforming the texture coordinates
         /// </summary>
@@ -36,7 +31,29 @@ namespace SuperBMD.Materials
         /// <summary>
         /// Instructions for setting up the specified TEV stage for lookup operations
         /// </summary>
-        public IndirectTevStage[] Stages;
+        public IndirectTevStage[] TevStages;
+
+        public IndirectTexturing()
+        {
+            HasLookup = false;
+            IndTexStageNum = 0;
+
+            TevOrders = new IndirectTevOrder[4];
+            for (int i = 0; i < 4; i++)
+                TevOrders[i] = new IndirectTevOrder();
+
+            Matrices = new IndirectTexMatrix[3];
+            for (int i = 0; i < 3; i++)
+                Matrices[i] = new IndirectTexMatrix();
+
+            Scales = new IndirectTexScale[4];
+            for (int i = 0; i < 3; i++)
+                Scales[i] = new IndirectTexScale();
+
+            TevStages = new IndirectTevStage[16];
+            for (int i = 0; i < 3; i++)
+                TevStages[i] = new IndirectTevStage();
+        }
 
         public IndirectTexturing(EndianBinaryReader reader)
         {
@@ -53,9 +70,29 @@ namespace SuperBMD.Materials
             for (int i = 0; i < 4; i++)
                 Scales[i] = new IndirectTexScale(reader);
 
-            Stages = new IndirectTevStage[16];
+            TevStages = new IndirectTevStage[16];
             for (int i = 0; i < 16; i++)
-                Stages[i] = new IndirectTevStage(reader);
+                TevStages[i] = new IndirectTevStage(reader);
+        }
+
+        public void Write(EndianBinaryWriter writer)
+        {
+            writer.Write(HasLookup);
+            writer.Write(IndTexStageNum);
+
+            writer.Write((short)-1);
+
+            for (int i = 0; i < 4; i++)
+                TevOrders[i].Write(writer);
+
+            for (int i = 0; i < 3; i++)
+                Matrices[i].Write(writer);
+
+            for (int i = 0; i < 4; i++)
+                Scales[i].Write(writer);
+
+            for (int i = 0; i < 16; i++)
+                TevStages[i].Write(writer);
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SuperBMD.Materials.Enums
 {
-    public enum TexCoordSlot
+    public enum TexCoordId
     {
         TexCoord0 = 0,
         TexCoord1 = 1,
