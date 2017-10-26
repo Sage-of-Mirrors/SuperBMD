@@ -14,10 +14,12 @@ namespace SuperBMD.BMD
     public class JNT1
     {
         public List<Rigging.Bone> FlatSkeleton { get; private set; }
+        public Dictionary<string, int> BoneNameIndices { get; private set; }
         public Rigging.Bone SkeletonRoot { get; private set; }
 
         public JNT1(EndianBinaryReader reader, int offset)
         {
+            BoneNameIndices = new Dictionary<string, int>();
             FlatSkeleton = new List<Rigging.Bone>();
 
             reader.BaseStream.Seek(offset, System.IO.SeekOrigin.Begin);
@@ -56,6 +58,9 @@ namespace SuperBMD.BMD
                 FlatSkeleton.Add(tempList[remapTable[i]]);
             }
 
+            foreach (Rigging.Bone bone in FlatSkeleton)
+                BoneNameIndices.Add(bone.Name, FlatSkeleton.IndexOf(bone));
+
             reader.BaseStream.Seek(offset + jnt1Size, System.IO.SeekOrigin.Begin);
         }
 
@@ -69,6 +74,7 @@ namespace SuperBMD.BMD
 
         public JNT1(Assimp.Scene scene)
         {
+            BoneNameIndices = new Dictionary<string, int>();
             FlatSkeleton = new List<Rigging.Bone>();
             Assimp.Node root = null;
 
@@ -85,6 +91,9 @@ namespace SuperBMD.BMD
                 throw new Exception("Skeleton root was not found. Please make sure the root is under a node called \"skeleton_root.\"");
 
             SkeletonRoot = AssimpNodesToBonesRecursive(root, null, FlatSkeleton);
+
+            foreach (Rigging.Bone bone in FlatSkeleton)
+                BoneNameIndices.Add(bone.Name, FlatSkeleton.IndexOf(bone));
         }
 
         private Rigging.Bone AssimpNodesToBonesRecursive(Assimp.Node node, Rigging.Bone parent, List<Rigging.Bone> boneList)

@@ -121,15 +121,30 @@ namespace SuperBMD.BMD
             reader.BaseStream.Seek(offset + shp1Size, System.IO.SeekOrigin.Begin);
         }
 
+        private SHP1(Assimp.Scene scene, VertexData vertData, Dictionary<string, int> boneNames, EVP1 envelopes, DRW1 partialWeight)
+        {
+            Shapes = new List<Shape>();
+            RemapTable = new List<int>();
+
+            foreach (Mesh mesh in scene.Meshes)
+            {
+                Shape meshShape = new Shape(mesh);
+                ProcessShapeVertices(mesh, meshShape, vertData, boneNames, envelopes, partialWeight);
+                Shapes.Add(meshShape);
+            }
+        }
+
         public static SHP1 Create(EndianBinaryReader reader, int offset)
         {
             return new SHP1(reader, offset);
         }
 
-        public static SHP1 Create(Scene scene, out DRW1 drw1)
+        public static SHP1 Create(Scene scene, Dictionary<string, int> boneNames, VertexData vertData, out EVP1 evp1, out DRW1 drw1)
         {
-            SHP1 shp1 = new SHP1();
-            drw1 = null;
+            evp1 = new EVP1();
+            drw1 = new DRW1();
+
+            SHP1 shp1 = new SHP1(scene, vertData, boneNames, evp1, drw1);
 
             return shp1;
         }
@@ -149,6 +164,87 @@ namespace SuperBMD.BMD
             }
 
             return prims;
+        }
+
+        private void ProcessShapeVertices(Mesh mesh, Shape shape, VertexData vertData, Dictionary<string, int> boneNames, EVP1 envelopes, DRW1 partialWeight)
+        {
+            Primitive prim = new Primitive();
+
+            for (int i = 0; i < mesh.FaceCount; i++)
+            {
+                Face meshFace = mesh.Faces[i];
+
+                for (int j = 0; j < meshFace.IndexCount; j++)
+                {
+                    Vertex vert = new Vertex();
+                    int vertIndex = meshFace.Indices[j];
+                    SetVertexIndices(mesh, vert, vertData, shape.Descriptor, vertIndex);
+
+                    foreach (Assimp.Bone bone in mesh.Bones)
+                    {
+                        foreach (Assimp.VertexWeight weight in bone.VertexWeights)
+                        {
+                            if (weight.VertexID == vertIndex)
+                            {
+                                vert.VertexWeight.AddWeight(weight.Weight, boneNames[bone.Name]);
+                            }
+                        }
+                    }
+
+                    vert.SetAttributeIndex(GXVertexAttribute.PositionMatrixIdx, (uint)shape.MatrixDataIndices.Count);
+                    shape.MatrixDataIndices.Add(partialWeight.WeightTypeCheck.Count);
+
+                    if (vert.VertexWeight.WeightCount > 1)
+                    {
+                        partialWeight.WeightTypeCheck.Add(true);
+                        partialWeight.Indices.Add(envelopes.Weights.Count);
+                        envelopes.Weights.Add(vert.VertexWeight);
+                    }
+                    else
+                    {
+                        partialWeight.WeightTypeCheck.Add(false);
+                        partialWeight.Indices.Add(vert.VertexWeight.BoneIndices[0]);
+                    }
+                }
+            }
+        }
+
+        private void SetVertexIndices(Mesh mesh, Vertex vert, VertexData vertData, ShapeVertexDescriptor descriptor, int vertIndex)
+        {
+            if (descriptor.CheckAttribute(GXVertexAttribute.Position))
+            {
+                Vector3D posVec = mesh.Vertices[vertIndex];
+                uint posIndex = (uint)vertData.Positions.IndexOf(posVec.ToOpenTKVector3());
+                vert.SetAttributeIndex(GXVertexAttribute.Position, posIndex);
+            }
+            if (descriptor.CheckAttribute(GXVertexAttribute.Normal))
+            {
+                Vector3D normVec = mesh.Normals[vertIndex];
+                uint normIndex = (uint)vertData.Normals.IndexOf(normVec.ToOpenTKVector3());
+                vert.SetAttributeIndex(GXVertexAttribute.Normal, normIndex);
+            }
+
+            for (int color = 0; color < 2; color++)
+            {
+                if (descriptor.CheckAttribute(GXVertexAttribute.Color0 + color))
+                {
+                    Color4D assimpColor = mesh.VertexColorChannels[color][vertIndex];
+                    List<Color> colorData = (List<Color>)vertData.GetAttributeData(GXVertexAttribute.Color0 + color);
+                    uint colIndex = (uint)colorData.IndexOf(assimpColor.ToSuperBMDColorRGBA());
+                    vert.SetAttributeIndex(GXVertexAttribute.Color0 + color, colIndex);
+                }
+            }
+
+            for (int tex = 0; tex < 8; tex++)
+            {
+                if (descriptor.CheckAttribute(GXVertexAttribute.Tex0 + tex))
+                {
+                    Vector3D texVec = mesh.TextureCoordinateChannels[tex][vertIndex];
+                    List<OpenTK.Vector2> texData = (List<OpenTK.Vector2>)vertData.GetAttributeData(GXVertexAttribute.Tex0 + tex);
+                    uint texIndex = (uint)texData.IndexOf(texVec.ToOpenTKVector2());
+                    vert.SetAttributeIndex(GXVertexAttribute.Tex0 + tex, texIndex);
+                }
+            }
         }
 
         public void DistributeWeights(EVP1 envelopes, DRW1 partialWeights)

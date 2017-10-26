@@ -44,6 +44,8 @@ namespace SuperBMD.Geometry
             TexCoord5Index = uint.MaxValue;
             TexCoord6Index = uint.MaxValue;
             TexCoord7Index = uint.MaxValue;
+
+            VertexWeight = new Weight();
         }
 
         public uint GetAttributeIndex(GXVertexAttribute attribute)

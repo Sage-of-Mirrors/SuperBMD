@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using SuperBMD.Util;
 using GameFormatReader.Common;
 using OpenTK;
+using Assimp;
 
 namespace SuperBMD.Geometry
 {
@@ -45,6 +46,29 @@ namespace SuperBMD.Geometry
 
             for (int i = 0; i < matrixIndices.Count; i++)
                 MatrixDataIndices.AddRange(matrixIndices[i]);
+        }
+
+        public Shape(Mesh mesh)
+        {
+            int indexOffset = 0;
+            Descriptor = new ShapeVertexDescriptor();
+            Descriptor.SetAttribute(Enums.GXVertexAttribute.PositionMatrixIdx, Enums.VertexInputType.Direct, indexOffset++);
+
+            if (mesh.HasVertices)
+                Descriptor.SetAttribute(Enums.GXVertexAttribute.Position, Enums.VertexInputType.Index16, indexOffset++);
+            if (mesh.HasNormals)
+                Descriptor.SetAttribute(Enums.GXVertexAttribute.Normal, Enums.VertexInputType.Index16, indexOffset++);
+            for (int i = 0; i < 2; i++)
+            {
+                if (mesh.HasVertexColors(i))
+                    Descriptor.SetAttribute(Enums.GXVertexAttribute.Color0 + i, Enums.VertexInputType.Index16, indexOffset++);
+            }
+
+            for (int i = 0; i < 8; i++)
+            {
+                if (mesh.HasTextureCoords(i))
+                    Descriptor.SetAttribute(Enums.GXVertexAttribute.Tex0 + i, Enums.VertexInputType.Index16, indexOffset++);
+            }
         }
 
         public void FillMatrices()

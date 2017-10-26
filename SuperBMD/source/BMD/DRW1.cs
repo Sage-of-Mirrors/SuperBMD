@@ -13,6 +13,12 @@ namespace SuperBMD.BMD
         public List<bool> WeightTypeCheck { get; private set; }
         public List<int> Indices { get; private set; }
 
+        public DRW1()
+        {
+            WeightTypeCheck = new List<bool>();
+            Indices = new List<int>();
+        }
+
         public DRW1(EndianBinaryReader reader, int offset)
         {
             Indices = new List<int>();

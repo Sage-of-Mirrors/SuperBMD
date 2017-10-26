@@ -11,20 +11,20 @@ namespace SuperBMD.Geometry
 {
     public class VertexData
     {
-        List<GXVertexAttribute> m_Attributes;
+        private List<GXVertexAttribute> m_Attributes;
 
-        List<Vector3> Positions;
-        List<Vector3> Normals;
-        List<Color> Color_0;
-        List<Color> Color_1;
-        List<Vector2> TexCoord_0;
-        List<Vector2> TexCoord_1;
-        List<Vector2> TexCoord_2;
-        List<Vector2> TexCoord_3;
-        List<Vector2> TexCoord_4;
-        List<Vector2> TexCoord_5;
-        List<Vector2> TexCoord_6;
-        List<Vector2> TexCoord_7;
+        public List<Vector3> Positions { get; private set; }
+        public List<Vector3> Normals { get; private set; }
+        public List<Color> Color_0 { get; private set; }
+        public List<Color> Color_1 { get; private set; }
+        public List<Vector2> TexCoord_0 { get; private set; }
+        public List<Vector2> TexCoord_1 { get; private set; }
+        public List<Vector2> TexCoord_2 { get; private set; }
+        public List<Vector2> TexCoord_3 { get; private set; }
+        public List<Vector2> TexCoord_4 { get; private set; }
+        public List<Vector2> TexCoord_5 { get; private set; }
+        public List<Vector2> TexCoord_6 { get; private set; }
+        public List<Vector2> TexCoord_7 { get; private set; }
 
         public VertexData()
         {

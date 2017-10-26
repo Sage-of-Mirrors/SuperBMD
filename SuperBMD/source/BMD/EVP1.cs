@@ -15,6 +15,12 @@ namespace SuperBMD.BMD
         public List<Weight> Weights {get; private set;}
         public List<Matrix3x4> InverseBindMatrices { get; private set; }
 
+        public EVP1()
+        {
+            Weights = new List<Weight>();
+            InverseBindMatrices = new List<Matrix3x4>();
+        }
+
         public EVP1(EndianBinaryReader reader, int offset)
         {
             Weights = new List<Weight>();

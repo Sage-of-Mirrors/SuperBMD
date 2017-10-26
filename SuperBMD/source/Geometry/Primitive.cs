@@ -13,6 +13,12 @@ namespace SuperBMD.Geometry
         public GXPrimitiveType PrimitiveType { get; private set; }
         public List<Vertex> Vertices { get; private set; }
 
+        public Primitive()
+        {
+            PrimitiveType = GXPrimitiveType.Lines;
+            Vertices = new List<Vertex>();
+        }
+
         public Primitive(EndianBinaryReader reader, ShapeVertexDescriptor activeAttribs)
         {
             Vertices = new List<Vertex>();
