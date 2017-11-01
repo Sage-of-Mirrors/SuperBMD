@@ -19,7 +19,7 @@ namespace SuperBMD.Geometry
         public BoundingVolume Bounds { get; private set; }
 
         public List<Primitive> Primitives { get; private set; }
-        public List<int> MatrixDataIndices { get; private set; }
+        public List<int[]> MatrixDataIndices { get; private set; }
 
         private Vector4[] m_PositionMatrices;
         private Vector4[] m_NormalMatrices;
@@ -29,7 +29,7 @@ namespace SuperBMD.Geometry
             AttributeData = new VertexData();
             Descriptor = new ShapeVertexDescriptor();
             Primitives = new List<Primitive>();
-            MatrixDataIndices = new List<int>();
+            MatrixDataIndices = new List<int[]>();
 
             m_PositionMatrices = new Vector4[64];
             m_NormalMatrices = new Vector4[32];
@@ -37,15 +37,14 @@ namespace SuperBMD.Geometry
 
         public Shape(ShapeVertexDescriptor desc, BoundingVolume bounds, List<Primitive> prims, List<int[]> matrixIndices, int matrixType)
         {
-            MatrixDataIndices = new List<int>();
+            MatrixDataIndices = new List<int[]>();
 
             Descriptor = desc;
             Bounds = bounds;
             Primitives = prims;
             matrixType = (byte)matrixType;
 
-            for (int i = 0; i < matrixIndices.Count; i++)
-                MatrixDataIndices.AddRange(matrixIndices[i]);
+            MatrixDataIndices = matrixIndices;
         }
 
         public Shape(Mesh mesh)

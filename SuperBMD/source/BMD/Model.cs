@@ -66,6 +66,7 @@ namespace SuperBMD.BMD
             EVP1 evpFromScene;
             DRW1 drwFromScene;
             Shapes = SHP1.Create(scene, Joints.BoneNameIndices, VertexData.Attributes, out evpFromScene, out drwFromScene);
+
             SkinningEnvelopes = evpFromScene;
             PartialWeightData = drwFromScene;
         }
