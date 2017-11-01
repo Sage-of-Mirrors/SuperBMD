@@ -49,6 +49,9 @@ namespace SuperBMD.Geometry
 
         public Shape(Mesh mesh)
         {
+            Primitives = new List<Primitive>();
+            MatrixDataIndices = new List<int[]>();
+
             int indexOffset = 0;
             Descriptor = new ShapeVertexDescriptor();
             Descriptor.SetAttribute(Enums.GXVertexAttribute.PositionMatrixIdx, Enums.VertexInputType.Direct, indexOffset++);

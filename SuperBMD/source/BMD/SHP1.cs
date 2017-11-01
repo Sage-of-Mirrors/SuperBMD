@@ -8,6 +8,7 @@ using GameFormatReader.Common;
 using Assimp;
 using SuperBMD.Geometry.Enums;
 using SuperBMD.Util;
+using SuperBMD.Rigging;
 
 namespace SuperBMD.BMD
 {
@@ -170,7 +171,7 @@ namespace SuperBMD.BMD
         {
             Primitive prim = new Primitive();
             List<int> matrixIndices = new List<int>();
-            List<Rigging.Weight> currentWeights = new List<Rigging.Weight>();
+            List<Rigging.Weight> totalWeights = new List<Rigging.Weight>();
             int totalMatrixCount = 0;
 
             for (int i = 0; i < mesh.FaceCount; i++)
@@ -198,9 +199,15 @@ namespace SuperBMD.BMD
                     faceVertices.Add(vert);
                 }
 
+                List<Rigging.Weight> currentWeights = new List<Rigging.Weight>();
+
                 int currentMatrixCount = 0;
                 for (int j = 0; j < meshFace.IndexCount; j++)
-                    currentMatrixCount += faceVertices[j].VertexWeight.WeightCount;
+                    currentWeights.Add(faceVertices[j].VertexWeight);
+
+                List<Rigging.Weight> newWeights = currentWeights.Except(totalWeights, new WeightEqualityComparer()).ToList();
+                for (int j = 0; j < newWeights.Count; j++)
+                    currentMatrixCount += newWeights[j].WeightCount;
 
                 if (totalMatrixCount + currentMatrixCount > 10)
                 {
@@ -209,16 +216,43 @@ namespace SuperBMD.BMD
 
                     prim = new Primitive();
                     matrixIndices = new List<int>();
+                    totalWeights.Clear();
+                    totalMatrixCount = 0;
 
                     prim.Vertices.AddRange(faceVertices);
                 }
                 else
                 {
+                    totalMatrixCount += currentMatrixCount;
+                    
+                    for (int j = 0; j < currentWeights.Count; j++)
+                    {
+                        if (!totalWeights.Contains(currentWeights[j]))
+                            totalWeights.Add(currentWeights[j]);
+                    }
+
                     prim.Vertices.AddRange(faceVertices);
                 }
 
+                // The following needs to be fixed so that the correct indices are given to the vertex and EVP1/DRW1
                 for (int j = 0; j < meshFace.IndexCount; j++)
-                    SetMatrixIndices(faceVertices[j], envelopes, partialWeight, matrixIndices);
+                {
+                    faceVertices[j].SetAttributeIndex(GXVertexAttribute.PositionMatrixIdx, (uint)matrixIndices.Count);
+                    matrixIndices.Add(partialWeight.WeightTypeCheck.Count);
+
+                    if (faceVertices[j].VertexWeight.WeightCount > 1)
+                    {
+                        partialWeight.WeightTypeCheck.Add(true);
+                        partialWeight.Indices.Add(envelopes.Weights.Count);
+                        envelopes.Weights.Add(faceVertices[j].VertexWeight);
+                    }
+                    else
+                    {
+                        partialWeight.WeightTypeCheck.Add(false);
+                        partialWeight.Indices.Add(faceVertices[j].VertexWeight.BoneIndices[0]);
+                    }
+                }
+                    //SetMatrixIndices(faceVertices[j], envelopes, partialWeight, matrixIndices);
             }
         }
 
