@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using OpenTK;
 using Assimp;
+using GameFormatReader.Common;
 
 namespace SuperBMD.Util
 {

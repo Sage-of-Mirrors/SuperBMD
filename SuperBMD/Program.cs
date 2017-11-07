@@ -15,18 +15,20 @@ namespace SuperBMD
         {
             //using (FileStream strm = new FileStream(@"D:\SZS Tools\SuperBMD\test.bti", FileMode.Create, FileAccess.Write))
             //{
-                //EndianBinaryWriter writer = new EndianBinaryWriter(strm, Endian.Big);
-                //img.WriteHeader(writer);
-                //writer.Write(img.EncodeData(Materials.BinaryTextureImage.TextureFormats.RGBA32));
+            //EndianBinaryWriter writer = new EndianBinaryWriter(strm, Endian.Big);
+            //img.WriteHeader(writer);
+            //writer.Write(img.EncodeData(Materials.BinaryTextureImage.TextureFormats.RGBA32));
             //}
 
-            Assimp.Scene test = LoadAssimpScene(args[0]);
-            Model mod = new Model(test, Path.GetDirectoryName(args[0]));
+            //Assimp.Scene test = LoadAssimpScene(args[0]);
+            //Model mod = new Model(test, Path.GetDirectoryName(args[0]));
+            //mod.Export("D:\\SZS Tools\\SuperBMD\\test.bmd");
 
             using (FileStream str = new FileStream(args[0], FileMode.Open, FileAccess.Read))
             {
                 EndianBinaryReader reader = new EndianBinaryReader(str, Endian.Big);
                 Model testModel = new Model(reader);
+                testModel.Export("D:\\SZS Tools\\SuperBMD\\test.bmd");
             }
         }
 

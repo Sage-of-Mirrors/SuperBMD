@@ -107,5 +107,38 @@ namespace SuperBMD.BMD
                 FlatNodes.Add(upNode);
             }
         }
+
+        public byte[] ToBytes(int packetCount, int vertexCount)
+        {
+            List<byte> outList = new List<byte>();
+
+            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
+            {
+                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
+
+                writer.Write("INF1".ToCharArray());
+                writer.Write(0); // Placeholder for section size
+                writer.Write((short)1);
+                writer.Write((short)-1);
+
+                writer.Write(packetCount); // Number of packets
+                writer.Write(vertexCount); // Number of vertex positions
+                writer.Write(0x18);
+
+                foreach (SceneNode node in FlatNodes)
+                {
+                    writer.Write((short)node.Type);
+                    writer.Write((short)node.Index);
+                }
+
+                Util.StreamUtility.PadStreamWithString(writer, 32);
+                writer.Seek(4, System.IO.SeekOrigin.Begin);
+                writer.Write((int)writer.BaseStream.Length);
+
+                outList.AddRange(mem.ToArray());
+            }
+
+            return outList.ToArray();
+        }
     }
 }

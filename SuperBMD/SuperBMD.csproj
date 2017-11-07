@@ -164,6 +164,7 @@
     <Compile Include="source\Util\Color.cs" />
     <Compile Include="source\Util\Color32.cs" />
     <Compile Include="source\Util\J3DUtility.cs" />
+    <Compile Include="source\Util\StreamUtility.cs" />
     <Compile Include="source\Util\VectorUtility.cs" />
     <Compile Include="source\Util\WrapModeUtility.cs" />
   </ItemGroup>

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GameFormatReader.Common;
 using Assimp;
+using System.IO;
 
 namespace SuperBMD.BMD
 {
@@ -18,6 +19,9 @@ namespace SuperBMD.BMD
         public SHP1 Shapes            { get; private set; }
         public MAT3 Materials         { get; private set; }
         public TEX1 Textures          { get; private set; }
+
+        private int packetCount;
+        private int vertexCount;
 
         public Model(EndianBinaryReader reader)
         {
@@ -44,6 +48,11 @@ namespace SuperBMD.BMD
             Materials         = new MAT3(reader, (int)reader.BaseStream.Position);
             SkipMDL3(reader);
             Textures          = new TEX1(reader, (int)reader.BaseStream.Position);
+
+            foreach (Geometry.Shape shape in Shapes.Shapes)
+                packetCount += shape.Primitives.Count;
+
+            vertexCount = VertexData.Attributes.Positions.Count;
         }
 
         private void SkipMDL3(EndianBinaryReader reader)
@@ -69,16 +78,33 @@ namespace SuperBMD.BMD
 
             SkinningEnvelopes = evpFromScene;
             PartialWeightData = drwFromScene;
-        }
 
-        public void Render()
-        {
+            foreach (Geometry.Shape shape in Shapes.Shapes)
+                packetCount += shape.MatrixDataIndices.Count;
 
+            vertexCount = VertexData.Attributes.Positions.Count;
         }
 
         public void Export(string fileName)
         {
+            using (FileStream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
+            {
+                EndianBinaryWriter writer = new EndianBinaryWriter(stream, Endian.Big);
 
+                writer.Write("J3D2bmd3".ToCharArray());
+                writer.Write(0); // Placeholder for file size
+                writer.Write(8); // Number of sections; bmd has 8, bdl has 9
+
+                writer.Write("SVR3".ToCharArray());
+                writer.Write(-1);
+                writer.Write((long)-1);
+
+                writer.Write(Scenegraph.ToBytes(packetCount, vertexCount));
+                writer.Write(VertexData.ToBytes());
+
+                writer.Seek(8, SeekOrigin.Begin);
+                writer.Write((int)writer.BaseStream.Length);
+            }
         }
     }
 }

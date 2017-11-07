@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SuperBMD.Materials.Enums;
+using GameFormatReader.Common;
 
 namespace SuperBMD.Util
 {
