@@ -996,6 +996,7 @@ namespace SuperBMD.Materials
                 EncodeColor(col, rawColorData);
             }
 
+            int pixIndex = 0;
             for (int yBlock = 0; yBlock < numBlocksH; yBlock++)
             {
                 for (int xBlock = 0; xBlock < numBlocksW; xBlock++)
@@ -1004,7 +1005,8 @@ namespace SuperBMD.Materials
                     {
                         for (int pX = 0; pX < 8; pX += 2)
                         {
-                            pixIndices[(yBlock * 8) + pY + (xBlock * 8) + pX] = (byte)rawColorData.IndexOfValue(palColors[(yBlock * 8) + pY + (xBlock * 8) + pX]);
+                            pixIndices[pixIndex] = (byte)(rawColorData.IndexOfValue(palColors[Width * ((yBlock * 8) + pY) + (xBlock * 8) + pX]) << 4);
+                            pixIndices[pixIndex++] |= (byte)(rawColorData.IndexOfValue(palColors[Width * ((yBlock * 8) + pY) + (xBlock * 8) + pX + 1]));
                         }
                     }
                 }
@@ -1075,16 +1077,16 @@ namespace SuperBMD.Materials
                         rawColorData.Add(fullColor565, col);
                     break;
                 case PaletteFormats.RGB5A3:
-                    ushort r_53 = (ushort)(col.R >> 3);
-                    ushort g_53 = (ushort)(col.G >> 3);
-                    ushort b_53 = (ushort)(col.B >> 3);
+                    ushort r_53 = (ushort)(col.R >> 4);
+                    ushort g_53 = (ushort)(col.G >> 4);
+                    ushort b_53 = (ushort)(col.B >> 4);
                     ushort a_53 = (ushort)(col.A >> 5);
 
                     ushort fullColor53 = 0;
-                    fullColor53 |= a_53;
-                    fullColor53 |= (ushort)(b_53 << 3);
-                    fullColor53 |= (ushort)(g_53 << 8);
-                    fullColor53 |= (ushort)(r_53 << 13);
+                    fullColor53 |= b_53;
+                    fullColor53 |= (ushort)(g_53 << 4);
+                    fullColor53 |= (ushort)(r_53 << 8);
+                    fullColor53 |= (ushort)(a_53 << 12);
 
                     if (!rawColorData.ContainsKey(fullColor53))
                         rawColorData.Add(fullColor53, col);
