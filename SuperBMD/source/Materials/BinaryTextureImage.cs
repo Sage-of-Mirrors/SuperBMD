@@ -44,8 +44,8 @@ namespace SuperBMD.Materials
             RGB5A3 = 0x05,  // 16 | 4 | 4 | 32 | color + alpha
             RGBA32 = 0x06,  // 32 | 4 | 4 | 64 | color + alpha
             C4 = 0x08,      //  4 | 8 | 8 | 32 | palette choices (IA8, RGB565, RGB5A3)
-            C8 = 0x09,      // 8, 8, 4, 32 | palette choices (IA8, RGB565, RGB5A3)
-            C14X2 = 0x0a,   // 16 (14 used) | 4 | 4 | 32 | palette (IA8, RGB565, RGB5A3)
+            C8 = 0x09,      //  8 | 8 | 4 | 32 | palette choices (IA8, RGB565, RGB5A3)
+            C14X2 = 0x0a,   // 16 | 4 | 4 | 32 | palette (IA8, RGB565, RGB5A3) NOTE: only 14 bits are used per pixel
             CMPR = 0x0e,    //  4 | 8 | 8 | 32 | mini palettes in each block, RGB565 or transparent.
         }
 
@@ -116,6 +116,7 @@ namespace SuperBMD.Materials
         }
         #endregion
 
+        public string Name { get; private set; }
         public TextureFormats Format { get; private set; }
         public byte AlphaSetting { get; private set; } // 0 for no alpha, 0x02 and other values seem to indicate yes alpha.
         public ushort Width { get; private set; }
@@ -134,6 +135,16 @@ namespace SuperBMD.Materials
 
         private Palette m_imagePalette;
         private byte[] m_rgbaImageData;
+
+        public BinaryTextureImage()
+        {
+
+        }
+
+        public BinaryTextureImage(string name)
+        {
+            Name = name;
+        }
 
         // headerStart seems to be chunkStart + 0x20 and I don't know why.
         /// <summary>
@@ -219,11 +230,13 @@ namespace SuperBMD.Materials
 
         public void SaveImageToDisk(string outputFile)
         {
+            string fileName = Path.Combine(outputFile, $"{ Name }.bmp");
+
             using (Bitmap bmp = CreateBitmap())
             {
                 // Bitmaps will throw an exception if the output folder doesn't exist so...
-                Directory.CreateDirectory(Path.GetDirectoryName(outputFile));
-                bmp.Save(outputFile);
+                Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+                bmp.Save(fileName);
             }
         }
 
@@ -936,20 +949,146 @@ namespace SuperBMD.Materials
         #endregion
 
         #region Encoding
-        public byte[] EncodeData(TextureFormats format)
+        public Tuple<byte[], ushort[]> EncodeData()
         {
-            switch (format)
+            switch (Format)
             {
                 case TextureFormats.I4:
-                    return ImageDataFormat.I4.ConvertTo(m_rgbaImageData, Width, Height, null);
+                    return new Tuple<byte[], ushort[]>(ImageDataFormat.I4.ConvertTo(m_rgbaImageData, Width, Height, null), new ushort[0]);
+                case TextureFormats.I8:
+                    return new Tuple<byte[], ushort[]>(ImageDataFormat.I8.ConvertTo(m_rgbaImageData, Width, Height, null), new ushort[0]);
+                case TextureFormats.IA4:
+                    return new Tuple<byte[], ushort[]>(ImageDataFormat.IA4.ConvertTo(m_rgbaImageData, Width, Height, null), new ushort[0]);
+                case TextureFormats.IA8:
+                    return new Tuple<byte[], ushort[]>(ImageDataFormat.IA8.ConvertTo(m_rgbaImageData, Width, Height, null), new ushort[0]);
+                case TextureFormats.RGB565:
+                    return new Tuple<byte[], ushort[]>(ImageDataFormat.RGB565.ConvertTo(m_rgbaImageData, Width, Height, null), new ushort[0]);
                 case TextureFormats.RGB5A3:
-                    return ImageDataFormat.RGB5A3.ConvertTo(m_rgbaImageData, Width, Height, null);
+                    return new Tuple<byte[], ushort[]>(ImageDataFormat.RGB5A3.ConvertTo(m_rgbaImageData, Width, Height, null), new ushort[0]);
                 case TextureFormats.RGBA32:
-                    return ImageDataFormat.Rgba32.ConvertTo(m_rgbaImageData, Width, Height, null);
+                    return new Tuple<byte[], ushort[]>(ImageDataFormat.Rgba32.ConvertTo(m_rgbaImageData, Width, Height, null), new ushort[0]);
+                case TextureFormats.C4:
+                    return EncodeC4();
+                case TextureFormats.C8:
+                    return EncodeC8();
                 case TextureFormats.CMPR:
-                    return ImageDataFormat.Cmpr.ConvertTo(m_rgbaImageData, Width, Height, null);
+                    return new Tuple<byte[], ushort[]>(ImageDataFormat.Cmpr.ConvertTo(m_rgbaImageData, Width, Height, null), new ushort[0]);
                 default:
-                    return new byte[0];
+                    return new Tuple<byte[], ushort[]>(new byte[0], new ushort[0]);
+            }
+        }
+
+        private Tuple<byte[], ushort[]> EncodeC4()
+        {
+            List<Util.Color32> palColors = new List<Util.Color32>();
+
+            uint numBlocksW = (uint)Width / 8;
+            uint numBlocksH = (uint)Height / 8;
+
+            byte[] pixIndices = new byte[numBlocksH * numBlocksW * 8 * 8];
+
+            for (int i = 0; i < (Width * Height) * 4; i += 4)
+                palColors.Add(new Util.Color32(m_rgbaImageData[i + 2], m_rgbaImageData[i + 1], m_rgbaImageData[i + 0], m_rgbaImageData[i + 3]));
+
+            SortedList<ushort, Util.Color32> rawColorData = new SortedList<ushort, Util.Color32>();
+            foreach (Util.Color32 col in palColors)
+            {
+                EncodeColor(col, rawColorData);
+            }
+
+            for (int yBlock = 0; yBlock < numBlocksH; yBlock++)
+            {
+                for (int xBlock = 0; xBlock < numBlocksW; xBlock++)
+                {
+                    for (int pY = 0; pY < 8; pY++)
+                    {
+                        for (int pX = 0; pX < 8; pX += 2)
+                        {
+                            pixIndices[(yBlock * 8) + pY + (xBlock * 8) + pX] = (byte)rawColorData.IndexOfValue(palColors[(yBlock * 8) + pY + (xBlock * 8) + pX]);
+                        }
+                    }
+                }
+            }
+
+            return new Tuple<byte[], ushort[]>(pixIndices, rawColorData.Keys.ToArray());
+        }
+
+        private Tuple<byte[], ushort[]> EncodeC8()
+        {
+            List<Util.Color32> palColors = new List<Util.Color32>();
+
+            uint numBlocksW = (uint)Width / 8;
+            uint numBlocksH = (uint)Height / 4;
+
+            byte[] pixIndices = new byte[numBlocksH * numBlocksW * 8 * 4];
+
+            for (int i = 0; i < (Width * Height) * 4; i += 4)
+                palColors.Add(new Util.Color32(m_rgbaImageData[i + 2], m_rgbaImageData[i + 1], m_rgbaImageData[i + 0], m_rgbaImageData[i + 3]));
+
+            SortedList<ushort, Util.Color32> rawColorData = new SortedList<ushort, Util.Color32>();
+            foreach (Util.Color32 col in palColors)
+            {
+                EncodeColor(col, rawColorData);
+            }
+
+            int pixIndex = 0;
+            for (int yBlock = 0; yBlock < numBlocksH; yBlock++)
+            {
+                for (int xBlock = 0; xBlock < numBlocksW; xBlock++)
+                {
+                    for (int pY = 0; pY < 4; pY++)
+                    {
+                        for (int pX = 0; pX < 8; pX++)
+                        {
+                            pixIndices[pixIndex++] = (byte)rawColorData.IndexOfValue(palColors[Width * ((yBlock * 4) + pY) + (xBlock * 8) + pX]);
+                        }
+                    }
+                }
+            }
+
+            PaletteCount = (ushort)rawColorData.Count;
+
+            return new Tuple<byte[], ushort[]>(pixIndices, rawColorData.Keys.ToArray());
+        }
+
+        private void EncodeColor(Util.Color32 col, SortedList<ushort, Util.Color32> rawColorData)
+        {
+            switch (PaletteFormat)
+            {
+                case PaletteFormats.IA8:
+                    byte i = (byte)((col.R * 0.2126) + (col.G * 0.7152) + (col.B * 0.0722));
+
+                    ushort fullIA8 = (ushort)((i << 8) | (col.A));
+                    rawColorData.Add((ushort)(fullIA8), col);
+                    break;
+                case PaletteFormats.RGB565:
+                    ushort r_565 = (ushort)(col.R >> 3);
+                    ushort g_565 = (ushort)(col.G >> 2);
+                    ushort b_565 = (ushort)(col.B >> 3);
+
+                    ushort fullColor565 = 0;
+                    fullColor565 |= b_565;
+                    fullColor565 |= (ushort)(g_565 << 5);
+                    fullColor565 |= (ushort)(r_565 << 11);
+
+                    if (!rawColorData.ContainsKey(fullColor565))
+                        rawColorData.Add(fullColor565, col);
+                    break;
+                case PaletteFormats.RGB5A3:
+                    ushort r_53 = (ushort)(col.R >> 3);
+                    ushort g_53 = (ushort)(col.G >> 3);
+                    ushort b_53 = (ushort)(col.B >> 3);
+                    ushort a_53 = (ushort)(col.A >> 5);
+
+                    ushort fullColor53 = 0;
+                    fullColor53 |= a_53;
+                    fullColor53 |= (ushort)(b_53 << 3);
+                    fullColor53 |= (ushort)(g_53 << 8);
+                    fullColor53 |= (ushort)(r_53 << 13);
+
+                    if (!rawColorData.ContainsKey(fullColor53))
+                        rawColorData.Add(fullColor53, col);
+                    break;
             }
         }
         #endregion

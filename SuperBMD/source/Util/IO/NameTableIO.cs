@@ -34,9 +34,51 @@ namespace SuperBMD.Util
             return names;
         }
 
-        public static void Write(EndianBinaryWriter writer)
+        public static byte[] Write(List<string> names)
         {
+            List<byte> outList = new List<byte>();
 
+            using (System.IO.MemoryStream stream = new System.IO.MemoryStream())
+            {
+                EndianBinaryWriter writer = new EndianBinaryWriter(stream, Endian.Big);
+
+                writer.Write((short)names.Count);
+                writer.Write((short)-1);
+
+                foreach (string st in names)
+                {
+                    writer.Write(HashString(st));
+                    writer.Write((short)0);
+                }
+
+                for (int i = 0; i < names.Count; i++)
+                {
+                    writer.Seek((int)(6 + i * 4), System.IO.SeekOrigin.Begin);
+                    writer.Write((short)writer.BaseStream.Length);
+                    writer.Seek(0, System.IO.SeekOrigin.End);
+                    writer.Write(names[i].ToCharArray());
+                    writer.Write((byte)0);
+                }
+
+                StreamUtility.PadStreamWithString(writer, 32);
+
+                outList.AddRange(stream.ToArray());
+            }
+
+            return outList.ToArray();
+        }
+
+        private static ushort HashString(string str)
+        {
+            ushort hash = 0;
+
+            foreach (char c in str)
+            {
+                hash *= 3;
+                hash += (ushort)c;
+            }
+
+            return hash;
         }
     }
 }
