@@ -60,8 +60,6 @@ namespace SuperBMD.Util
                     writer.Write((byte)0);
                 }
 
-                StreamUtility.PadStreamWithString(writer, 32);
-
                 outList.AddRange(stream.ToArray());
             }
 

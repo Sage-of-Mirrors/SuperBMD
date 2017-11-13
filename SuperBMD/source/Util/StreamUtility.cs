@@ -12,7 +12,7 @@ namespace SuperBMD.Util
     {
         public static void PadStreamWithString(EndianBinaryWriter writer, int padValue)
         {
-            string padding = "This is padding data to ";
+            string padding = "This is padding data to align";
 
             // Pad up to a 32 byte alignment
             // Formula: (x + (n-1)) & ~(n-1)
@@ -45,6 +45,24 @@ namespace SuperBMD.Util
             writer.Write((byte)color.G);
             writer.Write((byte)color.B);
             writer.Write((byte)color.A);
+        }
+
+        public static void Write(this EndianBinaryWriter writer, Matrix3x4 mat)
+        {
+            writer.Write(mat.M11);
+            writer.Write(mat.M12);
+            writer.Write(mat.M13);
+            writer.Write(mat.M14);
+
+            writer.Write(mat.M21);
+            writer.Write(mat.M22);
+            writer.Write(mat.M23);
+            writer.Write(mat.M24);
+
+            writer.Write(mat.M31);
+            writer.Write(mat.M32);
+            writer.Write(mat.M33);
+            writer.Write(mat.M34);
         }
     }
 }

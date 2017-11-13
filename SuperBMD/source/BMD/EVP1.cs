@@ -7,6 +7,7 @@ using SuperBMD.Rigging;
 using Assimp;
 using GameFormatReader.Common;
 using OpenTK;
+using SuperBMD.Util;
 
 namespace SuperBMD.BMD
 {
@@ -129,6 +130,63 @@ namespace SuperBMD.BMD
 
                 Weights.AddRange(weights.Values);
             }
+        }
+
+        public byte[] ToBytes()
+        {
+            List<byte> outList = new List<byte>();
+
+            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
+            {
+                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
+
+                writer.Write("EVP1".ToCharArray());
+                writer.Write(0); // Placeholder for section size
+                writer.Write((short)Weights.Count);
+                writer.Write((short)-1);
+
+                writer.Write(28); // Offset to weight count data. Always 28
+                writer.Write(28 + Weights.Count); // Offset to bone/weight indices. Always 28 + the number of weights
+                writer.Write(0); // Placeholder for weight data offset
+                writer.Write(0); // Placeholder for inverse bind matrix data offset
+
+                foreach (Weight w in Weights)
+                    writer.Write((byte)w.WeightCount);
+
+                foreach (Weight w in Weights)
+                {
+                    foreach (int inte in w.BoneIndices)
+                        writer.Write((short)inte);
+                }
+
+                StreamUtility.PadStreamWithString(writer, 8);
+
+                writer.Seek(20, System.IO.SeekOrigin.Begin);
+                writer.Write((int)writer.BaseStream.Length);
+                writer.Seek(0, System.IO.SeekOrigin.End);
+
+                foreach (Weight w in Weights)
+                {
+                    foreach (float fl in w.Weights)
+                        writer.Write(fl);
+                }
+
+                writer.Seek(24, System.IO.SeekOrigin.Begin);
+                writer.Write((int)writer.BaseStream.Length);
+                writer.Seek(0, System.IO.SeekOrigin.End);
+
+                foreach (Matrix3x4 mat in InverseBindMatrices)
+                    writer.Write(mat);
+
+                StreamUtility.PadStreamWithString(writer, 32);
+
+                writer.Seek(4, System.IO.SeekOrigin.Begin);
+                writer.Write((int)writer.BaseStream.Length);
+
+                outList.AddRange(mem.ToArray());
+            }
+
+            return outList.ToArray();
         }
     }
 }

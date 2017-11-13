@@ -101,6 +101,9 @@ namespace SuperBMD.BMD
 
                 writer.Write(Scenegraph.ToBytes(packetCount, vertexCount));
                 writer.Write(VertexData.ToBytes());
+                writer.Write(SkinningEnvelopes.ToBytes());
+                writer.Write(PartialWeightData.ToBytes());
+                writer.Write(Joints.ToBytes());
                 // Stuff
                 writer.Write(Textures.ToBytes());
 

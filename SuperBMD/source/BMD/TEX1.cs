@@ -128,6 +128,8 @@ namespace SuperBMD.BMD
 
                 writer.Write(NameTableIO.Write(names));
 
+                StreamUtility.PadStreamWithString(writer, 32);
+
                 writer.Seek(4, System.IO.SeekOrigin.Begin);
                 writer.Write((int)writer.BaseStream.Length);
 

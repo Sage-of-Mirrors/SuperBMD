@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GameFormatReader.Common;
 using Assimp;
+using SuperBMD.Util;
 
 namespace SuperBMD.BMD
 {
@@ -48,6 +49,39 @@ namespace SuperBMD.BMD
         public DRW1(Scene scene)
         {
 
+        }
+
+        public byte[] ToBytes()
+        {
+            List<byte> outList = new List<byte>();
+
+            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
+            {
+                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
+
+                writer.Write("DRW1".ToCharArray());
+                writer.Write(0); // Placeholder for section size
+                writer.Write((short)WeightTypeCheck.Count);
+                writer.Write((short)-1);
+
+                writer.Write(20); // Offset to weight type bools, always 20
+                writer.Write(20 + WeightTypeCheck.Count); // Offset to indices, always 20 + number of weight type bools
+
+                foreach (bool bol in WeightTypeCheck)
+                    writer.Write(bol);
+
+                foreach (int inte in Indices)
+                    writer.Write((short)inte);
+
+                StreamUtility.PadStreamWithString(writer, 32);
+
+                writer.Seek(4, System.IO.SeekOrigin.Begin);
+                writer.Write((int)writer.BaseStream.Length);
+
+                outList.AddRange(mem.ToArray());
+            }
+
+            return outList.ToArray();
         }
     }
 }
