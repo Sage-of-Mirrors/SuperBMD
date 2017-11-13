@@ -104,7 +104,8 @@ namespace SuperBMD.BMD
                 writer.Write(SkinningEnvelopes.ToBytes());
                 writer.Write(PartialWeightData.ToBytes());
                 writer.Write(Joints.ToBytes());
-                // Stuff
+                //writer.Write(Shapes.ToBytes());
+                writer.Write(Materials.ToBytes());
                 writer.Write(Textures.ToBytes());
 
                 writer.Seek(8, SeekOrigin.Begin);

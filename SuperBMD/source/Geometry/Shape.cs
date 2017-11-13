@@ -91,5 +91,23 @@ namespace SuperBMD.Geometry
                 }
             }
         }
+
+        public byte[] ToBytes()
+        {
+            List<byte> outList = new List<byte>();
+
+            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
+            {
+                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
+
+                writer.Write(MatrixType);
+                writer.Write((sbyte)-1);
+                writer.Write((short)Primitives.Count);
+
+                outList.AddRange(mem.ToArray());
+            }
+
+            return outList.ToArray();
+        }
     }
 }

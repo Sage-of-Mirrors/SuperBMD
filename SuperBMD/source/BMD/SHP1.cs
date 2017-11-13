@@ -337,5 +337,39 @@ namespace SuperBMD.BMD
                 }
             }
         }
+
+        public byte[] ToBytes()
+        {
+            List<byte> outList = new List<byte>();
+
+            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
+            {
+                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
+
+                writer.Write("SHP1".ToCharArray());
+                writer.Write(0); // Placeholder for section offset
+                writer.Write((short)Shapes.Count);
+                writer.Write((short)-1);
+
+                writer.Write(44); // Offset to shape header data. Always 48
+
+                for (int i = 0; i < 7; i++)
+                    writer.Write(0);
+
+                foreach (Shape shp in Shapes)
+                {
+                    writer.Write(shp.ToBytes());
+                }
+
+                StreamUtility.PadStreamWithString(writer, 32);
+
+                writer.Seek(4, System.IO.SeekOrigin.Begin);
+                writer.Write((int)writer.BaseStream.Length);
+
+                outList.AddRange(mem.ToArray());
+            }
+
+            return outList.ToArray();
+        }
     }
 }

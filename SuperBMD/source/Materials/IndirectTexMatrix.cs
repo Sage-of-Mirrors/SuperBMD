@@ -50,6 +50,8 @@ namespace SuperBMD.Materials
             writer.Write(Matrix.M23);
 
             writer.Write((byte)Exponent);
+            writer.Write((sbyte)-1);
+            writer.Write((short)-1);
         }
     }
 }

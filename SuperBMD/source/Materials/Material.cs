@@ -52,7 +52,7 @@ namespace SuperBMD.Materials
             PostTexMatrix = new TexCoordGen[8];
             TexMatrix1 = new TexMatrix[10];
             TexMatrix2 = new TexMatrix[20];
-            TextureIndices = new int[8];
+            TextureIndices = new int[8] { -1, -1, -1, -1, -1, -1, -1, -1 };
             KonstColors = new Color[4];
             ColorSels = new KonstColorSel[16];
             AlphaSels = new KonstAlphaSel[16];

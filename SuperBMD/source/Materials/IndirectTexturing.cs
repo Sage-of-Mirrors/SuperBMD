@@ -60,7 +60,10 @@ namespace SuperBMD.Materials
             HasLookup = reader.ReadBoolean();
             IndTexStageNum = reader.ReadByte();
             reader.SkipInt16();
-            reader.Skip(16);
+
+            TevOrders = new IndirectTevOrder[8];
+            for (int i = 0; i < 4; i++)
+                TevOrders[i] = new IndirectTevOrder(reader);
 
             Matrices = new IndirectTexMatrix[3];
             for (int i = 0; i < 3; i++)
