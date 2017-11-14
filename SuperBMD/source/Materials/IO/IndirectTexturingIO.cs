@@ -21,23 +21,12 @@ namespace SuperBMD.Materials.IO
             return indirects;
         }
 
-        public static byte[] Write(List<IndirectTexturing> indTex)
+        public static void Write(EndianBinaryWriter writer, List<IndirectTexturing> indTex)
         {
-            List<byte> outList = new List<byte>();
-
-            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
+            foreach (IndirectTexturing ind in indTex)
             {
-                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
-
-                foreach (IndirectTexturing ind in indTex)
-                {
-                    ind.Write(writer);
-                }
-
-                outList.AddRange(mem.ToArray());
+                ind.Write(writer);
             }
-
-            return outList.ToArray();
         }
     }
 }

@@ -28,5 +28,17 @@ namespace SuperBMD.Materials
 
             reader.SkipInt16();
         }
+
+        public void Write(EndianBinaryWriter writer)
+        {
+            writer.Write(Enable);
+            writer.Write((byte)MaterialSrcColor);
+            writer.Write((byte)LitMask);
+            writer.Write((byte)DiffuseFunction);
+            writer.Write((byte)AttenuationFunction);
+            writer.Write((byte)AmbientSrcColor);
+
+            writer.Write((short)-1);
+        }
     }
 }

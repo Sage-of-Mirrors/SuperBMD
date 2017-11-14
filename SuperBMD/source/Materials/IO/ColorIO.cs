@@ -28,5 +28,11 @@ namespace SuperBMD.Materials.IO
 
             return colors;
         }
+
+        public static void Write(EndianBinaryWriter writer, List<Color> colors)
+        {
+            foreach (Color col in colors)
+                writer.Write(col);
+        }
     }
 }

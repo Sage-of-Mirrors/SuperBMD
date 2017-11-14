@@ -443,239 +443,307 @@ namespace SuperBMD.BMD
             return parameters;
         }
 
-        public byte[] ToBytes()
+        public void Write(EndianBinaryWriter writer)
         {
-            List<byte> outList = new List<byte>();
+            long start = writer.BaseStream.Position;
 
-            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
+            writer.Write("MAT3".ToCharArray());
+            writer.Write(0); // Placeholder for section offset
+            writer.Write((short)m_Materials.Count);
+            writer.Write((short)-1);
+
+            writer.Write(132); // Offset to material init data. Always 132
+
+            for (int i = 0; i < 29; i++)
+                writer.Write(0);
+
+            bool[] writtenCheck = new bool[m_Materials.Count];
+            List<string> names = new List<string>();
+
+            for (int i = 0; i < m_Materials.Count; i++)
             {
-                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
+                names.Add(m_Materials[i].Name);
 
-                writer.Write("MAT3".ToCharArray());
-                writer.Write(0); // Placeholder for section offset
-                writer.Write((short)m_Materials.Count);
-                writer.Write((short)-1);
-
-                writer.Write(132); // Offset to material init data. Always 132
-
-                for (int i = 0; i < 29; i++)
-                    writer.Write(0);
-
-                bool[] writtenCheck = new bool[m_Materials.Count];
-                List<string> names = new List<string>();
-
-                for (int i = 0; i < m_Materials.Count; i++)
+                if (m_Materials.FindAll(x => x == m_Materials[i]).Count > 1)
                 {
-                    names.Add(m_Materials[i].Name);
+                    int dupeIndex = m_Materials.IndexOf(m_Materials[i]);
 
-                    if (m_Materials.FindAll(x => x == m_Materials[i]).Count > 1)
-                    {
-                        int dupeIndex = m_Materials.IndexOf(m_Materials[i]);
-
-                        if (writtenCheck[dupeIndex])
-                            continue;
-                        else
-                        {
-                            writer.Write(MaterialInitDataToBytes(m_Materials[m_Materials.IndexOf(m_Materials[i])]));
-                            writtenCheck[dupeIndex] = true;
-                        }
-                    }
+                    if (writtenCheck[dupeIndex])
+                        continue;
                     else
                     {
-                        writer.Write(MaterialInitDataToBytes(m_Materials[i]));
-                        writtenCheck[i] = true;
+                        WriteMaterialInitData(writer, m_Materials[m_Materials.IndexOf(m_Materials[i])]);
+                        writtenCheck[dupeIndex] = true;
                     }
                 }
-
-                // Remap indices offset
-                writer.Seek(16, System.IO.SeekOrigin.Begin);
-                writer.Write((int)writer.BaseStream.Length);
-                writer.Seek(0, System.IO.SeekOrigin.End);
-
-                for (int i = 0; i < m_Materials.Count; i++)
+                else
                 {
-                    if (m_Materials.FindAll(x => x == m_Materials[i]).Count > 1) // There are multiple materials with the same properties...
-                    {
-                        writer.Write((short)m_Materials.IndexOf(m_Materials[i])); // So we use the index of the first matching material
-                    }
-                    else // otherwise,
-                    {
-                        writer.Write((short)i); // We write the index of the material
-                    }
+                    WriteMaterialInitData(writer, m_Materials[i]);
+                    writtenCheck[i] = true;
                 }
-
-                // Name table offset
-                writer.Seek(20, System.IO.SeekOrigin.Begin);
-                writer.Write((int)writer.BaseStream.Length);
-                writer.Seek(0, System.IO.SeekOrigin.End);
-
-                //NameTableIO.Write(writer, names);
-
-                // Indirect texturing offset
-                writer.Seek(24, System.IO.SeekOrigin.Begin);
-                writer.Write((int)writer.BaseStream.Length);
-                writer.Seek(0, System.IO.SeekOrigin.End);
-
-                writer.Write(IndirectTexturingIO.Write(m_IndirectTexBlock));
-
-                writer.Seek(28, System.IO.SeekOrigin.Begin);
-                writer.Write((int)writer.BaseStream.Length);
-                writer.Seek(0, System.IO.SeekOrigin.End);
-
-                outList.AddRange(mem.ToArray());
             }
 
-            return outList.ToArray();
+            long curOffset = writer.BaseStream.Position;
+
+            // Remap indices offset
+            writer.Seek((int)start + 16, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            for (int i = 0; i < m_Materials.Count; i++)
+            {
+                if (m_Materials.FindAll(x => x == m_Materials[i]).Count > 1) // There are multiple materials with the same properties...
+                {
+                    writer.Write((short)m_Materials.IndexOf(m_Materials[i])); // So we use the index of the first matching material
+                }
+                else // otherwise,
+                {
+                    writer.Write((short)i); // We write the index of the material
+                }
+            }
+
+            curOffset = writer.BaseStream.Position;
+
+            // Name table offset
+            writer.Seek((int)start + 20, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            NameTableIO.Write(writer, names);
+
+            curOffset = writer.BaseStream.Position;
+
+            // Indirect texturing offset
+            writer.Seek((int)start + 24, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            IndirectTexturingIO.Write(writer, m_IndirectTexBlock);
+
+            curOffset = writer.BaseStream.Position;
+
+            // Cull mode offset
+            writer.Seek((int)start + 28, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            CullModeIO.Write(writer, m_CullModeBlock);
+
+            curOffset = writer.BaseStream.Position;
+
+            // Material colors offset
+            writer.Seek((int)start + 32, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            ColorIO.Write(writer, m_MaterialColorBlock);
+
+            curOffset = writer.BaseStream.Position;
+
+            // Color channel count offset
+            writer.Seek((int)start + 36, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            foreach (byte chanNum in NumColorChannelsBlock)
+                writer.Write(chanNum);
+
+            StreamUtility.PadStreamWithString(writer, 4);
+
+            curOffset = writer.BaseStream.Position;
+
+            // Color channel data offset
+            writer.Seek((int)start + 40, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            ColorChannelIO.Write(writer, m_ChannelControlBlock);
+
+            curOffset = writer.BaseStream.Position;
+
+            // ambient color data offset
+            writer.Seek((int)start + 44, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            ColorIO.Write(writer, m_AmbientColorBlock);
+
+            curOffset = writer.BaseStream.Position;
+
+            // light color data offset
+            writer.Seek((int)start + 48, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            if (m_LightingColorBlock != null)
+                ColorIO.Write(writer, m_LightingColorBlock);
+
+            curOffset = writer.BaseStream.Position;
+
+            // tex gen count data offset
+            writer.Seek((int)start + 52, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            foreach (byte texGenCnt in NumTexGensBlock)
+                writer.Write(texGenCnt);
+
+            StreamUtility.PadStreamWithString(writer, 4);
+
+            curOffset = writer.BaseStream.Position;
+
+            // tex gen data offset
+            writer.Seek((int)start + 56, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            TexCoordGenIO.Write(writer, m_TexCoord1GenBlock);
+
+            long end = writer.BaseStream.Position;
+            long length = (end - start);
+
+            writer.Seek((int)start + 4, System.IO.SeekOrigin.Begin);
+            writer.Write((int)length);
+            writer.Seek((int)end, System.IO.SeekOrigin.Begin);
         }
 
-        private byte[] MaterialInitDataToBytes(Material mat)
+        private void WriteMaterialInitData(EndianBinaryWriter writer, Material mat)
         {
-            List<byte> outList = new List<byte>();
+            writer.Write(mat.Flag);
+            writer.Write((byte)m_CullModeBlock.IndexOf(mat.CullMode));
 
-            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
+            writer.Write((byte)NumColorChannelsBlock.IndexOf(mat.ColorChannelControlsCount));
+            writer.Write((byte)NumTexGensBlock.IndexOf(mat.NumTexGensCount));
+            writer.Write((byte)NumTevStagesBlock.IndexOf(mat.NumTevStagesCount));
+
+            writer.Write((byte)m_zCompLocBlock.IndexOf(mat.ZCompLoc));
+            writer.Write((byte)m_zModeBlock.IndexOf(mat.ZMode));
+            writer.Write((byte)m_ditherBlock.IndexOf(mat.Dither));
+
+            writer.Write((short)m_MaterialColorBlock.IndexOf(mat.MaterialColors[0]));
+            writer.Write((short)m_MaterialColorBlock.IndexOf(mat.MaterialColors[1]));
+
+            for (int i = 0; i < 4; i++)
             {
-                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
-
-                writer.Write(mat.Flag);
-                writer.Write((byte)m_CullModeBlock.IndexOf(mat.CullMode));
-
-                writer.Write((byte)NumColorChannelsBlock.IndexOf(mat.ColorChannelControlsCount));
-                writer.Write((byte)NumTexGensBlock.IndexOf(mat.NumTexGensCount));
-                writer.Write((byte)NumTevStagesBlock.IndexOf(mat.NumTevStagesCount));
-
-                writer.Write((byte)m_zCompLocBlock.IndexOf(mat.ZCompLoc));
-                writer.Write((byte)m_zModeBlock.IndexOf(mat.ZMode));
-                writer.Write((byte)m_ditherBlock.IndexOf(mat.Dither));
-
-                writer.Write((short)m_MaterialColorBlock.IndexOf(mat.MaterialColors[0]));
-                writer.Write((short)m_MaterialColorBlock.IndexOf(mat.MaterialColors[1]));
-
-                for (int i = 0; i < 4; i++)
-                {
-                    if (mat.ChannelControls[i] != null)
-                        writer.Write((short)m_ChannelControlBlock.IndexOf(mat.ChannelControls[i]));
-                    else
-                        writer.Write((short)-1);
-                }
-
-                writer.Write((short)m_AmbientColorBlock.IndexOf(mat.AmbientColors[0]));
-                writer.Write((short)m_AmbientColorBlock.IndexOf(mat.AmbientColors[1]));
-
-                for (int i = 0; i < 8; i++)
-                {
-                    if (mat.LightingColors[i] != null && m_LightingColorBlock != null)
-                        writer.Write((short)m_LightingColorBlock.IndexOf(mat.LightingColors[i]));
-                    else
-                        writer.Write((short)-1);
-                }
-
-                for (int i = 0; i < 8; i++)
-                {
-                    if (mat.TexCoord1Gens[i] != null)
-                        writer.Write((short)m_TexCoord1GenBlock.IndexOf(mat.TexCoord1Gens[i]));
-                    else
-                        writer.Write((short)-1);
-                }
-
-                for (int i = 0; i < 8; i++)
-                {
-                    if (mat.PostTexMatrix[i] != null)
-                        writer.Write((short)m_TexCoord2GenBlock.IndexOf(mat.PostTexMatrix[i]));
-                    else
-                        writer.Write((short)-1);
-                }
-
-                for (int i = 0; i < 10; i++)
-                {
-                    if (mat.TexMatrix1[i] != null)
-                        writer.Write((short)m_TexMatrix1Block.IndexOf(mat.TexMatrix1[i]));
-                    else
-                        writer.Write((short)-1);
-                }
-
-                for (int i = 0; i < 20; i++)
-                {
-                    if (mat.TexMatrix2[i] != null)
-                        writer.Write((short)m_TexMatrix2Block.IndexOf(mat.TexMatrix2[i]));
-                    else
-                        writer.Write((short)-1);
-                }
-
-                for (int i = 0; i < 8; i++)
-                {
-                    if (mat.TextureIndices[i] != -1)
-                        writer.Write((short)m_TexRemapBlock.IndexOf((short)mat.TextureIndices[i]));
-                    else
-                        writer.Write((short)-1);
-                }
-
-                for (int i = 0; i < 4; i++)
-                {
-                    if (mat.KonstColors[i] != null)
-                        writer.Write((short)m_TevKonstColorBlock.IndexOf(mat.KonstColors[i]));
-                    else
-                        writer.Write((short)-1);
-                }
-
-                for (int i = 0; i < 16; i++)
-                {
-                    writer.Write((byte)mat.ColorSels[i]);
-                }
-
-                for (int i = 0; i < 16; i++)
-                {
-                    writer.Write((byte)mat.AlphaSels[i]);
-                }
-
-                for (int i = 0; i < 16; i++)
-                {
-                    if (mat.TevOrders[i] != null)
-                        writer.Write((short)m_TevOrderBlock.IndexOf(mat.TevOrders[i]));
-                    else
-                        writer.Write((short)-1);
-                }
-
-                for (int i = 0; i < 4; i++)
-                {
-                    if (mat.TevColors[i] != null)
-                        writer.Write((short)m_TevColorBlock.IndexOf(mat.TevColors[i]));
-                    else
-                        writer.Write((short)-1);
-                }
-
-                for (int i = 0; i < 16; i++)
-                {
-                    if (mat.TevStages[i] != null)
-                        writer.Write((short)m_TevStageBlock.IndexOf(mat.TevStages[i]));
-                    else
-                        writer.Write((short)-1);
-                }
-
-                for (int i = 0; i < 16; i++)
-                {
-                    if (mat.SwapModes[i] != null)
-                        writer.Write((short)m_SwapModeBlock.IndexOf(mat.SwapModes[i]));
-                    else
-                        writer.Write((short)-1);
-                }
-
-                for (int i = 0; i < 16; i++)
-                {
-                    if (mat.SwapTables[i] != null)
-                        writer.Write((short)m_SwapTableBlock.IndexOf(mat.SwapTables[i]));
-                    else
-                        writer.Write((short)-1);
-                }
-
-                writer.Write((short)m_FogBlock.IndexOf(mat.FogInfo));
-                writer.Write((short)m_AlphaCompBlock.IndexOf(mat.AlphCompare));
-                writer.Write((short)m_blendModeBlock.IndexOf(mat.BMode));
-                writer.Write((short)m_NBTScaleBlock.IndexOf(mat.NBTScale));
-
-                outList.AddRange(mem.ToArray());
+                if (mat.ChannelControls[i] != null)
+                    writer.Write((short)m_ChannelControlBlock.IndexOf(mat.ChannelControls[i]));
+                else
+                    writer.Write((short)-1);
             }
 
-            return outList.ToArray();
+            writer.Write((short)m_AmbientColorBlock.IndexOf(mat.AmbientColors[0]));
+            writer.Write((short)m_AmbientColorBlock.IndexOf(mat.AmbientColors[1]));
+
+            for (int i = 0; i < 8; i++)
+            {
+                if (mat.LightingColors[i] != null && m_LightingColorBlock != null)
+                    writer.Write((short)m_LightingColorBlock.IndexOf(mat.LightingColors[i]));
+                else
+                    writer.Write((short)-1);
+            }
+
+            for (int i = 0; i < 8; i++)
+            {
+                if (mat.TexCoord1Gens[i] != null)
+                    writer.Write((short)m_TexCoord1GenBlock.IndexOf(mat.TexCoord1Gens[i]));
+                else
+                    writer.Write((short)-1);
+            }
+
+            for (int i = 0; i < 8; i++)
+            {
+                if (mat.PostTexMatrix[i] != null)
+                    writer.Write((short)m_TexCoord2GenBlock.IndexOf(mat.PostTexMatrix[i]));
+                else
+                    writer.Write((short)-1);
+            }
+
+            for (int i = 0; i < 10; i++)
+            {
+                if (mat.TexMatrix1[i] != null)
+                    writer.Write((short)m_TexMatrix1Block.IndexOf(mat.TexMatrix1[i]));
+                else
+                    writer.Write((short)-1);
+            }
+
+            for (int i = 0; i < 20; i++)
+            {
+                if (mat.TexMatrix2[i] != null)
+                    writer.Write((short)m_TexMatrix2Block.IndexOf(mat.TexMatrix2[i]));
+                else
+                    writer.Write((short)-1);
+            }
+
+            for (int i = 0; i < 8; i++)
+            {
+                if (mat.TextureIndices[i] != -1)
+                    writer.Write((short)m_TexRemapBlock.IndexOf((short)mat.TextureIndices[i]));
+                else
+                    writer.Write((short)-1);
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                if (mat.KonstColors[i] != null)
+                    writer.Write((short)m_TevKonstColorBlock.IndexOf(mat.KonstColors[i]));
+                else
+                    writer.Write((short)-1);
+            }
+
+            for (int i = 0; i < 16; i++)
+            {
+                writer.Write((byte)mat.ColorSels[i]);
+            }
+
+            for (int i = 0; i < 16; i++)
+            {
+                writer.Write((byte)mat.AlphaSels[i]);
+            }
+
+            for (int i = 0; i < 16; i++)
+            {
+                if (mat.TevOrders[i] != null)
+                    writer.Write((short)m_TevOrderBlock.IndexOf(mat.TevOrders[i]));
+                else
+                    writer.Write((short)-1);
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                if (mat.TevColors[i] != null)
+                    writer.Write((short)m_TevColorBlock.IndexOf(mat.TevColors[i]));
+                else
+                    writer.Write((short)-1);
+            }
+
+            for (int i = 0; i < 16; i++)
+            {
+                if (mat.TevStages[i] != null)
+                    writer.Write((short)m_TevStageBlock.IndexOf(mat.TevStages[i]));
+                else
+                    writer.Write((short)-1);
+            }
+
+            for (int i = 0; i < 16; i++)
+            {
+                if (mat.SwapModes[i] != null)
+                    writer.Write((short)m_SwapModeBlock.IndexOf(mat.SwapModes[i]));
+                else
+                    writer.Write((short)-1);
+            }
+
+            for (int i = 0; i < 16; i++)
+            {
+                if (mat.SwapTables[i] != null)
+                    writer.Write((short)m_SwapTableBlock.IndexOf(mat.SwapTables[i]));
+                else
+                    writer.Write((short)-1);
+            }
+
+            writer.Write((short)m_FogBlock.IndexOf(mat.FogInfo));
+            writer.Write((short)m_AlphaCompBlock.IndexOf(mat.AlphCompare));
+            writer.Write((short)m_blendModeBlock.IndexOf(mat.BMode));
+            writer.Write((short)m_NBTScaleBlock.IndexOf(mat.NBTScale));
         }
     }
 }

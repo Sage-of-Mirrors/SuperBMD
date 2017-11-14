@@ -29,5 +29,15 @@ namespace SuperBMD.Materials
             Source = src;
             TexMatrixSource = mtrx;
         }
+
+        public void Write(EndianBinaryWriter writer)
+        {
+            writer.Write((byte)Type);
+            writer.Write((byte)Source);
+            writer.Write((byte)TexMatrixSource);
+
+            // Pad entry to 4 bytes
+            writer.Write((sbyte)-1);
+        }
     }
 }

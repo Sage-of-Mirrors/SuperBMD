@@ -105,7 +105,7 @@ namespace SuperBMD.BMD
                 PartialWeightData.Write(writer);
                 Joints.Write(writer);
                 //writer.Write(Shapes.ToBytes());
-                //writer.Write(Materials.ToBytes());
+                Materials.Write(writer);
                 Textures.Write(writer);
 
                 writer.Seek(8, SeekOrigin.Begin);

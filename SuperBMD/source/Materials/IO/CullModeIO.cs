@@ -20,5 +20,11 @@ namespace SuperBMD.Materials.IO
 
             return modes;
         }
+
+        public static void Write(EndianBinaryWriter writer, List<CullMode> modes)
+        {
+            foreach (CullMode mode in modes)
+                writer.Write((int)mode);
+        }
     }
 }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SuperBMD.Materials;
 using GameFormatReader.Common;
+using SuperBMD.Util;
 
 namespace SuperBMD.Materials.IO
 {
@@ -19,6 +20,14 @@ namespace SuperBMD.Materials.IO
                 controls.Add(new ChannelControl(reader));
 
             return controls;
+        }
+
+        public static void Write(EndianBinaryWriter writer, List<ChannelControl> channels)
+        {
+            foreach (ChannelControl chan in channels)
+                chan.Write(writer);
+
+            StreamUtility.PadStreamWithString(writer, 4);
         }
     }
 }

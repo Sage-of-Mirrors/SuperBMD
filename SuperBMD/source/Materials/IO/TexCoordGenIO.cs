@@ -20,5 +20,11 @@ namespace SuperBMD.Materials.IO
 
             return gens;
         }
+
+        public static void Write(EndianBinaryWriter writer, List<TexCoordGen> gens)
+        {
+            foreach (TexCoordGen gen in gens)
+                gen.Write(writer);
+        }
     }
 }
