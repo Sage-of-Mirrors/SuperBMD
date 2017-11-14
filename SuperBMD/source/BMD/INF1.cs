@@ -108,37 +108,33 @@ namespace SuperBMD.BMD
             }
         }
 
-        public byte[] ToBytes(int packetCount, int vertexCount)
+        public void Write(EndianBinaryWriter writer, int packetCount, int vertexCount)
         {
-            List<byte> outList = new List<byte>();
+            long start = writer.BaseStream.Position;
 
-            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
+            writer.Write("INF1".ToCharArray());
+            writer.Write(0); // Placeholder for section size
+            writer.Write((short)1);
+            writer.Write((short)-1);
+
+            writer.Write(packetCount); // Number of packets
+            writer.Write(vertexCount); // Number of vertex positions
+            writer.Write(0x18);
+
+            foreach (SceneNode node in FlatNodes)
             {
-                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
-
-                writer.Write("INF1".ToCharArray());
-                writer.Write(0); // Placeholder for section size
-                writer.Write((short)1);
-                writer.Write((short)-1);
-
-                writer.Write(packetCount); // Number of packets
-                writer.Write(vertexCount); // Number of vertex positions
-                writer.Write(0x18);
-
-                foreach (SceneNode node in FlatNodes)
-                {
-                    writer.Write((short)node.Type);
-                    writer.Write((short)node.Index);
-                }
-
-                Util.StreamUtility.PadStreamWithString(writer, 32);
-                writer.Seek(4, System.IO.SeekOrigin.Begin);
-                writer.Write((int)writer.BaseStream.Length);
-
-                outList.AddRange(mem.ToArray());
+                writer.Write((short)node.Type);
+                writer.Write((short)node.Index);
             }
 
-            return outList.ToArray();
+            Util.StreamUtility.PadStreamWithString(writer, 32);
+
+            long end = writer.BaseStream.Position;
+            long length = (end - start);
+
+            writer.Seek((int)start + 4, System.IO.SeekOrigin.Begin);
+            writer.Write((int)length);
+            writer.Seek((int)end, System.IO.SeekOrigin.Begin);
         }
     }
 }
