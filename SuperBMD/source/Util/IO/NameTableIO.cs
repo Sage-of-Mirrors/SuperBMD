@@ -34,36 +34,31 @@ namespace SuperBMD.Util
             return names;
         }
 
-        public static byte[] Write(List<string> names)
+        public static void Write(EndianBinaryWriter writer, List<string> names)
         {
-            List<byte> outList = new List<byte>();
+            long start = writer.BaseStream.Position;
 
-            using (System.IO.MemoryStream stream = new System.IO.MemoryStream())
+            writer.Write((short)names.Count);
+            writer.Write((short)-1);
+
+            foreach (string st in names)
             {
-                EndianBinaryWriter writer = new EndianBinaryWriter(stream, Endian.Big);
-
-                writer.Write((short)names.Count);
-                writer.Write((short)-1);
-
-                foreach (string st in names)
-                {
-                    writer.Write(HashString(st));
-                    writer.Write((short)0);
-                }
-
-                for (int i = 0; i < names.Count; i++)
-                {
-                    writer.Seek((int)(6 + i * 4), System.IO.SeekOrigin.Begin);
-                    writer.Write((short)writer.BaseStream.Length);
-                    writer.Seek(0, System.IO.SeekOrigin.End);
-                    writer.Write(names[i].ToCharArray());
-                    writer.Write((byte)0);
-                }
-
-                outList.AddRange(stream.ToArray());
+                writer.Write(HashString(st));
+                writer.Write((short)0);
             }
 
-            return outList.ToArray();
+            long curOffset = writer.BaseStream.Position;
+            for (int i = 0; i < names.Count; i++)
+            {
+                writer.Seek((int)(start + (6 + i * 4)), System.IO.SeekOrigin.Begin);
+                writer.Write((short)(curOffset - start));
+                writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+                writer.Write(names[i].ToCharArray());
+                writer.Write((byte)0);
+
+                curOffset = writer.BaseStream.Position;
+            }
         }
 
         private static ushort HashString(string str)

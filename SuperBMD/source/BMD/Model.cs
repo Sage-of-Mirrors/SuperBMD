@@ -101,12 +101,12 @@ namespace SuperBMD.BMD
 
                 Scenegraph.Write(writer, packetCount, vertexCount);
                 VertexData.Write(writer);
-                writer.Write(SkinningEnvelopes.ToBytes());
-                writer.Write(PartialWeightData.ToBytes());
-                writer.Write(Joints.ToBytes());
+                SkinningEnvelopes.Write(writer);
+                PartialWeightData.Write(writer);
+                Joints.Write(writer);
                 //writer.Write(Shapes.ToBytes());
-                writer.Write(Materials.ToBytes());
-                writer.Write(Textures.ToBytes());
+                //writer.Write(Materials.ToBytes());
+                Textures.Write(writer);
 
                 writer.Seek(8, SeekOrigin.Begin);
                 writer.Write((int)writer.BaseStream.Length);

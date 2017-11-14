@@ -509,7 +509,7 @@ namespace SuperBMD.BMD
                 writer.Write((int)writer.BaseStream.Length);
                 writer.Seek(0, System.IO.SeekOrigin.End);
 
-                writer.Write(NameTableIO.Write(names));
+                //NameTableIO.Write(writer, names);
 
                 // Indirect texturing offset
                 writer.Seek(24, System.IO.SeekOrigin.Begin);

@@ -132,61 +132,60 @@ namespace SuperBMD.BMD
             }
         }
 
-        public byte[] ToBytes()
+        public void Write(EndianBinaryWriter writer)
         {
-            List<byte> outList = new List<byte>();
+            long start = writer.BaseStream.Position;
 
-            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
+            writer.Write("EVP1".ToCharArray());
+            writer.Write(0); // Placeholder for section size
+            writer.Write((short)Weights.Count);
+            writer.Write((short)-1);
+
+            writer.Write(28); // Offset to weight count data. Always 28
+            writer.Write(28 + Weights.Count); // Offset to bone/weight indices. Always 28 + the number of weights
+            writer.Write(0); // Placeholder for weight data offset
+            writer.Write(0); // Placeholder for inverse bind matrix data offset
+
+            foreach (Weight w in Weights)
+                writer.Write((byte)w.WeightCount);
+
+            foreach (Weight w in Weights)
             {
-                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
-
-                writer.Write("EVP1".ToCharArray());
-                writer.Write(0); // Placeholder for section size
-                writer.Write((short)Weights.Count);
-                writer.Write((short)-1);
-
-                writer.Write(28); // Offset to weight count data. Always 28
-                writer.Write(28 + Weights.Count); // Offset to bone/weight indices. Always 28 + the number of weights
-                writer.Write(0); // Placeholder for weight data offset
-                writer.Write(0); // Placeholder for inverse bind matrix data offset
-
-                foreach (Weight w in Weights)
-                    writer.Write((byte)w.WeightCount);
-
-                foreach (Weight w in Weights)
-                {
-                    foreach (int inte in w.BoneIndices)
-                        writer.Write((short)inte);
-                }
-
-                StreamUtility.PadStreamWithString(writer, 8);
-
-                writer.Seek(20, System.IO.SeekOrigin.Begin);
-                writer.Write((int)writer.BaseStream.Length);
-                writer.Seek(0, System.IO.SeekOrigin.End);
-
-                foreach (Weight w in Weights)
-                {
-                    foreach (float fl in w.Weights)
-                        writer.Write(fl);
-                }
-
-                writer.Seek(24, System.IO.SeekOrigin.Begin);
-                writer.Write((int)writer.BaseStream.Length);
-                writer.Seek(0, System.IO.SeekOrigin.End);
-
-                foreach (Matrix3x4 mat in InverseBindMatrices)
-                    writer.Write(mat);
-
-                StreamUtility.PadStreamWithString(writer, 32);
-
-                writer.Seek(4, System.IO.SeekOrigin.Begin);
-                writer.Write((int)writer.BaseStream.Length);
-
-                outList.AddRange(mem.ToArray());
+                foreach (int inte in w.BoneIndices)
+                    writer.Write((short)inte);
             }
 
-            return outList.ToArray();
+            StreamUtility.PadStreamWithString(writer, 8);
+
+            long curOffset = writer.BaseStream.Position;
+
+            writer.Seek((int)start + 20, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            foreach (Weight w in Weights)
+            {
+                foreach (float fl in w.Weights)
+                    writer.Write(fl);
+            }
+
+            curOffset = writer.BaseStream.Position;
+
+            writer.Seek((int)start + 24, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            foreach (Matrix3x4 mat in InverseBindMatrices)
+                writer.Write(mat);
+
+            StreamUtility.PadStreamWithString(writer, 32);
+
+            long end = writer.BaseStream.Position;
+            long length = (end - start);
+
+            writer.Seek((int)start + 4, System.IO.SeekOrigin.Begin);
+            writer.Write((int)length);
+            writer.Seek((int)end, System.IO.SeekOrigin.Begin);
         }
     }
 }

@@ -69,74 +69,75 @@ namespace SuperBMD.BMD
             }
         }
 
-        public byte[] ToBytes()
+        public void Write(EndianBinaryWriter writer)
         {
-            List<byte> outList = new List<byte>();
+            long start = writer.BaseStream.Position;
 
-            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
+            writer.Write("TEX1".ToCharArray());
+            writer.Write(0); // Placeholder for section size
+            writer.Write((short)Textures.Count);
+            writer.Write((short)-1);
+            writer.Write(32); // Offset to the start of the texture data. Always 32
+            writer.Write(0); // Placeholder for string table offset
+
+            StreamUtility.PadStreamWithString(writer, 32);
+
+            List<string> names = new List<string>();
+            List<Tuple<byte[], ushort[]>> imgData = new List<Tuple<byte[], ushort[]>>();
+
+            foreach (BinaryTextureImage img in Textures)
             {
-                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
-
-                writer.Write("TEX1".ToCharArray());
-                writer.Write(0); // Placeholder for section size
-                writer.Write((short)Textures.Count);
-                writer.Write((short)-1);
-                writer.Write(32); // Offset to the start of the texture data. Always 32
-                writer.Write(0); // Placeholder for string table offset
-
-                StreamUtility.PadStreamWithString(writer, 32);
-
-                List<string> names = new List<string>();
-                List<Tuple<byte[], ushort[]>> imgData = new List<Tuple<byte[], ushort[]>>();
-
-                foreach (BinaryTextureImage img in Textures)
-                {
-                    imgData.Add(img.EncodeData());
-                    img.WriteHeader(writer);
-                    names.Add(img.Name);
-                }
-
-                // Palette pass
-                for (int i = 0; i < imgData.Count; i++)
-                {
-                    writer.Seek((i * 32) + 44, System.IO.SeekOrigin.Begin); // offset of the image header + 32 bytes for the section's header + 12 bytes into the image header for palette offset
-                    writer.Write((int)writer.BaseStream.Length - (32 + i * 32)); // Offsets are relative to the start of the image header
-                    writer.Seek(0, System.IO.SeekOrigin.End);
-
-                    if (imgData[i].Item2.Length > 0)
-                    {
-                        foreach (ushort st in imgData[i].Item2)
-                            writer.Write(st);
-
-                        StreamUtility.PadStreamWithString(writer, 32);
-                    }
-                }
-
-                // Image data pass
-                for (int i = 0; i < imgData.Count; i++)
-                {
-                    writer.Seek((i * 32) + 60, System.IO.SeekOrigin.Begin); // offset of the image header + 32 bytes for the section's header + 28 bytes into the image header for image data offset
-                    writer.Write((int)writer.BaseStream.Length - (32 + i * 32)); // Offsets are relative to the start of the image header
-                    writer.Seek(0, System.IO.SeekOrigin.End);
-
-                    writer.Write(imgData[i].Item1);
-                }
-
-                writer.Seek(16, System.IO.SeekOrigin.Begin);
-                writer.Write((int)writer.BaseStream.Length);
-                writer.Seek(0, System.IO.SeekOrigin.End);
-
-                writer.Write(NameTableIO.Write(names));
-
-                StreamUtility.PadStreamWithString(writer, 32);
-
-                writer.Seek(4, System.IO.SeekOrigin.Begin);
-                writer.Write((int)writer.BaseStream.Length);
-
-                outList.AddRange(mem.ToArray());
+                imgData.Add(img.EncodeData());
+                img.WriteHeader(writer);
+                names.Add(img.Name);
             }
 
-            return outList.ToArray();
+            long curOffset = writer.BaseStream.Position;
+
+            // Palette pass
+            for (int i = 0; i < imgData.Count; i++)
+            {
+                writer.Seek((int)start + (i * 32) + 44, System.IO.SeekOrigin.Begin); // offset of the image header + 32 bytes for the section's header + 12 bytes into the image header for palette offset
+                writer.Write((int)(curOffset - start) - (32 + i * 32)); // Offsets are relative to the start of the image header
+                writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+                if (imgData[i].Item2.Length > 0)
+                {
+                    foreach (ushort st in imgData[i].Item2)
+                        writer.Write(st);
+
+                    StreamUtility.PadStreamWithString(writer, 32);
+                }
+
+                curOffset = writer.BaseStream.Position;
+            }
+
+            // Image data pass
+            for (int i = 0; i < imgData.Count; i++)
+            {
+                writer.Seek((int)start + (i * 32) + 60, System.IO.SeekOrigin.Begin); // offset of the image header + 32 bytes for the section's header + 28 bytes into the image header for image data offset
+                writer.Write((int)(curOffset - start) - (32 + i * 32)); // Offsets are relative to the start of the image header
+                writer.Seek(0, System.IO.SeekOrigin.End);
+
+                writer.Write(imgData[i].Item1);
+
+                curOffset = writer.BaseStream.Position;
+            }
+
+            writer.Seek((int)start + 16, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            NameTableIO.Write(writer, names);
+
+            StreamUtility.PadStreamWithString(writer, 32);
+
+            long end = writer.BaseStream.Position;
+            long length = (end - start);
+
+            writer.Seek((int)start + 4, System.IO.SeekOrigin.Begin);
+            writer.Write((int)length);
+            writer.Seek((int)end, System.IO.SeekOrigin.Begin);
         }
 
         public BinaryTextureImage this[int i]

@@ -109,54 +109,53 @@ namespace SuperBMD.BMD
             return newBone;
         }
 
-        public byte[] ToBytes()
+        public void Write(EndianBinaryWriter writer)
         {
-            List<byte> outList = new List<byte>();
+            long start = writer.BaseStream.Position;
 
-            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
+            writer.Write("JNT1".ToCharArray());
+            writer.Write(0); // Placeholder for section size
+            writer.Write((short)FlatSkeleton.Count);
+            writer.Write((short)-1);
+
+            writer.Write(24); // Offset to joint data, always 24
+            writer.Write(0); // Placeholder for remap data offset
+            writer.Write(0); // Placeholder for name table offset
+
+            List<string> names = new List<string>();
+            foreach (Rigging.Bone bone in FlatSkeleton)
             {
-                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
-
-                writer.Write("JNT1".ToCharArray());
-                writer.Write(0); // Placeholder for section size
-                writer.Write((short)FlatSkeleton.Count);
-                writer.Write((short)-1);
-
-                writer.Write(24); // Offset to joint data, always 24
-                writer.Write(0); // Placeholder for remap data offset
-                writer.Write(0); // Placeholder for name table offset
-
-                List<string> names = new List<string>();
-                foreach (Rigging.Bone bone in FlatSkeleton)
-                {
-                    writer.Write(bone.ToBytes());
-                    names.Add(bone.Name);
-                }
-
-                writer.Seek(16, System.IO.SeekOrigin.Begin);
-                writer.Write((int)writer.BaseStream.Length);
-                writer.Seek(0, System.IO.SeekOrigin.End);
-
-                for (int i = 0; i < FlatSkeleton.Count; i++)
-                    writer.Write((short)i);
-
-                StreamUtility.PadStreamWithString(writer, 8);
-
-                writer.Seek(20, System.IO.SeekOrigin.Begin);
-                writer.Write((int)writer.BaseStream.Length);
-                writer.Seek(0, System.IO.SeekOrigin.End);
-
-                writer.Write(NameTableIO.Write(names));
-
-                StreamUtility.PadStreamWithString(writer, 32);
-
-                writer.Seek(4, System.IO.SeekOrigin.Begin);
-                writer.Write((int)writer.BaseStream.Length);
-
-                outList.AddRange(mem.ToArray());
+                writer.Write(bone.ToBytes());
+                names.Add(bone.Name);
             }
 
-            return outList.ToArray();
+            long curOffset = writer.BaseStream.Position;
+
+            writer.Seek((int)(start + 16), System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            for (int i = 0; i < FlatSkeleton.Count; i++)
+                writer.Write((short)i);
+
+            StreamUtility.PadStreamWithString(writer, 8);
+
+            curOffset = writer.BaseStream.Position;
+
+            writer.Seek((int)(start + 20), System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            NameTableIO.Write(writer, names);
+
+            StreamUtility.PadStreamWithString(writer, 32);
+
+            long end = writer.BaseStream.Position;
+            long length = (end - start);
+
+            writer.Seek((int)start + 4, System.IO.SeekOrigin.Begin);
+            writer.Write((int)length);
+            writer.Seek((int)end, System.IO.SeekOrigin.Begin);
         }
     }
 }

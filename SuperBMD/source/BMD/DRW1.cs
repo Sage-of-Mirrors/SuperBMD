@@ -51,37 +51,32 @@ namespace SuperBMD.BMD
 
         }
 
-        public byte[] ToBytes()
+        public void Write(EndianBinaryWriter writer)
         {
-            List<byte> outList = new List<byte>();
+            long start = writer.BaseStream.Position;
 
-            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
-            {
-                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
+            writer.Write("DRW1".ToCharArray());
+            writer.Write(0); // Placeholder for section size
+            writer.Write((short)WeightTypeCheck.Count);
+            writer.Write((short)-1);
 
-                writer.Write("DRW1".ToCharArray());
-                writer.Write(0); // Placeholder for section size
-                writer.Write((short)WeightTypeCheck.Count);
-                writer.Write((short)-1);
+            writer.Write(20); // Offset to weight type bools, always 20
+            writer.Write(20 + WeightTypeCheck.Count); // Offset to indices, always 20 + number of weight type bools
 
-                writer.Write(20); // Offset to weight type bools, always 20
-                writer.Write(20 + WeightTypeCheck.Count); // Offset to indices, always 20 + number of weight type bools
+            foreach (bool bol in WeightTypeCheck)
+                writer.Write(bol);
 
-                foreach (bool bol in WeightTypeCheck)
-                    writer.Write(bol);
+            foreach (int inte in Indices)
+                writer.Write((short)inte);
 
-                foreach (int inte in Indices)
-                    writer.Write((short)inte);
+            StreamUtility.PadStreamWithString(writer, 32);
 
-                StreamUtility.PadStreamWithString(writer, 32);
+            long end = writer.BaseStream.Position;
+            long length = (end - start);
 
-                writer.Seek(4, System.IO.SeekOrigin.Begin);
-                writer.Write((int)writer.BaseStream.Length);
-
-                outList.AddRange(mem.ToArray());
-            }
-
-            return outList.ToArray();
+            writer.Seek((int)start + 4, System.IO.SeekOrigin.Begin);
+            writer.Write((int)length);
+            writer.Seek((int)end, System.IO.SeekOrigin.Begin);
         }
     }
 }
