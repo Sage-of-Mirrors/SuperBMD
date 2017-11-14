@@ -100,7 +100,7 @@ namespace SuperBMD.BMD
                 writer.Write((long)-1);
 
                 Scenegraph.Write(writer, packetCount, vertexCount);
-                writer.Write(VertexData.ToBytes());
+                VertexData.Write(writer);
                 writer.Write(SkinningEnvelopes.ToBytes());
                 writer.Write(PartialWeightData.ToBytes());
                 writer.Write(Joints.ToBytes());

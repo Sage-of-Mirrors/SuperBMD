@@ -590,136 +590,123 @@ namespace SuperBMD.BMD
             }
         }
 
-        public byte[] ToBytes()
+        public void Write(EndianBinaryWriter writer)
         {
-            List<byte> outList = new List<byte>();
+            long start = writer.BaseStream.Position;
 
-            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
-            {
-                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
+            writer.Write("VTX1".ToCharArray());
+            writer.Write(0); // Placeholder for section size
+            writer.Write(0x40); // Offset to attribute data
 
-                writer.Write("VTX1".ToCharArray());
-                writer.Write(0); // Placeholder for section size
-                writer.Write(0x40); // Offset to attribute data
-
-                for (int i = 0; i < 13; i++) // Placeholders for attribute data offsets
-                    writer.Write(0);
-
-                writer.Write(AttributeHeadersToBytes());
-                StreamUtility.PadStreamWithString(writer, 32);
-
-                AttributeDataToBytes(writer);
-
-                writer.Seek(4, System.IO.SeekOrigin.Begin);
-                writer.Write((int)writer.BaseStream.Length);
-
-                outList.AddRange(mem.ToArray());
-            }
-
-            return outList.ToArray();
-        }
-
-        private byte[] AttributeHeadersToBytes()
-        {
-            List<byte> outList = new List<byte>();
-
-            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
-            {
-                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
-
-                foreach (GXVertexAttribute attrib in Enum.GetValues(typeof(GXVertexAttribute)))
-                {
-                    if (!Attributes.CheckAttribute(attrib) || attrib == GXVertexAttribute.PositionMatrixIdx)
-                        continue;
-
-                    writer.Write((int)attrib);
-
-                    switch (attrib)
-                    {
-                        case GXVertexAttribute.PositionMatrixIdx:
-                            break;
-                        case GXVertexAttribute.Position:
-                            writer.Write(1);
-                            writer.Write((int)GXDataType.Float32);
-                            writer.Write((byte)0);
-                            writer.Write((sbyte)-1);
-                            writer.Write((short)-1);
-                            break;
-                        case GXVertexAttribute.Normal:
-                            writer.Write(0);
-                            writer.Write((int)GXDataType.Float32);
-                            writer.Write((byte)0);
-                            writer.Write((sbyte)-1);
-                            writer.Write((short)-1);
-                            break;
-                        case GXVertexAttribute.Color0:
-                        case GXVertexAttribute.Color1:
-                            writer.Write(1);
-                            writer.Write((int)GXDataType.RGBA8);
-                            writer.Write((byte)0);
-                            writer.Write((sbyte)-1);
-                            writer.Write((short)-1);
-                            break;
-                        case GXVertexAttribute.Tex0:
-                        case GXVertexAttribute.Tex1:
-                        case GXVertexAttribute.Tex2:
-                        case GXVertexAttribute.Tex3:
-                        case GXVertexAttribute.Tex4:
-                        case GXVertexAttribute.Tex5:
-                        case GXVertexAttribute.Tex6:
-                        case GXVertexAttribute.Tex7:
-                            writer.Write(1);
-                            writer.Write((int)GXDataType.Float32);
-                            writer.Write((byte)0);
-                            writer.Write((sbyte)-1);
-                            writer.Write((short)-1);
-                            break;
-                    }
-                }
-
-                writer.Write(255);
-                writer.Write(1);
+            for (int i = 0; i < 13; i++) // Placeholders for attribute data offsets
                 writer.Write(0);
-                writer.Write((byte)0);
-                writer.Write((sbyte)-1);
-                writer.Write((short)-1);
 
-                outList.AddRange(mem.ToArray());
-            }
+            WriteAttributeHeaders(writer);
 
-            return outList.ToArray();
+            StreamUtility.PadStreamWithString(writer, 32);
+
+            WriteAttributeData(writer, (int)start);
+
+            long end = writer.BaseStream.Position;
+            long length = (end - start);
+
+            writer.Seek((int)start + 4, System.IO.SeekOrigin.Begin);
+            writer.Write((int)length);
+            writer.Seek((int)end, System.IO.SeekOrigin.Begin);
         }
 
-        private void AttributeDataToBytes(EndianBinaryWriter writer)
+        private void WriteAttributeHeaders(EndianBinaryWriter writer)
         {
             foreach (GXVertexAttribute attrib in Enum.GetValues(typeof(GXVertexAttribute)))
             {
                 if (!Attributes.CheckAttribute(attrib) || attrib == GXVertexAttribute.PositionMatrixIdx)
                     continue;
 
+                writer.Write((int)attrib);
+
+                switch (attrib)
+                {
+                    case GXVertexAttribute.PositionMatrixIdx:
+                        break;
+                    case GXVertexAttribute.Position:
+                        writer.Write(1);
+                        writer.Write((int)GXDataType.Float32);
+                        writer.Write((byte)0);
+                        writer.Write((sbyte)-1);
+                        writer.Write((short)-1);
+                        break;
+                    case GXVertexAttribute.Normal:
+                        writer.Write(0);
+                        writer.Write((int)GXDataType.Float32);
+                        writer.Write((byte)0);
+                        writer.Write((sbyte)-1);
+                        writer.Write((short)-1);
+                        break;
+                    case GXVertexAttribute.Color0:
+                    case GXVertexAttribute.Color1:
+                        writer.Write(1);
+                        writer.Write((int)GXDataType.RGBA8);
+                        writer.Write((byte)0);
+                        writer.Write((sbyte)-1);
+                        writer.Write((short)-1);
+                        break;
+                    case GXVertexAttribute.Tex0:
+                    case GXVertexAttribute.Tex1:
+                    case GXVertexAttribute.Tex2:
+                    case GXVertexAttribute.Tex3:
+                    case GXVertexAttribute.Tex4:
+                    case GXVertexAttribute.Tex5:
+                    case GXVertexAttribute.Tex6:
+                    case GXVertexAttribute.Tex7:
+                        writer.Write(1);
+                        writer.Write((int)GXDataType.Float32);
+                        writer.Write((byte)0);
+                        writer.Write((sbyte)-1);
+                        writer.Write((short)-1);
+                        break;
+                }
+            }
+
+            writer.Write(255);
+            writer.Write(1);
+            writer.Write(0);
+            writer.Write((byte)0);
+            writer.Write((sbyte)-1);
+            writer.Write((short)-1);
+        }
+
+        private void WriteAttributeData(EndianBinaryWriter writer, int baseOffset)
+        {
+            foreach (GXVertexAttribute attrib in Enum.GetValues(typeof(GXVertexAttribute)))
+            {
+                if (!Attributes.CheckAttribute(attrib) || attrib == GXVertexAttribute.PositionMatrixIdx)
+                    continue;
+
+                long endOffset = writer.BaseStream.Position;
+
                 switch (attrib)
                 {
                     case GXVertexAttribute.Position:
-                        writer.Seek(0x0C, System.IO.SeekOrigin.Begin);
+                        writer.Seek(baseOffset + 0x0C, System.IO.SeekOrigin.Begin);
                         writer.Write((int)writer.BaseStream.Length);
-                        writer.Seek(0, System.IO.SeekOrigin.End);
+                        writer.Seek((int)endOffset, System.IO.SeekOrigin.Begin);
 
                         foreach (Vector3 vec3 in Attributes.Positions)
                             writer.Write(vec3);
                         break;
                     case GXVertexAttribute.Normal:
-                        writer.Seek(0x10, System.IO.SeekOrigin.Begin);
+                        writer.Seek(baseOffset + 0x10, System.IO.SeekOrigin.Begin);
                         writer.Write((int)writer.BaseStream.Length);
-                        writer.Seek(0, System.IO.SeekOrigin.End);
+                        writer.Seek((int)endOffset, System.IO.SeekOrigin.Begin);
 
                         foreach (Vector3 vec3 in Attributes.Normals)
                             writer.Write(vec3);
                         break;
                     case GXVertexAttribute.Color0:
                     case GXVertexAttribute.Color1:
-                        writer.Seek(0x18 + (int)(attrib - 11) * 4, System.IO.SeekOrigin.Begin);
+                        writer.Seek(baseOffset + 0x18 + (int)(attrib - 11) * 4, System.IO.SeekOrigin.Begin);
                         writer.Write((int)writer.BaseStream.Length);
-                        writer.Seek(0, System.IO.SeekOrigin.End);
+                        writer.Seek((int)endOffset, System.IO.SeekOrigin.Begin);
 
                         foreach (Color col in (List<Color>)Attributes.GetAttributeData(attrib))
                             writer.Write(col);
@@ -732,9 +719,9 @@ namespace SuperBMD.BMD
                     case GXVertexAttribute.Tex5:
                     case GXVertexAttribute.Tex6:
                     case GXVertexAttribute.Tex7:
-                        writer.Seek(0x20 + (int)(attrib - 13) * 4, System.IO.SeekOrigin.Begin);
+                        writer.Seek(baseOffset + 0x20 + (int)(attrib - 13) * 4, System.IO.SeekOrigin.Begin);
                         writer.Write((int)writer.BaseStream.Length);
-                        writer.Seek(0, System.IO.SeekOrigin.End);
+                        writer.Seek((int)endOffset, System.IO.SeekOrigin.Begin);
 
                         foreach (Vector2 vec2 in (List<Vector2>)Attributes.GetAttributeData(attrib))
                             writer.Write(vec2);
