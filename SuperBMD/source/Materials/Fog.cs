@@ -39,5 +39,20 @@ namespace SuperBMD.Materials
                 RangeAdjustmentTable[i] = (float)inVal / 256;
             }
         }
+
+        public void Write(EndianBinaryWriter writer)
+        {
+            writer.Write(Type);
+            writer.Write(Enable);
+            writer.Write(Center);
+            writer.Write(StartZ);
+            writer.Write(EndZ);
+            writer.Write(NearZ);
+            writer.Write(FarZ);
+            writer.Write(Color);
+
+            for (int i = 0; i < 10; i++)
+                writer.Write((ushort)(RangeAdjustmentTable[i] * 256));
+        }
     }
 }

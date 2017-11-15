@@ -26,5 +26,13 @@ namespace SuperBMD.Materials
             DestinationFact = (BlendModeControl)reader.ReadByte();
             Operation = (LogicOp)reader.ReadByte();
         }
+
+        public void Write(EndianBinaryWriter write)
+        {
+            write.Write((byte)Type);
+            write.Write((byte)SourceFact);
+            write.Write((byte)DestinationFact);
+            write.Write((byte)Operation);
+        }
     }
 }

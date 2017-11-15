@@ -20,5 +20,11 @@ namespace SuperBMD.Materials.IO
 
             return stages;
         }
+
+        public static void Write(EndianBinaryWriter writer, List<TevStage> stages)
+        {
+            foreach (TevStage stage in stages)
+                stage.Write(writer);
+        }
     }
 }

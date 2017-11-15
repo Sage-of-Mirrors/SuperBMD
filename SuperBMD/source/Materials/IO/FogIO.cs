@@ -20,5 +20,11 @@ namespace SuperBMD.Materials.IO
 
             return fogs;
         }
+
+        public static void Write(EndianBinaryWriter writer, List<Fog> fogs)
+        {
+            foreach (Fog fog in fogs)
+                fog.Write(writer);
+        }
     }
 }

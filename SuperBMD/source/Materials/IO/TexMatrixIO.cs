@@ -20,5 +20,11 @@ namespace SuperBMD.Materials.IO
 
             return matrices;
         }
+
+        public static void Write(EndianBinaryWriter writer, List<TexMatrix> mats)
+        {
+            foreach (TexMatrix mat in mats)
+                mat.Write(writer);
+        }
     }
 }

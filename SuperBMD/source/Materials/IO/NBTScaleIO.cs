@@ -20,5 +20,11 @@ namespace SuperBMD.Materials.IO
 
             return scales;
         }
+
+        public static void Write(EndianBinaryWriter writer, List<NBTScale> scales)
+        {
+            foreach (NBTScale scale in scales)
+                scale.Write(writer);
+        }
     }
 }

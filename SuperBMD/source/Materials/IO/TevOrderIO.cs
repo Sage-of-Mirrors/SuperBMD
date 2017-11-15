@@ -20,5 +20,11 @@ namespace SuperBMD.Materials.IO
 
             return orders;
         }
+
+        public static void Write(EndianBinaryWriter writer, List<TevOrder> orders)
+        {
+            foreach (TevOrder order in orders)
+                order.Write(writer);
+        }
     }
 }

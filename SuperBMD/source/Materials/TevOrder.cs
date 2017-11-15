@@ -21,5 +21,13 @@ namespace SuperBMD.Materials
             ChannelId = (J3DColorChannelId)reader.ReadByte();
             reader.SkipByte();
         }
+
+        public void Write(EndianBinaryWriter writer)
+        {
+            writer.Write((byte)TexCoord);
+            writer.Write((byte)TexMap);
+            writer.Write((byte)ChannelId);
+            writer.Write((sbyte)-1);
+        }
     }
 }

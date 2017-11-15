@@ -64,5 +64,28 @@ namespace SuperBMD.Util
             writer.Write(mat.M33);
             writer.Write(mat.M34);
         }
+
+        public static void Write(this EndianBinaryWriter writer, Matrix4 mat)
+        {
+            writer.Write(mat.M11);
+            writer.Write(mat.M12);
+            writer.Write(mat.M13);
+            writer.Write(mat.M14);
+
+            writer.Write(mat.M21);
+            writer.Write(mat.M22);
+            writer.Write(mat.M23);
+            writer.Write(mat.M24);
+
+            writer.Write(mat.M31);
+            writer.Write(mat.M32);
+            writer.Write(mat.M33);
+            writer.Write(mat.M34);
+
+            writer.Write(mat.M41);
+            writer.Write(mat.M42);
+            writer.Write(mat.M43);
+            writer.Write(mat.M44);
+        }
     }
 }

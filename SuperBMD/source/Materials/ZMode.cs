@@ -30,5 +30,13 @@ namespace SuperBMD.Materials
             UpdateEnable = reader.ReadBoolean();
             reader.SkipByte();
         }
+
+        public void Write(EndianBinaryWriter writer)
+        {
+            writer.Write(Enable);
+            writer.Write((byte)Function);
+            writer.Write(UpdateEnable);
+            writer.Write((sbyte)-1);
+        }
     }
 }

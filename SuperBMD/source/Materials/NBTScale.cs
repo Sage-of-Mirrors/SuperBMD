@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using OpenTK;
 using GameFormatReader.Common;
+using SuperBMD.Util;
 
 namespace SuperBMD.Materials
 {
@@ -18,6 +19,12 @@ namespace SuperBMD.Materials
             Unknown1 = reader.ReadByte();
             reader.Skip(3);
             Scale = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+        }
+
+        public void Write(EndianBinaryWriter writer)
+        {
+            writer.Write(Unknown1);
+            writer.Write(Scale);
         }
     }
 }

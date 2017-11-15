@@ -111,6 +111,35 @@ namespace SuperBMD.Materials
             AlphaRegId = parameters.AlphaRegId;
         }
 
+        public void Write(EndianBinaryWriter writer)
+        {
+            writer.Write((sbyte)-1);
+
+            writer.Write((byte)ColorInA);
+            writer.Write((byte)ColorInB);
+            writer.Write((byte)ColorInC);
+            writer.Write((byte)ColorInD);
+
+            writer.Write((byte)ColorOp);
+            writer.Write((byte)ColorBias);
+            writer.Write((byte)ColorScale);
+            writer.Write(ColorClamp);
+            writer.Write((byte)ColorRegId);
+
+            writer.Write((byte)AlphaInA);
+            writer.Write((byte)AlphaInB);
+            writer.Write((byte)AlphaInC);
+            writer.Write((byte)AlphaInD);
+
+            writer.Write((byte)AlphaOp);
+            writer.Write((byte)AlphaBias);
+            writer.Write((byte)AlphaScale);
+            writer.Write(AlphaClamp);
+            writer.Write((byte)AlphaRegId);
+
+            writer.Write((sbyte)-1);
+        }
+
         public override string ToString()
         {
             string ret = "";

@@ -18,5 +18,12 @@ namespace SuperBMD.Materials
             TexSel = reader.ReadByte();
             reader.SkipInt16();
         }
+
+        public void Write(EndianBinaryWriter writer)
+        {
+            writer.Write(RasSel);
+            writer.Write(TexSel);
+            writer.Write((short)-1);
+        }
     }
 }

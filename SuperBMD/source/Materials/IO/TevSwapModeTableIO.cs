@@ -20,5 +20,11 @@ namespace SuperBMD.Materials.IO
 
             return modes;
         }
+
+        public static void Write(EndianBinaryWriter writer, List<TevSwapModeTable> tables)
+        {
+            foreach (TevSwapModeTable table in tables)
+                table.Write(writer);
+        }
     }
 }

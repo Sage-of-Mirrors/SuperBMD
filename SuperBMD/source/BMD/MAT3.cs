@@ -592,12 +592,206 @@ namespace SuperBMD.BMD
 
             curOffset = writer.BaseStream.Position;
 
-            // tex gen data offset
+            // tex coord 1 data offset
             writer.Seek((int)start + 56, System.IO.SeekOrigin.Begin);
             writer.Write((int)(curOffset - start));
             writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
 
             TexCoordGenIO.Write(writer, m_TexCoord1GenBlock);
+
+            curOffset = writer.BaseStream.Position;
+
+            if (m_TexCoord2GenBlock.Count != 0)
+            {
+                // tex coord 2 data offset
+                writer.Seek((int)start + 60, System.IO.SeekOrigin.Begin);
+                writer.Write((int)(curOffset - start));
+                writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+                TexCoordGenIO.Write(writer, m_TexCoord2GenBlock);
+            }
+            else
+            {
+                writer.Seek((int)start + 60, System.IO.SeekOrigin.Begin);
+                writer.Write((int)0);
+                writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+            }
+
+            curOffset = writer.BaseStream.Position;
+
+            // tex matrix 1 data offset
+            writer.Seek((int)start + 64, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            TexMatrixIO.Write(writer, m_TexMatrix1Block);
+
+            curOffset = writer.BaseStream.Position;
+
+            if (m_TexMatrix2Block.Count != 0)
+            {
+                // tex matrix 1 data offset
+                writer.Seek((int)start + 68, System.IO.SeekOrigin.Begin);
+                writer.Write((int)(curOffset - start));
+                writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+                TexMatrixIO.Write(writer, m_TexMatrix2Block);
+            }
+            else
+            {
+                writer.Seek((int)start + 60, System.IO.SeekOrigin.Begin);
+                writer.Write((int)0);
+                writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+            }
+
+            curOffset = writer.BaseStream.Position;
+
+            // tex number data offset
+            writer.Seek((int)start + 72, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            foreach (int inte in m_TexRemapBlock)
+                writer.Write((short)inte);
+
+            StreamUtility.PadStreamWithString(writer, 4);
+
+            curOffset = writer.BaseStream.Position;
+
+            // tev order data offset
+            writer.Seek((int)start + 76, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            TevOrderIO.Write(writer, m_TevOrderBlock);
+
+            curOffset = writer.BaseStream.Position;
+
+            // tev color data offset
+            writer.Seek((int)start + 80, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            ColorIO.Write(writer, m_TevColorBlock);
+
+            curOffset = writer.BaseStream.Position;
+
+            // tev konst color data offset
+            writer.Seek((int)start + 84, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            ColorIO.Write(writer, m_TevKonstColorBlock);
+
+            curOffset = writer.BaseStream.Position;
+
+            // tev stage count data offset
+            writer.Seek((int)start + 88, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            foreach (byte bt in NumTevStagesBlock)
+                writer.Write(bt);
+
+            StreamUtility.PadStreamWithString(writer, 4);
+
+            curOffset = writer.BaseStream.Position;
+
+            // tev stage data offset
+            writer.Seek((int)start + 92, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            TevStageIO.Write(writer, m_TevStageBlock);
+
+            curOffset = writer.BaseStream.Position;
+
+            // tev swap mode offset
+            writer.Seek((int)start + 96, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            TevSwapModeIO.Write(writer, m_SwapModeBlock);
+
+            curOffset = writer.BaseStream.Position;
+
+            // tev swap mode table offset
+            writer.Seek((int)start + 100, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            TevSwapModeTableIO.Write(writer, m_SwapTableBlock);
+
+            curOffset = writer.BaseStream.Position;
+
+            // fog data offset
+            writer.Seek((int)start + 104, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            FogIO.Write(writer, m_FogBlock);
+
+            curOffset = writer.BaseStream.Position;
+
+            // alpha compare offset
+            writer.Seek((int)start + 108, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            AlphaCompareIO.Write(writer, m_AlphaCompBlock);
+
+            curOffset = writer.BaseStream.Position;
+
+            // blend data offset
+            writer.Seek((int)start + 112, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            BlendModeIO.Write(writer, m_blendModeBlock);
+
+            curOffset = writer.BaseStream.Position;
+
+            // zmode data offset
+            writer.Seek((int)start + 116, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            ZModeIO.Write(writer, m_zModeBlock);
+
+            curOffset = writer.BaseStream.Position;
+
+            // z comp loc data offset
+            writer.Seek((int)start + 120, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            foreach (bool bol in m_zCompLocBlock)
+                writer.Write(bol);
+
+            StreamUtility.PadStreamWithString(writer, 4);
+
+            curOffset = writer.BaseStream.Position;
+
+            // dither data offset
+            writer.Seek((int)start + 124, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            foreach (bool bol in m_ditherBlock)
+                writer.Write(bol);
+
+            StreamUtility.PadStreamWithString(writer, 4);
+
+            curOffset = writer.BaseStream.Position;
+
+            // NBT Scale data offset
+            writer.Seek((int)start + 128, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(curOffset - start));
+            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+
+            NBTScaleIO.Write(writer, m_NBTScaleBlock);
+
+            StreamUtility.PadStreamWithString(writer, 32);
 
             long end = writer.BaseStream.Position;
             long length = (end - start);

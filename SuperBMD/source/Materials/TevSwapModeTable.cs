@@ -21,5 +21,13 @@ namespace SuperBMD.Materials
             B = reader.ReadByte();
             A = reader.ReadByte();
         }
+
+        public void Write(EndianBinaryWriter writer)
+        {
+            writer.Write(R);
+            writer.Write(G);
+            writer.Write(B);
+            writer.Write(A);
+        }
     }
 }

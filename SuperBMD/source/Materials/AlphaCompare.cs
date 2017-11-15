@@ -29,5 +29,14 @@ namespace SuperBMD.Materials
             Comp1 = (CompareType)reader.ReadByte();
             Reference1 = reader.ReadByte();
         }
+
+        public void Write(EndianBinaryWriter writer)
+        {
+            writer.Write((byte)Comp0);
+            writer.Write(Reference0);
+            writer.Write((byte)Operation);
+            writer.Write((byte)Comp1);
+            writer.Write(Reference1);
+        }
     }
 }

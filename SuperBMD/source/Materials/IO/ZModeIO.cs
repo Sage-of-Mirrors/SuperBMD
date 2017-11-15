@@ -20,5 +20,11 @@ namespace SuperBMD.Materials.IO
 
             return modes;
         }
+
+        public static void Write(EndianBinaryWriter writer, List<ZMode> modes)
+        {
+            foreach (ZMode mode in modes)
+                mode.Write(writer);
+        }
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using OpenTK;
 using GameFormatReader.Common;
 using SuperBMD.Materials.Enums;
+using SuperBMD.Util;
 
 namespace SuperBMD.Materials
 {
@@ -37,6 +38,18 @@ namespace SuperBMD.Materials
                 reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(),
                 reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(),
                 reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+        }
+
+        public void Write(EndianBinaryWriter writer)
+        {
+            writer.Write((byte)Projection);
+            writer.Write(Type);
+            writer.Write((short)-1);
+            writer.Write(EffectTranslation);
+            writer.Write(Scale);
+            writer.Write((short)(Rotation * (32768.0f / 180)));
+            writer.Write((short)-1);
+            writer.Write(ProjectionMatrix);
         }
     }
 }

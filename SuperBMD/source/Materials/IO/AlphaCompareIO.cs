@@ -20,5 +20,11 @@ namespace SuperBMD.Materials.IO
 
             return compares;
         }
+
+        public static void Write(EndianBinaryWriter writer, List<AlphaCompare> comps)
+        {
+            foreach (AlphaCompare comp in comps)
+                comp.Write(writer);
+        }
     }
 }
