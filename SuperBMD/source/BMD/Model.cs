@@ -50,7 +50,7 @@ namespace SuperBMD.BMD
             Textures          = new TEX1(reader, (int)reader.BaseStream.Position);
 
             foreach (Geometry.Shape shape in Shapes.Shapes)
-                packetCount += shape.Primitives.Count;
+                packetCount += shape.Packets.Count;
 
             vertexCount = VertexData.Attributes.Positions.Count;
         }
@@ -104,7 +104,7 @@ namespace SuperBMD.BMD
                 SkinningEnvelopes.Write(writer);
                 PartialWeightData.Write(writer);
                 Joints.Write(writer);
-                //writer.Write(Shapes.ToBytes());
+                Shapes.Write(writer);
                 Materials.Write(writer);
                 Textures.Write(writer);
 

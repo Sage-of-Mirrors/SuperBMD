@@ -93,7 +93,7 @@ namespace SuperBMD.Rigging
                 writer.Write((short)-1);
                 writer.Write(m_Translation);
 
-                writer.Write(Bounds.ToBytes());
+                Bounds.Write(writer);
 
                 outList.AddRange(mem.ToArray());
             }

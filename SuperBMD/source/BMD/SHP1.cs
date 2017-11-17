@@ -102,18 +102,25 @@ namespace SuperBMD.BMD
 
                 BoundingVolume shapeVol = new BoundingVolume(reader);
 
+                long curOffset = reader.BaseStream.Position;
+
                 ShapeVertexDescriptor descriptor = new ShapeVertexDescriptor(reader, offset + attributeDataOffset + shapeAttributeOffset);
 
-                List<Primitive> shapePrims = new List<Primitive>();
+                List<Packet> shapePackets = new List<Packet>();
                 for (int j = 0; j < packetCount; j++)
                 {
                     int packetSize = packetData[j + firstPacketIndex].Item1;
                     int packetOffset = packetData[j + firstPacketIndex].Item2;
 
-                    shapePrims.AddRange(LoadPacketPrimitives(reader, descriptor, packetSize, offset + primitiveDataOffset + packetOffset));
+                    Packet pack = new Packet(packetSize, packetOffset + primitiveDataOffset + offset);
+                    pack.ReadPrimitives(reader, descriptor);
+
+                    shapePackets.Add(pack);
                 }
 
-                tempShapeList.Add(new Shape(descriptor, shapeVol, shapePrims, matrixIndices.GetRange(shapeMatrixDataIndex, packetCount), matrixType));
+                tempShapeList.Add(new Shape(descriptor, shapeVol, shapePackets, matrixIndices.GetRange(shapeMatrixDataIndex, packetCount), matrixType));
+
+                reader.BaseStream.Seek(curOffset, System.IO.SeekOrigin.Begin);
             }
 
             for (int i = 0; i < entryCount; i++)
@@ -148,23 +155,6 @@ namespace SuperBMD.BMD
             SHP1 shp1 = new SHP1(scene, vertData, boneNames, evp1, drw1);
 
             return shp1;
-        }
-
-        private List<Primitive> LoadPacketPrimitives(EndianBinaryReader reader, ShapeVertexDescriptor desc, int size, int offset)
-        {
-            List<Primitive> prims = new List<Primitive>();
-            reader.BaseStream.Seek(offset, System.IO.SeekOrigin.Begin);
-
-            while(true)
-            {
-                Primitive prim = new Primitive(reader, desc);
-                prims.Add(prim);
-
-                if (reader.PeekReadByte() == 0 || reader.BaseStream.Position > size + offset)
-                    break;
-            }
-
-            return prims;
         }
 
         private void ProcessShapeVertices(Mesh mesh, Shape shape, VertexData vertData, Dictionary<string, int> boneNames, EVP1 envelopes, DRW1 partialWeight)
@@ -211,7 +201,7 @@ namespace SuperBMD.BMD
 
                 if (totalMatrixCount + currentMatrixCount > 10)
                 {
-                    shape.Primitives.Add(prim);
+                    //shape.Primitives.Add(prim);
                     shape.MatrixDataIndices.Add(matrixIndices.ToArray());
 
                     prim = new Primitive();
@@ -316,60 +306,58 @@ namespace SuperBMD.BMD
         {
             foreach (Shape shape in Shapes)
             {
-                foreach (Primitive prim in shape.Primitives)
+                foreach (Packet pack in shape.Packets)
                 {
-                    foreach (Vertex vert in prim.Vertices)
+                    foreach (Primitive prim in pack.Primitives)
                     {
-                        uint drw1Index = vert.GetAttributeIndex(GXVertexAttribute.PositionMatrixIdx);
-
-                        if (partialWeights.WeightTypeCheck[(int)drw1Index])
+                        foreach (Vertex vert in prim.Vertices)
                         {
-                            vert.SetWeight(envelopes.Weights[partialWeights.Indices[(int)drw1Index]]);
-                        }
-                        else
-                        {
-                            Rigging.Weight newWeight = new Rigging.Weight();
-                            newWeight.AddWeight(1.0f, partialWeights.Indices[(int)drw1Index]);
+                            uint drw1Index = vert.GetAttributeIndex(GXVertexAttribute.PositionMatrixIdx);
 
-                            vert.SetWeight(newWeight);
+                            if (partialWeights.WeightTypeCheck[(int)drw1Index])
+                            {
+                                vert.SetWeight(envelopes.Weights[partialWeights.Indices[(int)drw1Index]]);
+                            }
+                            else
+                            {
+                                Rigging.Weight newWeight = new Rigging.Weight();
+                                newWeight.AddWeight(1.0f, partialWeights.Indices[(int)drw1Index]);
+
+                                vert.SetWeight(newWeight);
+                            }
                         }
                     }
                 }
             }
         }
 
-        public byte[] ToBytes()
+        public void Write(EndianBinaryWriter writer)
         {
-            List<byte> outList = new List<byte>();
+            long start = writer.BaseStream.Position;
 
-            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
+            writer.Write("SHP1".ToCharArray());
+            writer.Write(0); // Placeholder for section offset
+            writer.Write((short)Shapes.Count);
+            writer.Write((short)-1);
+
+            writer.Write(44); // Offset to shape header data. Always 48
+
+            for (int i = 0; i < 7; i++)
+                writer.Write(0);
+
+            foreach (Shape shp in Shapes)
             {
-                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
-
-                writer.Write("SHP1".ToCharArray());
-                writer.Write(0); // Placeholder for section offset
-                writer.Write((short)Shapes.Count);
-                writer.Write((short)-1);
-
-                writer.Write(44); // Offset to shape header data. Always 48
-
-                for (int i = 0; i < 7; i++)
-                    writer.Write(0);
-
-                foreach (Shape shp in Shapes)
-                {
-                    writer.Write(shp.ToBytes());
-                }
-
-                StreamUtility.PadStreamWithString(writer, 32);
-
-                writer.Seek(4, System.IO.SeekOrigin.Begin);
-                writer.Write((int)writer.BaseStream.Length);
-
-                outList.AddRange(mem.ToArray());
+                shp.Write(writer);
             }
 
-            return outList.ToArray();
+            StreamUtility.PadStreamWithString(writer, 32);
+
+            long end = writer.BaseStream.Position;
+            long length = (end - start);
+
+            writer.Seek((int)start + 4, System.IO.SeekOrigin.Begin);
+            writer.Write((int)length);
+            writer.Seek((int)end, System.IO.SeekOrigin.Begin);
         }
     }
 }

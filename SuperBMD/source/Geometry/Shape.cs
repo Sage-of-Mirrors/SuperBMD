@@ -18,7 +18,7 @@ namespace SuperBMD.Geometry
         public byte MatrixType { get; private set; }
         public BoundingVolume Bounds { get; private set; }
 
-        public List<Primitive> Primitives { get; private set; }
+        public List<Packet> Packets { get; private set; }
         public List<int[]> MatrixDataIndices { get; private set; }
 
         private Vector4[] m_PositionMatrices;
@@ -28,20 +28,25 @@ namespace SuperBMD.Geometry
         {
             AttributeData = new VertexData();
             Descriptor = new ShapeVertexDescriptor();
-            Primitives = new List<Primitive>();
+            Packets = new List<Packet>();
             MatrixDataIndices = new List<int[]>();
 
             m_PositionMatrices = new Vector4[64];
             m_NormalMatrices = new Vector4[32];
         }
 
-        public Shape(ShapeVertexDescriptor desc, BoundingVolume bounds, List<Primitive> prims, List<int[]> matrixIndices, int matrixType)
+        public Shape(EndianBinaryReader reader)
+        {
+
+        }
+
+        public Shape(ShapeVertexDescriptor desc, BoundingVolume bounds, List<Packet> prims, List<int[]> matrixIndices, int matrixType)
         {
             MatrixDataIndices = new List<int[]>();
 
             Descriptor = desc;
             Bounds = bounds;
-            Primitives = prims;
+            Packets = prims;
             matrixType = (byte)matrixType;
 
             MatrixDataIndices = matrixIndices;
@@ -49,7 +54,7 @@ namespace SuperBMD.Geometry
 
         public Shape(Mesh mesh)
         {
-            Primitives = new List<Primitive>();
+            Packets = new List<Packet>();
             MatrixDataIndices = new List<int[]>();
 
             int indexOffset = 0;
@@ -73,7 +78,7 @@ namespace SuperBMD.Geometry
             }
         }
 
-        public void FillMatrices()
+        /*public void FillMatrices()
         {
             uint matrixIndex = 0;
 
@@ -90,24 +95,14 @@ namespace SuperBMD.Geometry
                     matrixIndex += 4;
                 }
             }
-        }
+        }*/
 
-        public byte[] ToBytes()
+        public void Write(EndianBinaryWriter writer)
         {
-            List<byte> outList = new List<byte>();
-
-            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
-            {
-                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
-
-                writer.Write(MatrixType);
-                writer.Write((sbyte)-1);
-                writer.Write((short)Primitives.Count);
-
-                outList.AddRange(mem.ToArray());
-            }
-
-            return outList.ToArray();
+            writer.Write(MatrixType);
+            writer.Write((sbyte)-1);
+            writer.Write((short)Packets.Count);
+            Bounds.Write(writer);
         }
     }
 }

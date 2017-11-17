@@ -51,15 +51,5 @@ namespace SuperBMD.Geometry
                 Vertices.Add(vert);
             }
         }
-
-        public uint[] ToEBO(List<GXVertexAttribute> activeAttributes)
-        {
-            List<uint> ebo = new List<uint>();
-
-            foreach (Vertex vert in Vertices)
-                ebo.AddRange(vert.ToEBO(activeAttributes));
-
-            return ebo.ToArray();
-        }
     }
 }

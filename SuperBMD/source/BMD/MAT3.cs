@@ -601,7 +601,7 @@ namespace SuperBMD.BMD
 
             curOffset = writer.BaseStream.Position;
 
-            if (m_TexCoord2GenBlock.Count != 0)
+            if (m_TexCoord2GenBlock != null)
             {
                 // tex coord 2 data offset
                 writer.Seek((int)start + 60, System.IO.SeekOrigin.Begin);
@@ -628,7 +628,7 @@ namespace SuperBMD.BMD
 
             curOffset = writer.BaseStream.Position;
 
-            if (m_TexMatrix2Block.Count != 0)
+            if (m_TexMatrix2Block != null)
             {
                 // tex matrix 1 data offset
                 writer.Seek((int)start + 68, System.IO.SeekOrigin.Begin);

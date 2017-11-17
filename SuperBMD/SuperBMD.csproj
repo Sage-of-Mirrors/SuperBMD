@@ -80,6 +80,7 @@
     <Compile Include="source\BMD\SHP1.cs" />
     <Compile Include="source\BMD\TEX1.cs" />
     <Compile Include="source\BMD\VTX1.cs" />
+    <Compile Include="source\Geometry\Packet.cs" />
     <Compile Include="source\Geometry\Primitive.cs" />
     <Compile Include="source\Geometry\Vertex.cs" />
     <Compile Include="source\Geometry\VertexData.cs" />

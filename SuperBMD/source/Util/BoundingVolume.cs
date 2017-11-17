@@ -28,22 +28,11 @@ namespace SuperBMD.Util
             MaxBounds = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
         }
 
-        public byte[] ToBytes()
+        public void Write(EndianBinaryWriter writer)
         {
-            List<byte> outList = new List<byte>();
-
-            using (System.IO.MemoryStream mem = new System.IO.MemoryStream())
-            {
-                EndianBinaryWriter writer = new EndianBinaryWriter(mem, Endian.Big);
-
-                writer.Write(SphereRadius);
-                writer.Write(MinBounds);
-                writer.Write(MaxBounds);
-
-                outList.AddRange(mem.ToArray());
-            }
-
-            return outList.ToArray();
+            writer.Write(SphereRadius);
+            writer.Write(MinBounds);
+            writer.Write(MaxBounds);
         }
     }
 }
