@@ -275,7 +275,11 @@ namespace SuperBMD.BMD
 
             mat.ZCompLoc = m_zCompLocBlock[reader.ReadByte()];
             mat.ZMode = m_zModeBlock[reader.ReadByte()];
-            mat.Dither = m_ditherBlock[reader.ReadByte()];
+
+            if (m_ditherBlock == null)
+                reader.SkipByte();
+            else
+                mat.Dither = m_ditherBlock[reader.ReadByte()];
 
             mat.MaterialColors[0] = m_MaterialColorBlock[reader.ReadInt16()];
             mat.MaterialColors[1] = m_MaterialColorBlock[reader.ReadInt16()];
@@ -773,15 +777,18 @@ namespace SuperBMD.BMD
 
             curOffset = writer.BaseStream.Position;
 
-            // dither data offset
-            writer.Seek((int)start + 124, System.IO.SeekOrigin.Begin);
-            writer.Write((int)(curOffset - start));
-            writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
+            if (m_ditherBlock != null)
+            {
+                // dither data offset
+                writer.Seek((int)start + 124, System.IO.SeekOrigin.Begin);
+                writer.Write((int)(curOffset - start));
+                writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
 
-            foreach (bool bol in m_ditherBlock)
-                writer.Write(bol);
+                foreach (bool bol in m_ditherBlock)
+                    writer.Write(bol);
 
-            StreamUtility.PadStreamWithStringByOffset(writer, (int)(writer.BaseStream.Position - curOffset), 4);
+                StreamUtility.PadStreamWithStringByOffset(writer, (int)(writer.BaseStream.Position - curOffset), 4);
+            }
 
             curOffset = writer.BaseStream.Position;
 

@@ -204,6 +204,7 @@ namespace SuperBMD.Materials
             if (File.Exists(texture.FilePath))
             {
                 texData = new Bitmap(texture.FilePath);
+                Name = Path.GetFileNameWithoutExtension(texture.FilePath);
             }
             else
             {
@@ -215,6 +216,7 @@ namespace SuperBMD.Materials
                     throw new Exception($"Cannot find texture \"{ fileName }\". Make sure it exists and that it is in the same directory as the model file.");
 
                 texData = new Bitmap(texPath);
+                Name = Path.GetFileNameWithoutExtension(texPath);
             }
 
             Width = (ushort)texData.Width;

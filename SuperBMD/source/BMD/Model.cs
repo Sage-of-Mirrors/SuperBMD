@@ -70,17 +70,17 @@ namespace SuperBMD.BMD
             Joints = new JNT1(scene);
             Scenegraph = new INF1(scene, Joints);
             Textures = new TEX1(scene, modelDirectory);
-            Materials = new MAT3(scene, Textures);
+            //Materials = new MAT3(scene, Textures);
 
-            EVP1 evpFromScene;
-            DRW1 drwFromScene;
-            Shapes = SHP1.Create(scene, Joints.BoneNameIndices, VertexData.Attributes, out evpFromScene, out drwFromScene);
+            //EVP1 evpFromScene;
+            //DRW1 drwFromScene;
+            //Shapes = SHP1.Create(scene, Joints.BoneNameIndices, VertexData.Attributes, out evpFromScene, out drwFromScene);
 
-            SkinningEnvelopes = evpFromScene;
-            PartialWeightData = drwFromScene;
+            //SkinningEnvelopes = evpFromScene;
+            //PartialWeightData = drwFromScene;
 
-            foreach (Geometry.Shape shape in Shapes.Shapes)
-                packetCount += shape.Packets.Count;
+            //foreach (Geometry.Shape shape in Shapes.Shapes)
+                //packetCount += shape.Packets.Count;
 
             vertexCount = VertexData.Attributes.Positions.Count;
         }
@@ -101,11 +101,11 @@ namespace SuperBMD.BMD
 
                 Scenegraph.Write(writer, packetCount, vertexCount);
                 VertexData.Write(writer);
-                SkinningEnvelopes.Write(writer);
+                /*SkinningEnvelopes.Write(writer);
                 PartialWeightData.Write(writer);
-                Joints.Write(writer);
+                */Joints.Write(writer);/*
                 Shapes.Write(writer);
-                Materials.Write(writer);
+                Materials.Write(writer);*/
                 Textures.Write(writer);
 
                 writer.Seek(8, SeekOrigin.Begin);
