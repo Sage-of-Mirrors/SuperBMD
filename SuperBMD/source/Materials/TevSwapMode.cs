@@ -12,6 +12,12 @@ namespace SuperBMD.Materials
         public byte RasSel;
         public byte TexSel;
 
+        public TevSwapMode(byte rasSel, byte texSel)
+        {
+            RasSel = rasSel;
+            TexSel = texSel;
+        }
+
         public TevSwapMode(EndianBinaryReader reader)
         {
             RasSel = reader.ReadByte();

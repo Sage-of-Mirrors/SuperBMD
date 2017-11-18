@@ -17,6 +17,16 @@ namespace SuperBMD.Materials
         public J3DAttenuationFn AttenuationFunction;
         public ColorSrc AmbientSrcColor;
 
+        public ChannelControl(bool enable, ColorSrc matSrcColor, LightId litMask, DiffuseFn diffFn, J3DAttenuationFn attenFn, ColorSrc ambSrcColor)
+        {
+            Enable = enable;
+            MaterialSrcColor = matSrcColor;
+            LitMask = litMask;
+            DiffuseFunction = diffFn;
+            AttenuationFunction = attenFn;
+            AmbientSrcColor = ambSrcColor;
+        }
+
         public ChannelControl(EndianBinaryReader reader)
         {
             Enable              = reader.ReadBoolean();

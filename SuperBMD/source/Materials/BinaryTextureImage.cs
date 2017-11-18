@@ -213,10 +213,16 @@ namespace SuperBMD.Materials
                 string texPath = Path.Combine(modelDirectory, fileName);
 
                 if (!File.Exists(texPath))
-                    throw new Exception($"Cannot find texture \"{ fileName }\". Make sure it exists and that it is in the same directory as the model file.");
-
-                texData = new Bitmap(texPath);
-                Name = Path.GetFileNameWithoutExtension(texPath);
+                {
+                    Console.WriteLine($"Cannot find texture { fileName }. Using a checkboard texture instead...");
+                    texData = new Bitmap(SuperBMD.Properties.Resources.default_checker);
+                    Name = "default_checker";
+                }
+                else
+                {
+                    texData = new Bitmap(texPath);
+                    Name = Path.GetFileNameWithoutExtension(texPath);
+                }
             }
 
             Width = (ushort)texData.Width;

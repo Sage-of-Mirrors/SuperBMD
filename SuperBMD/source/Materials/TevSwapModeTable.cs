@@ -14,6 +14,14 @@ namespace SuperBMD.Materials
         public byte B;
         public byte A;
 
+        public TevSwapModeTable(byte r, byte g, byte b, byte a)
+        {
+            R = r;
+            G = g;
+            B = b;
+            A = a;
+        }
+
         public TevSwapModeTable(EndianBinaryReader reader)
         {
             R = reader.ReadByte();

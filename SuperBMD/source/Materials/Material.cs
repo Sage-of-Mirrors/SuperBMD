@@ -46,7 +46,11 @@ namespace SuperBMD.Materials
         public Material()
         {
             MaterialColors = new Color[2] { new Color(1, 1, 1, 1), new Color(1, 1, 1, 1) };
+            ColorChannelControlsCount = 4;
             ChannelControls = new ChannelControl[4];
+            for (int i = 0; i < 4; i++)
+                ChannelControls[i] = new ChannelControl(false, ColorSrc.Register, LightId.None, DiffuseFn.None, J3DAttenuationFn.None_0, ColorSrc.Register);
+
             AmbientColors = new Color[2] { new Color(0, 0, 0, 1), new Color(0, 0, 0, 0) };
             LightingColors = new Color[8];
             TexCoord1Gens = new TexCoordGen[8];
@@ -58,10 +62,14 @@ namespace SuperBMD.Materials
             ColorSels = new KonstColorSel[16];
             AlphaSels = new KonstAlphaSel[16];
             TevOrders = new TevOrder[16];
+            TevOrders[0] = new TevOrder(TexCoordId.TexCoord0, TexMapId.TexMap0, J3DColorChannelId.Color0);
             TevColors = new Color[16];
             TevStages = new TevStage[16];
             SwapModes = new TevSwapMode[16];
+            SwapModes[0] = new TevSwapMode(0, 1);
             SwapTables = new TevSwapModeTable[16];
+            SwapTables[0] = new TevSwapModeTable(0, 1, 2, 3);
+            SwapTables[1] = new TevSwapModeTable(0, 0, 0, 3);
         }
 
         public void AddTexGen(TexGenType genType, TexGenSrc genSrc, Enums.TexMatrix mtrx)
