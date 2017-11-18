@@ -688,7 +688,7 @@ namespace SuperBMD.BMD
                 {
                     case GXVertexAttribute.Position:
                         writer.Seek(baseOffset + 0x0C, System.IO.SeekOrigin.Begin);
-                        writer.Write((int)writer.BaseStream.Length);
+                        writer.Write((int)(writer.BaseStream.Length - baseOffset));
                         writer.Seek((int)endOffset, System.IO.SeekOrigin.Begin);
 
                         foreach (Vector3 vec3 in Attributes.Positions)
@@ -696,7 +696,7 @@ namespace SuperBMD.BMD
                         break;
                     case GXVertexAttribute.Normal:
                         writer.Seek(baseOffset + 0x10, System.IO.SeekOrigin.Begin);
-                        writer.Write((int)writer.BaseStream.Length);
+                        writer.Write((int)(writer.BaseStream.Length - baseOffset));
                         writer.Seek((int)endOffset, System.IO.SeekOrigin.Begin);
 
                         foreach (Vector3 vec3 in Attributes.Normals)
@@ -705,7 +705,7 @@ namespace SuperBMD.BMD
                     case GXVertexAttribute.Color0:
                     case GXVertexAttribute.Color1:
                         writer.Seek(baseOffset + 0x18 + (int)(attrib - 11) * 4, System.IO.SeekOrigin.Begin);
-                        writer.Write((int)writer.BaseStream.Length);
+                        writer.Write((int)(writer.BaseStream.Length - baseOffset));
                         writer.Seek((int)endOffset, System.IO.SeekOrigin.Begin);
 
                         foreach (Color col in (List<Color>)Attributes.GetAttributeData(attrib))
@@ -720,7 +720,7 @@ namespace SuperBMD.BMD
                     case GXVertexAttribute.Tex6:
                     case GXVertexAttribute.Tex7:
                         writer.Seek(baseOffset + 0x20 + (int)(attrib - 13) * 4, System.IO.SeekOrigin.Begin);
-                        writer.Write((int)writer.BaseStream.Length);
+                        writer.Write((int)(writer.BaseStream.Length - baseOffset));
                         writer.Seek((int)endOffset, System.IO.SeekOrigin.Begin);
 
                         foreach (Vector2 vec2 in (List<Vector2>)Attributes.GetAttributeData(attrib))
