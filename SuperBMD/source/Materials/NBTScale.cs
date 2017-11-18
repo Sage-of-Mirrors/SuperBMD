@@ -24,6 +24,8 @@ namespace SuperBMD.Materials
         public void Write(EndianBinaryWriter writer)
         {
             writer.Write(Unknown1);
+            writer.Write((sbyte)-1);
+            writer.Write((short)-1);
             writer.Write(Scale);
         }
     }

@@ -31,7 +31,7 @@ namespace SuperBMD.Materials
             EndZ = reader.ReadSingle();
             NearZ = reader.ReadSingle();
             FarZ = reader.ReadSingle();
-            Color = new Color(reader.ReadByte(), reader.ReadByte(), reader.ReadByte(), reader.ReadByte());
+            Color = new Color((float)reader.ReadByte() / 255, (float)reader.ReadByte() / 255, (float)reader.ReadByte() / 255, (float)reader.ReadByte() / 255);
 
             for (int i = 0; i < 10; i++)
             {

@@ -28,6 +28,7 @@ namespace SuperBMD.Materials
             Operation = (AlphaOp)reader.ReadByte();
             Comp1 = (CompareType)reader.ReadByte();
             Reference1 = reader.ReadByte();
+            reader.Skip(3);
         }
 
         public void Write(EndianBinaryWriter writer)
@@ -37,6 +38,8 @@ namespace SuperBMD.Materials
             writer.Write((byte)Operation);
             writer.Write((byte)Comp1);
             writer.Write(Reference1);
+            writer.Write((sbyte)-1);
+            writer.Write((short)-1);
         }
     }
 }

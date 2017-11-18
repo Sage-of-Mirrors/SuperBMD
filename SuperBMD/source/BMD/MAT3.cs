@@ -118,7 +118,12 @@ namespace SuperBMD.BMD
                         NumColorChannelsBlock = new List<byte>();
 
                         for (int chanCnt = 0; chanCnt < sectionSize; chanCnt++)
-                            NumColorChannelsBlock.Add(reader.ReadByte());
+                        {
+                            byte chanCntIn = reader.ReadByte();
+
+                            if (chanCntIn < 84)
+                                NumColorChannelsBlock.Add(chanCntIn);
+                        }
 
                         break;
                     case Mat3OffsetIndex.ColorChannelData:
@@ -160,7 +165,7 @@ namespace SuperBMD.BMD
                         m_TevOrderBlock = TevOrderIO.Load(reader, sectionOffset, sectionSize);
                         break;
                     case Mat3OffsetIndex.TevColorData:
-                        m_TevColorBlock = ColorIO.Load(reader, sectionOffset, sectionSize);
+                        m_TevColorBlock = Int16ColorIO.Load(reader, sectionOffset, sectionSize);
                         break;
                     case Mat3OffsetIndex.TevKColorData:
                         m_TevKonstColorBlock = ColorIO.Load(reader, sectionOffset, sectionSize);
@@ -236,7 +241,7 @@ namespace SuperBMD.BMD
             for (int i = 0; i < matCount; i++)
             {
                 m_Materials.Add(tempList[m_RemapIndices[i]]);
-                m_Materials[i].Name = m_MaterialNames[i];
+                m_Materials[i].Name = m_MaterialNames[m_RemapIndices[i]];
             }
 
             reader.BaseStream.Seek(offset + mat3Size, System.IO.SeekOrigin.Begin);
@@ -511,6 +516,8 @@ namespace SuperBMD.BMD
 
             NameTableIO.Write(writer, names);
 
+            StreamUtility.PadStreamWithString(writer, 32);
+
             curOffset = writer.BaseStream.Position;
 
             // Indirect texturing offset
@@ -548,7 +555,7 @@ namespace SuperBMD.BMD
             foreach (byte chanNum in NumColorChannelsBlock)
                 writer.Write(chanNum);
 
-            StreamUtility.PadStreamWithString(writer, 4);
+            StreamUtility.PadStreamWithStringByOffset(writer, (int)(writer.BaseStream.Position - curOffset), 4);
 
             curOffset = writer.BaseStream.Position;
 
@@ -672,7 +679,7 @@ namespace SuperBMD.BMD
             writer.Write((int)(curOffset - start));
             writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
 
-            ColorIO.Write(writer, m_TevColorBlock);
+            Int16ColorIO.Write(writer, m_TevColorBlock);
 
             curOffset = writer.BaseStream.Position;
 

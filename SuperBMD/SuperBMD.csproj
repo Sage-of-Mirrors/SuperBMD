@@ -139,6 +139,7 @@
     <Compile Include="source\Materials\IO\FogIO.cs" />
     <Compile Include="source\Materials\IO\IndirectTexturingIO.cs" />
     <Compile Include="source\Materials\IO\ColorIO.cs" />
+    <Compile Include="source\Materials\IO\Int16ColorIO.cs" />
     <Compile Include="source\Rigging\Weight.cs" />
     <Compile Include="source\Scenegraph\Enums\NodeType.cs" />
     <Compile Include="source\Scenegraph\SceneNode.cs" />

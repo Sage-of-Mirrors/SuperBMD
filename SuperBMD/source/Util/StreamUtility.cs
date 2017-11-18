@@ -26,6 +26,22 @@ namespace SuperBMD.Util
             }
         }
 
+        public static void PadStreamWithStringByOffset(EndianBinaryWriter writer, int offset, int padValue)
+        {
+            string padding = "This is padding data to align";
+
+            // Pad up to a 32 byte alignment
+            // Formula: (x + (n-1)) & ~(n-1)
+            long nextAligned = (offset + (padValue - 1)) & ~(padValue - 1);
+
+            long delta = nextAligned - offset;
+            writer.BaseStream.Position = writer.BaseStream.Length;
+            for (int i = 0; i < delta; i++)
+            {
+                writer.Write(padding[i]);
+            }
+        }
+
         public static void PadStreamWithZero(EndianBinaryWriter writer, int padValue)
         {
             // Pad up to a 32 byte alignment
@@ -55,10 +71,10 @@ namespace SuperBMD.Util
 
         public static void Write(this EndianBinaryWriter writer, Color color)
         {
-            writer.Write((byte)color.R);
-            writer.Write((byte)color.G);
-            writer.Write((byte)color.B);
-            writer.Write((byte)color.A);
+            writer.Write((byte)(color.R * 255));
+            writer.Write((byte)(color.G * 255));
+            writer.Write((byte)(color.B * 255));
+            writer.Write((byte)(color.A * 255));
         }
 
         public static void Write(this EndianBinaryWriter writer, Matrix3x4 mat)

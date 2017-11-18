@@ -49,6 +49,7 @@ namespace SuperBMD.Materials
             writer.Write(Scale);
             writer.Write((short)(Rotation * (32768.0f / 180)));
             writer.Write((short)-1);
+            writer.Write(Translation);
             writer.Write(ProjectionMatrix);
         }
     }
