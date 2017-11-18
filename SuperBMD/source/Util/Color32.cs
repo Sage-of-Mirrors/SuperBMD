@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SuperBMD.Util
 {
-    public struct Color32
+    public class Color32
     {
         public byte R, G, B, A;
 

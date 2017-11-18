@@ -7,19 +7,23 @@ using System.Globalization;
 
 namespace SuperBMD.Util
 {
-    public struct Color
+    public class Color
     {
         /// <summary> Red component of the <see cref="Color"/>. </summary>
-        public float R;
+        public float R { get; private set; }
 
         /// <summary> Green component of the <see cref="Color"/>. </summary>
-        public float G;
+        public float G { get; private set; }
 
         /// <summary> Blue component of the <see cref="Color"/>. </summary>
-        public float B;
+        public float B { get; private set; }
 
         /// <summary> Alpha component of the <see cref="Color"/>. Defaults to 1f. </summary>
-        public float A;
+        public float A { get; private set; }
+
+        public Color()
+        {
+        }
 
         /// <summary>
         /// Construct new <see cref="Color"/> with the given R, G, B, and A components.
@@ -115,6 +119,9 @@ namespace SuperBMD.Util
         {
             if (!(obj is Color))
                 return false;
+
+            if (ReferenceEquals(this, obj))
+                return true;
 
             Color other = (Color)obj;
             return this == other;

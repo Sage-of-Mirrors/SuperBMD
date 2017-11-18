@@ -162,5 +162,34 @@ namespace SuperBMD.BMD
                 Textures[i] = value;
             }
         }
+
+        public BinaryTextureImage this[string s]
+        {
+            get
+            {
+                if (Textures == null)
+                {
+                    Console.WriteLine("There are no textures currently loaded.");
+                    return null;
+                }
+
+                if (Textures.Count == 0)
+                {
+                    Console.WriteLine("There are no textures currently loaded.");
+                    return null;
+                }
+
+                foreach (BinaryTextureImage tex in Textures)
+                {
+                    if (tex.Name == s)
+                        return tex;
+                }
+
+                Console.WriteLine($"No texture with the name { s } was found.");
+                return null;
+            }
+
+            private set { }
+        }
     }
 }

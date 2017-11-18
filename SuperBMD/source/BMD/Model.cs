@@ -70,7 +70,7 @@ namespace SuperBMD.BMD
             Joints = new JNT1(scene);
             Scenegraph = new INF1(scene, Joints);
             Textures = new TEX1(scene, modelDirectory);
-            //Materials = new MAT3(scene, Textures);
+            Materials = new MAT3(scene, Textures);
 
             //EVP1 evpFromScene;
             //DRW1 drwFromScene;

@@ -22,6 +22,27 @@ namespace SuperBMD.Materials
 
         public Matrix4 ProjectionMatrix;
 
+        public TexMatrix()
+        {
+            EffectTranslation = new Vector3();
+            Scale = new Vector2(1, 1);
+            Translation = new Vector2();
+            ProjectionMatrix = Matrix4.Identity;
+        }
+
+        public TexMatrix(TexGenType projection, byte type, Vector3 effectTranslation, Vector2 scale, float rotation, Vector2 translation, Matrix4 matrix)
+        {
+            Projection = projection;
+            Type = type;
+            EffectTranslation = effectTranslation;
+
+            Scale = scale;
+            Rotation = rotation;
+            Translation = translation;
+
+            ProjectionMatrix = matrix;
+        }
+
         public TexMatrix(EndianBinaryReader reader)
         {
             Projection = (TexGenType)reader.ReadByte();

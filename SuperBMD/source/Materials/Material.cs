@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SuperBMD.Materials.Enums;
 using SuperBMD.Util;
+using OpenTK;
 
 namespace SuperBMD.Materials
 {
@@ -22,7 +23,7 @@ namespace SuperBMD.Materials
         public Color[] AmbientColors;
         public Color[] LightingColors;
         public TexCoordGen[] TexCoord1Gens;
-        public TexCoordGen[] PostTexMatrix;
+        public TexCoordGen[] PostTexMatrixGens;
         public TexMatrix[] TexMatrix1;
         public TexMatrix[] TexMatrix2;
         public int[] TextureIndices;
@@ -44,12 +45,12 @@ namespace SuperBMD.Materials
 
         public Material()
         {
-            MaterialColors = new Color[2];
+            MaterialColors = new Color[2] { new Color(1, 1, 1, 1), new Color(1, 1, 1, 1) };
             ChannelControls = new ChannelControl[4];
-            AmbientColors = new Color[2];
+            AmbientColors = new Color[2] { new Color(0, 0, 0, 1), new Color(0, 0, 0, 0) };
             LightingColors = new Color[8];
             TexCoord1Gens = new TexCoordGen[8];
-            PostTexMatrix = new TexCoordGen[8];
+            PostTexMatrixGens = new TexCoordGen[8];
             TexMatrix1 = new TexMatrix[10];
             TexMatrix2 = new TexMatrix[20];
             TextureIndices = new int[8] { -1, -1, -1, -1, -1, -1, -1, -1 };
@@ -78,6 +79,38 @@ namespace SuperBMD.Materials
                 if (i == 7)
                     throw new Exception($"TexGen array for material \"{ Name }\" is full!");
             }
+
+            NumTexGensCount++;
+        }
+
+        public void AddTexMatrix(TexGenType projection, byte type, Vector3 effectTranslation, Vector2 scale, float rotation, Vector2 translation, Matrix4 matrix)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                if (TexMatrix1[i] == null)
+                {
+                    TexMatrix1[i] = new TexMatrix(projection, type, effectTranslation, scale, rotation, translation, matrix);
+                    break;
+                }
+
+                if (i == 9)
+                    throw new Exception($"TexMatrix1 array for material \"{ Name }\" is full!");
+            }
+        }
+
+        public void AddTexIndex(int index)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                if (TextureIndices[i] == -1)
+                {
+                    TextureIndices[i] = index;
+                    break;
+                }
+
+                if (i == 7)
+                    throw new Exception($"TextureIndex array for material \"{ Name }\" is full!");
+            }
         }
 
         public void AddTevStage(TevStageParameters parameters)
@@ -93,6 +126,8 @@ namespace SuperBMD.Materials
                 if (i == 15)
                     throw new Exception($"TevStage array for material \"{ Name }\" is full!");
             }
+
+            NumTevStagesCount++;
         }
 
         public void Debug_Print()
