@@ -107,12 +107,12 @@ namespace SuperBMD.Util
 
         public static bool operator ==(Color lhs, Color rhs)
         {
-            return lhs.R == rhs.R && lhs.G == rhs.G && lhs.B == rhs.B && lhs.A == rhs.A;
+            return lhs.Equals(rhs);
         }
 
         public static bool operator !=(Color lhs, Color rhs)
         {
-            return !(lhs == rhs);
+            return !(lhs.Equals(rhs));
         }
 
         public override bool Equals(object obj)
@@ -120,11 +120,14 @@ namespace SuperBMD.Util
             if (!(obj is Color))
                 return false;
 
+            if (obj == null)
+                return false;
+
             if (ReferenceEquals(this, obj))
                 return true;
 
             Color other = (Color)obj;
-            return this == other;
+            return this.R == other.R && this.G == other.G && this.B == other.B && this.A == other.A;
         }
 
         public override int GetHashCode()

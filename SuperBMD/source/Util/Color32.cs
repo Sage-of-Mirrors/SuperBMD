@@ -18,6 +18,25 @@ namespace SuperBMD.Util
             A = a;
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+
+            if (!(obj is Color32))
+                return false;
+
+            Color32 col = obj as Color32;
+
+            if (this.R == col.R &&
+                this.G == col.G &&
+                this.B == col.B &&
+                this.A == col.A)
+                return true;
+
+            return false;
+        }
+
         public override string ToString()
         {
             return string.Format("[Color32] (r: {0} g: {1} b: {2} a: {3})", R, G, B, A);

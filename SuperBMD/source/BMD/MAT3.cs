@@ -1084,10 +1084,10 @@ namespace SuperBMD.BMD
 
             for (int i = 0; i < 8; i++)
             {
-                if (mat.LightingColors[i] != null && m_LightingColorBlock != null)
-                    writer.Write((short)m_LightingColorBlock.IndexOf(mat.LightingColors[i]));
-                else
+                if (m_LightingColorBlock.Count == 0)
                     writer.Write((short)-1);
+                else
+                    writer.Write((short)m_LightingColorBlock.IndexOf(mat.LightingColors[i]));
             }
 
             for (int i = 0; i < 8; i++)
