@@ -39,8 +39,16 @@ namespace SuperBMD.Rigging
             short xRot = reader.ReadInt16();
             short yRot = reader.ReadInt16();
             short zRot = reader.ReadInt16();
-            Vector3 euler = new Vector3((float)(xRot * (Math.PI / 180)) * (180.0f / 32767.0f), (float)(yRot * (Math.PI / 180)) * (180.0f / 32767.0f), (float)(zRot * (Math.PI / 180)) * (180.0f / 32767.0f));
-            m_Rotation = new Quaternion(euler);
+
+            float xConvRot = xRot * (180 / 32768f);
+            float yConvRot = yRot * (180 / 32768f);
+            float zConvRot = zRot * (180 / 32768f);
+
+            Vector3 rotFull = new Vector3(xConvRot * (float)(Math.PI / 180f), yConvRot * (float)(Math.PI / 180f), zConvRot * (float)(Math.PI / 180f));
+
+            m_Rotation = Quaternion.FromAxisAngle(new Vector3(0, 0, 1), rotFull.Z) *
+                         Quaternion.FromAxisAngle(new Vector3(0, 1, 0), rotFull.Y) *
+                         Quaternion.FromAxisAngle(new Vector3(1, 0, 0), rotFull.X);
 
             reader.SkipInt16();
 

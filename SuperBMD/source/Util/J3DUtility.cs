@@ -79,9 +79,9 @@ namespace SuperBMD.Util
         {
             ushort[] output = new ushort[3];
 
-            output[0] = (ushort)((rot.X * 32767.0f) / 180.0f);
-            output[1] = (ushort)((rot.Y * 32767.0f) / 180.0f);
-            output[2] = (ushort)((rot.Z * 32767.0f) / 180.0f);
+            output[0] = (ushort)((rot.X * 32768.0f) / 180.0f);
+            output[1] = (ushort)((rot.Y * 32768.0f) / 180.0f);
+            output[2] = (ushort)((rot.Z * 32768.0f) / 180.0f);
 
             return output;
         }
@@ -89,7 +89,7 @@ namespace SuperBMD.Util
         public static Vector3 ToEulerAngles(this Quaternion q)
         {
             // Store the Euler angles in radians
-            Vector3 pitchYawRoll = new Vector3();
+            /*Vector3 pitchYawRoll = new Vector3();
 
             double sqw = q.W * q.W;
             double sqx = q.X * q.X;
@@ -123,13 +123,13 @@ namespace SuperBMD.Util
                 pitchYawRoll.Z = (float)Math.Atan2(2f * q.X * q.W - 2f * q.Y * q.Z, -sqx + sqy - sqz + sqw);      // Roll
             }
 
-            pitchYawRoll.X = pitchYawRoll.X * (float)(180 / Math.PI);
-            pitchYawRoll.Y = pitchYawRoll.Y * (float)(180 / Math.PI);
-            pitchYawRoll.Z = pitchYawRoll.Z * (float)(180 / Math.PI);
+            pitchYawRoll.X = pitchYawRoll.X * (float)(180.0f / Math.PI);
+            pitchYawRoll.Y = pitchYawRoll.Y * (float)(180.0f / Math.PI);
+            pitchYawRoll.Z = pitchYawRoll.Z * (float)(180.0f / Math.PI);
 
-            return pitchYawRoll;
+            return pitchYawRoll;*/
 
-            /*
+            
             Vector3 vec = new Vector3();
 
             float ysqr = q.Y * q.Y;
@@ -154,7 +154,7 @@ namespace SuperBMD.Util
             vec.Y = vec.Y * (float)(180.0f / Math.PI);
             vec.Z = vec.Z * (float)(180.0f / Math.PI);
 
-            return vec;*/
+            return vec;
         }
     }
 }
