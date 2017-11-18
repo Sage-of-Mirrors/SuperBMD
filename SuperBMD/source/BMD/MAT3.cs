@@ -235,15 +235,6 @@ namespace SuperBMD.BMD
                 LoadInitData(reader);
             }
 
-            List<Material> tempList = new List<Material>(m_Materials);
-            m_Materials.Clear();
-
-            for (int i = 0; i < matCount; i++)
-            {
-                m_Materials.Add(tempList[m_RemapIndices[i]]);
-                m_Materials[i].Name = m_MaterialNames[m_RemapIndices[i]];
-            }
-
             reader.BaseStream.Seek(offset + mat3Size, System.IO.SeekOrigin.Begin);
         }
 
@@ -454,7 +445,7 @@ namespace SuperBMD.BMD
 
             writer.Write("MAT3".ToCharArray());
             writer.Write(0); // Placeholder for section offset
-            writer.Write((short)m_Materials.Count);
+            writer.Write((short)m_RemapIndices.Count);
             writer.Write((short)-1);
 
             writer.Write(132); // Offset to material init data. Always 132
@@ -463,28 +454,16 @@ namespace SuperBMD.BMD
                 writer.Write(0);
 
             bool[] writtenCheck = new bool[m_Materials.Count];
-            List<string> names = new List<string>();
+            List<string> names = m_MaterialNames;
 
-            for (int i = 0; i < m_Materials.Count; i++)
+            for (int i = 0; i < m_RemapIndices.Count; i++)
             {
-                names.Add(m_Materials[i].Name);
-
-                if (m_Materials.FindAll(x => x == m_Materials[i]).Count > 1)
-                {
-                    int dupeIndex = m_Materials.IndexOf(m_Materials[i]);
-
-                    if (writtenCheck[dupeIndex])
-                        continue;
-                    else
-                    {
-                        WriteMaterialInitData(writer, m_Materials[m_Materials.IndexOf(m_Materials[i])]);
-                        writtenCheck[dupeIndex] = true;
-                    }
-                }
+                if (writtenCheck[m_RemapIndices[i]])
+                    continue;
                 else
                 {
-                    WriteMaterialInitData(writer, m_Materials[i]);
-                    writtenCheck[i] = true;
+                    WriteMaterialInitData(writer, m_Materials[m_RemapIndices[i]]);
+                    writtenCheck[m_RemapIndices[i]] = true;
                 }
             }
 
@@ -495,16 +474,9 @@ namespace SuperBMD.BMD
             writer.Write((int)(curOffset - start));
             writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
 
-            for (int i = 0; i < m_Materials.Count; i++)
+            for (int i = 0; i < m_RemapIndices.Count; i++)
             {
-                if (m_Materials.FindAll(x => x == m_Materials[i]).Count > 1) // There are multiple materials with the same properties...
-                {
-                    writer.Write((short)m_Materials.IndexOf(m_Materials[i])); // So we use the index of the first matching material
-                }
-                else // otherwise,
-                {
-                    writer.Write((short)i); // We write the index of the material
-                }
+                writer.Write((short)m_RemapIndices[i]);
             }
 
             curOffset = writer.BaseStream.Position;
