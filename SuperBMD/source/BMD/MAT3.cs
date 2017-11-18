@@ -137,8 +137,13 @@ namespace SuperBMD.BMD
                     case Mat3OffsetIndex.TexGenCount:
                         NumTexGensBlock = new List<byte>();
 
-                        for (int texGen = 0; texGen < sectionSize; texGen++)
-                            NumTexGensBlock.Add(reader.ReadByte());
+                        for (int genCnt = 0; genCnt < sectionSize; genCnt++)
+                        {
+                            byte genCntIn = reader.ReadByte();
+
+                            if (genCntIn < 84)
+                                NumTexGensBlock.Add(genCntIn);
+                        }
 
                         break;
                     case Mat3OffsetIndex.TexCoordData:
@@ -173,8 +178,13 @@ namespace SuperBMD.BMD
                     case Mat3OffsetIndex.TevStageCount:
                         NumTevStagesBlock = new List<byte>();
 
-                        for (int tevStageNo = 0; tevStageNo < sectionSize; tevStageNo++)
-                            NumTevStagesBlock.Add(reader.ReadByte());
+                        for (int stgCnt = 0; stgCnt < sectionSize; stgCnt++)
+                        {
+                            byte stgCntIn = reader.ReadByte();
+
+                            if (stgCntIn < 84)
+                                NumTevStagesBlock.Add(stgCntIn);
+                        }
 
                         break;
                     case Mat3OffsetIndex.TevStageData:
@@ -202,14 +212,28 @@ namespace SuperBMD.BMD
                         m_zCompLocBlock = new List<bool>();
 
                         for (int zcomp = 0; zcomp < sectionSize; zcomp++)
-                            m_zCompLocBlock.Add(reader.ReadBoolean());
+                        {
+                            byte boolIn = reader.ReadByte();
+
+                            if (boolIn > 1)
+                                break;
+
+                            m_zCompLocBlock.Add(Convert.ToBoolean(boolIn));
+                        }
 
                         break;
                     case Mat3OffsetIndex.DitherData:
                         m_ditherBlock = new List<bool>();
 
                         for (int dith = 0; dith < sectionSize; dith++)
-                            m_ditherBlock.Add(reader.ReadBoolean());
+                        {
+                            byte boolIn = reader.ReadByte();
+
+                            if (boolIn > 1)
+                                break;
+
+                            m_ditherBlock.Add(Convert.ToBoolean(boolIn));
+                        }
 
                         break;
                     case Mat3OffsetIndex.NBTScaleData:
@@ -488,8 +512,6 @@ namespace SuperBMD.BMD
 
             NameTableIO.Write(writer, names);
 
-            StreamUtility.PadStreamWithString(writer, 32);
-
             curOffset = writer.BaseStream.Position;
 
             // Indirect texturing offset
@@ -567,7 +589,7 @@ namespace SuperBMD.BMD
             foreach (byte texGenCnt in NumTexGensBlock)
                 writer.Write(texGenCnt);
 
-            StreamUtility.PadStreamWithString(writer, 4);
+            StreamUtility.PadStreamWithStringByOffset(writer, (int)(writer.BaseStream.Position - curOffset), 4);
 
             curOffset = writer.BaseStream.Position;
 
@@ -672,7 +694,7 @@ namespace SuperBMD.BMD
             foreach (byte bt in NumTevStagesBlock)
                 writer.Write(bt);
 
-            StreamUtility.PadStreamWithString(writer, 4);
+            StreamUtility.PadStreamWithStringByOffset(writer, (int)(writer.BaseStream.Position - curOffset), 4);
 
             curOffset = writer.BaseStream.Position;
 
@@ -747,7 +769,7 @@ namespace SuperBMD.BMD
             foreach (bool bol in m_zCompLocBlock)
                 writer.Write(bol);
 
-            StreamUtility.PadStreamWithString(writer, 4);
+            StreamUtility.PadStreamWithStringByOffset(writer, (int)(writer.BaseStream.Position - curOffset), 4);
 
             curOffset = writer.BaseStream.Position;
 
@@ -759,7 +781,7 @@ namespace SuperBMD.BMD
             foreach (bool bol in m_ditherBlock)
                 writer.Write(bol);
 
-            StreamUtility.PadStreamWithString(writer, 4);
+            StreamUtility.PadStreamWithStringByOffset(writer, (int)(writer.BaseStream.Position - curOffset), 4);
 
             curOffset = writer.BaseStream.Position;
 
