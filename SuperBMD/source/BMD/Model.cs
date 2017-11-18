@@ -80,7 +80,7 @@ namespace SuperBMD.BMD
             PartialWeightData = drwFromScene;
 
             foreach (Geometry.Shape shape in Shapes.Shapes)
-                packetCount += shape.MatrixDataIndices.Count;
+                packetCount += shape.Packets.Count;
 
             vertexCount = VertexData.Attributes.Positions.Count;
         }

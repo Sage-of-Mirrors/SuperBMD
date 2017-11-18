@@ -19,7 +19,6 @@ namespace SuperBMD.Geometry
         public BoundingVolume Bounds { get; private set; }
 
         public List<Packet> Packets { get; private set; }
-        public List<int[]> MatrixDataIndices { get; private set; }
 
         private Vector4[] m_PositionMatrices;
         private Vector4[] m_NormalMatrices;
@@ -29,7 +28,6 @@ namespace SuperBMD.Geometry
             AttributeData = new VertexData();
             Descriptor = new ShapeVertexDescriptor();
             Packets = new List<Packet>();
-            MatrixDataIndices = new List<int[]>();
 
             m_PositionMatrices = new Vector4[64];
             m_NormalMatrices = new Vector4[32];
@@ -40,22 +38,17 @@ namespace SuperBMD.Geometry
 
         }
 
-        public Shape(ShapeVertexDescriptor desc, BoundingVolume bounds, List<Packet> prims, List<int[]> matrixIndices, int matrixType)
+        public Shape(ShapeVertexDescriptor desc, BoundingVolume bounds, List<Packet> prims, int matrixType)
         {
-            MatrixDataIndices = new List<int[]>();
-
             Descriptor = desc;
             Bounds = bounds;
             Packets = prims;
-            matrixType = (byte)matrixType;
-
-            MatrixDataIndices = matrixIndices;
+            MatrixType = (byte)matrixType;
         }
 
         public Shape(Mesh mesh)
         {
             Packets = new List<Packet>();
-            MatrixDataIndices = new List<int[]>();
 
             int indexOffset = 0;
             Descriptor = new ShapeVertexDescriptor();
@@ -102,6 +95,10 @@ namespace SuperBMD.Geometry
             writer.Write(MatrixType);
             writer.Write((sbyte)-1);
             writer.Write((short)Packets.Count);
+            writer.Write((short)0); // Placeholder for descriptor offset
+            writer.Write((short)0); // Placeholder for starting packet index
+            writer.Write((short)0); // Placeholder for starting packet matrix index offset
+            writer.Write((short)-1);
             Bounds.Write(writer);
         }
     }

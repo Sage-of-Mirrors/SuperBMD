@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SuperBMD.Geometry.Enums;
 using SuperBMD.Rigging;
+using GameFormatReader.Common;
 
 namespace SuperBMD.Geometry
 {
@@ -134,6 +135,91 @@ namespace SuperBMD.Geometry
         public void SetWeight(Weight weight)
         {
             VertexWeight = weight;
+        }
+
+        public void Write(EndianBinaryWriter writer, ShapeVertexDescriptor desc)
+        {
+            if (desc.CheckAttribute(GXVertexAttribute.PositionMatrixIdx))
+            {
+                WriteAttributeIndex(writer, PositionMatrixIDxIndex * 3, desc.Attributes[GXVertexAttribute.PositionMatrixIdx].Item1);
+            }
+
+            if (desc.CheckAttribute(GXVertexAttribute.Position))
+            {
+                WriteAttributeIndex(writer, PositionIndex, desc.Attributes[GXVertexAttribute.Position].Item1);
+            }
+
+            if (desc.CheckAttribute(GXVertexAttribute.Normal))
+            {
+                WriteAttributeIndex(writer, NormalIndex, desc.Attributes[GXVertexAttribute.Normal].Item1);
+            }
+
+            if (desc.CheckAttribute(GXVertexAttribute.Color0))
+            {
+                WriteAttributeIndex(writer, Color0Index, desc.Attributes[GXVertexAttribute.Color0].Item1);
+            }
+
+            if (desc.CheckAttribute(GXVertexAttribute.Color1))
+            {
+                WriteAttributeIndex(writer, Color1Index, desc.Attributes[GXVertexAttribute.Color1].Item1);
+            }
+
+            if (desc.CheckAttribute(GXVertexAttribute.Tex0))
+            {
+                WriteAttributeIndex(writer, TexCoord0Index, desc.Attributes[GXVertexAttribute.Tex0].Item1);
+            }
+
+            if (desc.CheckAttribute(GXVertexAttribute.Tex1))
+            {
+                WriteAttributeIndex(writer, TexCoord1Index, desc.Attributes[GXVertexAttribute.Tex1].Item1);
+            }
+
+            if (desc.CheckAttribute(GXVertexAttribute.Tex2))
+            {
+                WriteAttributeIndex(writer, TexCoord2Index, desc.Attributes[GXVertexAttribute.Tex2].Item1);
+            }
+
+            if (desc.CheckAttribute(GXVertexAttribute.Tex3))
+            {
+                WriteAttributeIndex(writer, TexCoord3Index, desc.Attributes[GXVertexAttribute.Tex3].Item1);
+            }
+
+            if (desc.CheckAttribute(GXVertexAttribute.Tex4))
+            {
+                WriteAttributeIndex(writer, TexCoord4Index, desc.Attributes[GXVertexAttribute.Tex4].Item1);
+            }
+
+            if (desc.CheckAttribute(GXVertexAttribute.Tex5))
+            {
+                WriteAttributeIndex(writer, TexCoord5Index, desc.Attributes[GXVertexAttribute.Tex5].Item1);
+            }
+
+            if (desc.CheckAttribute(GXVertexAttribute.Tex6))
+            {
+                WriteAttributeIndex(writer, TexCoord6Index, desc.Attributes[GXVertexAttribute.Tex6].Item1);
+            }
+
+            if (desc.CheckAttribute(GXVertexAttribute.Tex7))
+            {
+                WriteAttributeIndex(writer, TexCoord7Index, desc.Attributes[GXVertexAttribute.Tex7].Item1);
+            }
+        }
+
+        private void WriteAttributeIndex(EndianBinaryWriter writer, uint value, VertexInputType type)
+        {
+            switch (type)
+            {
+                case VertexInputType.Direct:
+                case VertexInputType.Index8:
+                    writer.Write((byte)value);
+                    break;
+                case VertexInputType.Index16:
+                    writer.Write((short)value);
+                    break;
+                case VertexInputType.None:
+                default:
+                    throw new ArgumentException("vertex input type");
+            }
         }
     }
 }

@@ -112,13 +112,13 @@ namespace SuperBMD.BMD
                     int packetSize = packetData[j + firstPacketIndex].Item1;
                     int packetOffset = packetData[j + firstPacketIndex].Item2;
 
-                    Packet pack = new Packet(packetSize, packetOffset + primitiveDataOffset + offset);
+                    Packet pack = new Packet(packetSize, packetOffset + primitiveDataOffset + offset, matrixIndices[j + firstPacketIndex]);
                     pack.ReadPrimitives(reader, descriptor);
 
                     shapePackets.Add(pack);
                 }
 
-                tempShapeList.Add(new Shape(descriptor, shapeVol, shapePackets, matrixIndices.GetRange(shapeMatrixDataIndex, packetCount), matrixType));
+                tempShapeList.Add(new Shape(descriptor, shapeVol, shapePackets, matrixType));
 
                 reader.BaseStream.Seek(curOffset, System.IO.SeekOrigin.Begin);
             }
@@ -202,7 +202,7 @@ namespace SuperBMD.BMD
                 if (totalMatrixCount + currentMatrixCount > 10)
                 {
                     //shape.Primitives.Add(prim);
-                    shape.MatrixDataIndices.Add(matrixIndices.ToArray());
+                    //shape.MatrixDataIndices.Add(matrixIndices.ToArray());
 
                     prim = new Primitive();
                     matrixIndices = new List<int>();
@@ -333,6 +333,10 @@ namespace SuperBMD.BMD
 
         public void Write(EndianBinaryWriter writer)
         {
+            List<Tuple<ShapeVertexDescriptor, int>> descriptorOffsets; // Contains the offsets for each unique vertex descriptor
+            List<Tuple<Packet, int>> packetMatrixOffsets; // Contains the offsets for each packet's matrix indices
+            List<Tuple<int, int>> packetPrimitiveOffsets; // Contains the offsets for each packet's first primitive
+
             long start = writer.BaseStream.Position;
 
             writer.Write("SHP1".ToCharArray());
@@ -350,7 +354,76 @@ namespace SuperBMD.BMD
                 shp.Write(writer);
             }
 
+            // Remap table offset
+            writer.Seek((int)(start + 16), System.IO.SeekOrigin.Begin);
+            writer.Write((int)(writer.BaseStream.Length - start));
+            writer.Seek((int)(writer.BaseStream.Length), System.IO.SeekOrigin.Begin);
+
+            for (int i = 0; i < Shapes.Count; i++)
+                writer.Write((short)i);
+
             StreamUtility.PadStreamWithString(writer, 32);
+
+            // Attribute descriptor data offset
+            writer.Seek((int)(start + 24), System.IO.SeekOrigin.Begin);
+            writer.Write((int)(writer.BaseStream.Length - start));
+            writer.Seek((int)(writer.BaseStream.Length), System.IO.SeekOrigin.Begin);
+
+            descriptorOffsets = WriteShapeAttributeDescriptors(writer);
+
+            // Packet matrix index data offset
+            writer.Seek((int)(start + 28), System.IO.SeekOrigin.Begin);
+            writer.Write((int)(writer.BaseStream.Length - start));
+            writer.Seek((int)(writer.BaseStream.Length), System.IO.SeekOrigin.Begin);
+
+            packetMatrixOffsets = WritePacketMatrixIndices(writer);
+
+            StreamUtility.PadStreamWithString(writer, 32);
+
+            // Primitive data offset
+            writer.Seek((int)(start + 32), System.IO.SeekOrigin.Begin);
+            writer.Write((int)(writer.BaseStream.Length - start));
+            writer.Seek((int)(writer.BaseStream.Length), System.IO.SeekOrigin.Begin);
+
+            packetPrimitiveOffsets = WritePrimitives(writer);
+
+            // Packet matrix index metadata offset
+            writer.Seek((int)(start + 36), System.IO.SeekOrigin.Begin);
+            writer.Write((int)(writer.BaseStream.Length - start));
+            writer.Seek((int)(writer.BaseStream.Length), System.IO.SeekOrigin.Begin);
+
+            foreach (Tuple<Packet, int> tup in packetMatrixOffsets)
+            {
+                writer.Write((short)0); // ???
+                writer.Write((short)tup.Item1.MatrixIndices.Count);
+                writer.Write(tup.Item2);
+            }
+
+            // Packet primitive metadata offset
+            writer.Seek((int)(start + 40), System.IO.SeekOrigin.Begin);
+            writer.Write((int)(writer.BaseStream.Length - start));
+            writer.Seek((int)(writer.BaseStream.Length), System.IO.SeekOrigin.Begin);
+
+            foreach (Tuple<int, int> tup in packetPrimitiveOffsets)
+            {
+                writer.Write(tup.Item1);
+                writer.Write(tup.Item2);
+            }
+
+            StreamUtility.PadStreamWithString(writer, 32);
+
+            writer.Seek((int)(start + 44), System.IO.SeekOrigin.Begin);
+
+            foreach (Shape shape in Shapes)
+            {
+                writer.Seek(4, System.IO.SeekOrigin.Current);
+                writer.Write((short)descriptorOffsets.Find(x => x.Item1 == shape.Descriptor).Item2);
+                writer.Write((short)packetMatrixOffsets.IndexOf(packetMatrixOffsets.Find(x => x.Item1 == shape.Packets[0])));
+                writer.Write((short)packetMatrixOffsets.IndexOf(packetMatrixOffsets.Find(x => x.Item1 == shape.Packets[0])));
+                writer.Seek(30, System.IO.SeekOrigin.Current);
+            }
+
+            writer.Seek((int)writer.BaseStream.Length, System.IO.SeekOrigin.Begin);
 
             long end = writer.BaseStream.Position;
             long length = (end - start);
@@ -358,6 +431,76 @@ namespace SuperBMD.BMD
             writer.Seek((int)start + 4, System.IO.SeekOrigin.Begin);
             writer.Write((int)length);
             writer.Seek((int)end, System.IO.SeekOrigin.Begin);
+        }
+
+        private List<Tuple<ShapeVertexDescriptor, int>> WriteShapeAttributeDescriptors(EndianBinaryWriter writer)
+        {
+            List<Tuple<ShapeVertexDescriptor, int>> outList = new List<Tuple<ShapeVertexDescriptor, int>>();
+            List<ShapeVertexDescriptor> written = new List<ShapeVertexDescriptor>();
+
+            long start = writer.BaseStream.Position;
+
+            foreach (Shape shape in Shapes)
+            {
+                if (written.Contains(shape.Descriptor))
+                    continue;
+                else
+                {
+                    outList.Add(new Tuple<ShapeVertexDescriptor, int>(shape.Descriptor, (int)(writer.BaseStream.Position - start)));
+                    shape.Descriptor.Write(writer);
+                    written.Add(shape.Descriptor);
+                }
+            }
+
+            return outList;
+        }
+
+        private List<Tuple<Packet, int>> WritePacketMatrixIndices(EndianBinaryWriter writer)
+        {
+            List<Tuple<Packet, int>> outList = new List<Tuple<Packet, int>>();
+
+            int indexOffset = 0;
+            foreach (Shape shape in Shapes)
+            {
+                foreach (Packet pack in shape.Packets)
+                {
+                    outList.Add(new Tuple<Packet, int>(pack, indexOffset));
+
+                    foreach (int integer in pack.MatrixIndices)
+                    {
+                        writer.Write((ushort)integer);
+                        indexOffset++;
+                    }
+                }
+            }
+
+            return outList;
+        }
+
+        private List<Tuple<int, int>> WritePrimitives(EndianBinaryWriter writer)
+        {
+            List<Tuple<int, int>> outList = new List<Tuple<int, int>>();
+
+            long start = writer.BaseStream.Position;
+
+            foreach (Shape shape in Shapes)
+            {
+                foreach (Packet pack in shape.Packets)
+                {
+                    int offset = (int)(writer.BaseStream.Position - start);
+
+                    foreach (Primitive prim in pack.Primitives)
+                    {
+                        prim.Write(writer, shape.Descriptor);
+                    }
+
+                    StreamUtility.PadStreamWithZero(writer, 32);
+
+                    outList.Add(new Tuple<int, int>((int)((writer.BaseStream.Position - start) - offset), offset));
+                }
+            }
+
+            return outList;
         }
     }
 }

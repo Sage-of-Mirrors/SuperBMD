@@ -10,15 +10,18 @@ namespace SuperBMD.Geometry
     public class Packet
     {
         public List<Primitive> Primitives { get; private set; }
+        public List<int> MatrixIndices { get; private set; }
 
         private int m_Size;
         private int m_Offset;
 
-        public Packet(int size, int offset)
+        public Packet(int size, int offset, int[] matrixIndices)
         {
             m_Size = size;
             m_Offset = offset;
             Primitives = new List<Primitive>();
+            MatrixIndices = new List<int>();
+            MatrixIndices.AddRange(matrixIndices);
         }
 
         public void ReadPrimitives(EndianBinaryReader reader, ShapeVertexDescriptor desc)
@@ -30,7 +33,7 @@ namespace SuperBMD.Geometry
                 Primitive prim = new Primitive(reader, desc);
                 Primitives.Add(prim);
 
-                if (reader.PeekReadByte() == 0 || reader.BaseStream.Position > m_Size + m_Offset)
+                if (reader.PeekReadByte() == 0 || reader.BaseStream.Position >= m_Size + m_Offset)
                     break;
             }
         }

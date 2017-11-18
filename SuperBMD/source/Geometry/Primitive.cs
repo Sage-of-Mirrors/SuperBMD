@@ -51,5 +51,14 @@ namespace SuperBMD.Geometry
                 Vertices.Add(vert);
             }
         }
+
+        public void Write(EndianBinaryWriter writer, ShapeVertexDescriptor desc)
+        {
+            writer.Write((byte)PrimitiveType);
+            writer.Write((short)Vertices.Count);
+
+            foreach (Vertex vert in Vertices)
+                vert.Write(writer, desc);
+        }
     }
 }

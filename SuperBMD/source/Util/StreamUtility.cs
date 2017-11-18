@@ -26,6 +26,20 @@ namespace SuperBMD.Util
             }
         }
 
+        public static void PadStreamWithZero(EndianBinaryWriter writer, int padValue)
+        {
+            // Pad up to a 32 byte alignment
+            // Formula: (x + (n-1)) & ~(n-1)
+            long nextAligned = (writer.BaseStream.Length + (padValue - 1)) & ~(padValue - 1);
+
+            long delta = nextAligned - writer.BaseStream.Length;
+            writer.BaseStream.Position = writer.BaseStream.Length;
+            for (int i = 0; i < delta; i++)
+            {
+                writer.Write((byte)0);
+            }
+        }
+
         public static void Write(this EndianBinaryWriter writer, Vector3 vec3)
         {
             writer.Write(vec3.X);
