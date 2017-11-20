@@ -8,7 +8,7 @@ using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    public class IndirectTexMatrix
+    public struct IndirectTexMatrix
     {
         /// <summary>
         /// The floats that make up the matrix
@@ -19,13 +19,11 @@ namespace SuperBMD.Materials
         /// </summary>
         public byte Exponent;
 
-        public IndirectTexMatrix()
+        public IndirectTexMatrix(Matrix2x3 matrix, byte exponent)
         {
-            Matrix = new Matrix2x3(
-                0.5f, 0.0f, 0.0f,
-                0.0f, 0.5f, 0.0f);
+            Matrix = matrix;
 
-            Exponent = 1;
+            Exponent = exponent;
         }
 
         public IndirectTexMatrix(EndianBinaryReader reader)

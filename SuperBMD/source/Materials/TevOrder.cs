@@ -8,7 +8,7 @@ using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    public class TevOrder
+    public struct TevOrder
     {
         public TexCoordId TexCoord;
         public TexMapId TexMap;

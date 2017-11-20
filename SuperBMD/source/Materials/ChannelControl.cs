@@ -8,7 +8,7 @@ using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    public class ChannelControl
+    public struct ChannelControl
     {
         public bool Enable;
         public ColorSrc MaterialSrcColor;

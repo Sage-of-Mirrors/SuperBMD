@@ -33,7 +33,7 @@ namespace SuperBMD.Materials
         public TevRegisterId AlphaRegId;
     }
 
-    public class TevStage
+    public struct TevStage
     {
         public CombineColorInput ColorInA;
         public CombineColorInput ColorInB;

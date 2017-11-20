@@ -8,7 +8,7 @@ using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    public class Fog
+    public struct Fog
     {
         public byte Type;
         public bool Enable;

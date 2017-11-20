@@ -8,11 +8,18 @@ using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    public class TexCoordGen
+    public struct TexCoordGen
     {
         public TexGenType Type;
         public TexGenSrc Source;
         public Enums.TexMatrix TexMatrixSource;
+
+        public TexCoordGen(TexGenType type, TexGenSrc src, Enums.TexMatrix mtrx)
+        {
+            Type = type;
+            Source = src;
+            TexMatrixSource = mtrx;
+        }
 
         public TexCoordGen(EndianBinaryReader reader)
         {
@@ -21,13 +28,6 @@ namespace SuperBMD.Materials
             TexMatrixSource = (Enums.TexMatrix)reader.ReadByte();
 
             reader.SkipByte();
-        }
-
-        public TexCoordGen(TexGenType type, TexGenSrc src, Enums.TexMatrix mtrx)
-        {
-            Type = type;
-            Source = src;
-            TexMatrixSource = mtrx;
         }
 
         public void Write(EndianBinaryWriter writer)

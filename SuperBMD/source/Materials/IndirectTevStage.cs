@@ -8,7 +8,7 @@ using SuperBMD.Materials.Enums;
 
 namespace SuperBMD.Materials
 {
-    public class IndirectTevStage
+    public struct IndirectTevStage
     {
         public TevStageId TevStage;
         public IndirectFormat IndTexFormat;
@@ -20,9 +20,17 @@ namespace SuperBMD.Materials
         public bool UtcLod;
         public IndirectAlpha AlphaSel;
 
-        public IndirectTevStage()
+        public IndirectTevStage(TevStageId stageId, IndirectFormat format, IndirectBias bias, IndirectMatrix matrixId, IndirectWrap wrapS, IndirectWrap wrapT, bool addPrev, bool utcLod, IndirectAlpha alphaSel)
         {
-
+            TevStage = stageId;
+            IndTexFormat = format;
+            IndTexBiasSel = bias;
+            IndTexMtxId = matrixId;
+            IndTexWrapS = wrapS;
+            IndTexWrapT = wrapT;
+            AddPrev = addPrev;
+            UtcLod = utcLod;
+            AlphaSel = alphaSel;
         }
 
         public IndirectTevStage(EndianBinaryReader reader)

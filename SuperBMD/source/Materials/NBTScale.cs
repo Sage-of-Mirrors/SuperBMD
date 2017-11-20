@@ -9,10 +9,16 @@ using SuperBMD.Util;
 
 namespace SuperBMD.Materials
 {
-    public class NBTScale
+    public struct NBTScale
     {
         public byte Unknown1;
         public Vector3 Scale;
+
+        public NBTScale(byte unk1, Vector3 scale)
+        {
+            Unknown1 = unk1;
+            Scale = scale;
+        }
 
         public NBTScale(EndianBinaryReader reader)
         {

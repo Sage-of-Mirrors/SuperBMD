@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GameFormatReader.Common;
+using SuperBMD.Materials.Enums;
 
 namespace SuperBMD.Materials
 {
@@ -40,19 +41,29 @@ namespace SuperBMD.Materials
 
             TevOrders = new IndirectTevOrder[4];
             for (int i = 0; i < 4; i++)
-                TevOrders[i] = new IndirectTevOrder();
+                TevOrders[i] = new IndirectTevOrder(TexCoordId.Null, TexMapId.Null);
 
             Matrices = new IndirectTexMatrix[3];
             for (int i = 0; i < 3; i++)
-                Matrices[i] = new IndirectTexMatrix();
+                Matrices[i] = new IndirectTexMatrix(new OpenTK.Matrix2x3(0.5f, 0.0f, 0.0f, 0.0f, 0.5f, 0.0f), 1);
 
             Scales = new IndirectTexScale[4];
             for (int i = 0; i < 3; i++)
-                Scales[i] = new IndirectTexScale();
+                Scales[i] = new IndirectTexScale(IndirectScale.ITS_1, IndirectScale.ITS_1);
 
             TevStages = new IndirectTevStage[16];
             for (int i = 0; i < 3; i++)
-                TevStages[i] = new IndirectTevStage();
+                TevStages[i] = new IndirectTevStage(
+                    TevStageId.TevStage0,
+                    IndirectFormat.ITF_8,
+                    IndirectBias.ITB_S,
+                    IndirectMatrix.ITM_OFF,
+                    IndirectWrap.ITW_OFF,
+                    IndirectWrap.ITW_OFF,
+                    false,
+                    false,
+                    IndirectAlpha.ITBA_OFF
+                    );
         }
 
         public IndirectTexturing(EndianBinaryReader reader)

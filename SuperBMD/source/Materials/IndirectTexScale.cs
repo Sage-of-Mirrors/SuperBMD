@@ -19,10 +19,10 @@ namespace SuperBMD.Materials
         /// </summary>
         public IndirectScale ScaleT;
 
-        public IndirectTexScale()
+        public IndirectTexScale(IndirectScale s, IndirectScale t)
         {
-            ScaleS = IndirectScale.ITS_1;
-            ScaleT = IndirectScale.ITS_1;
+            ScaleS = s;
+            ScaleT = t;
         }
 
         public IndirectTexScale(EndianBinaryReader reader)

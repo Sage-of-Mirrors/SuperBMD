@@ -10,7 +10,7 @@ using SuperBMD.Util;
 
 namespace SuperBMD.Materials
 {
-    public class TexMatrix
+    public struct TexMatrix
     {
         public TexGenType Projection;
         public byte Type;
@@ -21,14 +21,6 @@ namespace SuperBMD.Materials
         public Vector2 Translation;
 
         public Matrix4 ProjectionMatrix;
-
-        public TexMatrix()
-        {
-            EffectTranslation = new Vector3();
-            Scale = new Vector2(1, 1);
-            Translation = new Vector2();
-            ProjectionMatrix = Matrix4.Identity;
-        }
 
         public TexMatrix(TexGenType projection, byte type, Vector3 effectTranslation, Vector2 scale, float rotation, Vector2 translation, Matrix4 matrix)
         {

@@ -8,7 +8,7 @@ using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    public class ZMode
+    public struct ZMode
     {
         /// <summary> If false, ZBuffering is disabled and the Z buffer is not updated. </summary>
         public bool Enable;
@@ -22,6 +22,13 @@ namespace SuperBMD.Materials
         /// Example: Disabling this would prevent a write to the Z buffer, useful for UI elements or other things
         /// that shouldn't write to Z Buffer. See glDepthMask. </summary>
         public bool UpdateEnable;
+
+        public ZMode(bool enable, CompareType func, bool update)
+        {
+            Enable = enable;
+            Function = func;
+            UpdateEnable = update;
+        }
 
         public ZMode(EndianBinaryReader reader)
         {

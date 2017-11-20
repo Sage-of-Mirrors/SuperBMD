@@ -13,10 +13,10 @@ namespace SuperBMD.Materials
         public TexCoordId TexCoord;
         public TexMapId TexMap;
 
-        public IndirectTevOrder()
+        public IndirectTevOrder(TexCoordId coordId, TexMapId mapId)
         {
-            TexCoord = TexCoordId.Null;
-            TexMap = TexMapId.Null;
+            TexCoord = coordId;
+            TexMap = mapId;
         }
 
         public IndirectTevOrder(EndianBinaryReader reader)

@@ -8,7 +8,7 @@ using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    public class AlphaCompare
+    public struct AlphaCompare
     {
         /// <summary> subfunction 0 </summary>
         public CompareType Comp0;
@@ -20,6 +20,15 @@ namespace SuperBMD.Materials
         public CompareType Comp1;
         /// <summary> Reference value for subfunction 1. </summary>
         public byte Reference1;
+
+        public AlphaCompare(CompareType comp0, byte ref0, AlphaOp operation, CompareType comp1, byte ref1)
+        {
+            Comp0 = comp0;
+            Reference0 = ref0;
+            Operation = operation;
+            Comp1 = comp1;
+            Reference1 = ref1;
+        }
 
         public AlphaCompare(EndianBinaryReader reader)
         {

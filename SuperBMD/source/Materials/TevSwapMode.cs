@@ -7,7 +7,7 @@ using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    public class TevSwapMode
+    public struct TevSwapMode
     {
         public byte RasSel;
         public byte TexSel;
