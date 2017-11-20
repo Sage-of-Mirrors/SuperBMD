@@ -7,23 +7,19 @@ using System.Globalization;
 
 namespace SuperBMD.Util
 {
-    public class Color
+    public struct Color
     {
         /// <summary> Red component of the <see cref="Color"/>. </summary>
-        public float R { get; private set; }
+        public float R;
 
         /// <summary> Green component of the <see cref="Color"/>. </summary>
-        public float G { get; private set; }
+        public float G;
 
         /// <summary> Blue component of the <see cref="Color"/>. </summary>
-        public float B { get; private set; }
+        public float B;
 
         /// <summary> Alpha component of the <see cref="Color"/>. Defaults to 1f. </summary>
-        public float A { get; private set; }
-
-        public Color()
-        {
-        }
+        public float A;
 
         /// <summary>
         /// Construct new <see cref="Color"/> with the given R, G, B, and A components.
@@ -107,12 +103,12 @@ namespace SuperBMD.Util
 
         public static bool operator ==(Color lhs, Color rhs)
         {
-            return lhs.Equals(rhs);
+            return lhs.R == rhs.R && lhs.G == rhs.G && lhs.B == rhs.B && lhs.A == rhs.A;
         }
 
         public static bool operator !=(Color lhs, Color rhs)
         {
-            return !(lhs.Equals(rhs));
+            return !(lhs == rhs);
         }
 
         public override bool Equals(object obj)
@@ -120,14 +116,8 @@ namespace SuperBMD.Util
             if (!(obj is Color))
                 return false;
 
-            if (obj == null)
-                return false;
-
-            if (ReferenceEquals(this, obj))
-                return true;
-
             Color other = (Color)obj;
-            return this.R == other.R && this.G == other.G && this.B == other.B && this.A == other.A;
+            return this == other;
         }
 
         public override int GetHashCode()

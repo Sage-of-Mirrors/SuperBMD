@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SuperBMD.Util
 {
-    public class Color32
+    public struct Color32
     {
         public byte R, G, B, A;
 
@@ -16,25 +16,6 @@ namespace SuperBMD.Util
             G = g;
             B = b;
             A = a;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-                return false;
-
-            if (!(obj is Color32))
-                return false;
-
-            Color32 col = obj as Color32;
-
-            if (this.R == col.R &&
-                this.G == col.G &&
-                this.B == col.B &&
-                this.A == col.A)
-                return true;
-
-            return false;
         }
 
         public override string ToString()
