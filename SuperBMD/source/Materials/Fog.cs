@@ -8,7 +8,7 @@ using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    public struct Fog
+    public struct Fog : IEquatable<Fog>
     {
         public byte Type;
         public bool Enable;
@@ -53,6 +53,50 @@ namespace SuperBMD.Materials
 
             for (int i = 0; i < 10; i++)
                 writer.Write((ushort)(RangeAdjustmentTable[i] * 256));
+        }
+
+        public static bool operator==(Fog left, Fog right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator!=(Fog left, Fog right)
+        {
+            return !left.Equals(right);
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = Type;
+            hash ^= Convert.ToInt32(Enable);
+            hash ^= Center << 7;
+            hash ^= StartZ.GetHashCode() << 4;
+            hash ^= EndZ.GetHashCode() << 4;
+            hash ^= NearZ.GetHashCode() << 3;
+            hash ^= FarZ.GetHashCode() << 5;
+            hash ^= Color.GetHashCode() << 6;
+
+            return hash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is Fog))
+                return false;
+            else
+                return Equals((Fog)obj);
+        }
+
+        public bool Equals(Fog other)
+        {
+            return Type == other.Type &&
+                Enable == other.Enable &&
+                Center == other.Center &&
+                StartZ == other.StartZ &&
+                EndZ == other.EndZ &&
+                NearZ == other.NearZ &&
+                FarZ == other.FarZ &&
+                Color == other.Color;
         }
     }
 }

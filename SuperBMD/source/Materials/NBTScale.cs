@@ -9,7 +9,7 @@ using SuperBMD.Util;
 
 namespace SuperBMD.Materials
 {
-    public struct NBTScale
+    public struct NBTScale : IEquatable<NBTScale>
     {
         public byte Unknown1;
         public Vector3 Scale;
@@ -33,6 +33,38 @@ namespace SuperBMD.Materials
             writer.Write((sbyte)-1);
             writer.Write((short)-1);
             writer.Write(Scale);
+        }
+
+        public static bool operator ==(NBTScale left, NBTScale right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(NBTScale left, NBTScale right)
+        {
+            return !left.Equals(right);
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = Unknown1;
+            hash ^= Scale.GetHashCode() << 4;
+
+            return hash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is NBTScale))
+                return false;
+            else
+                return Equals((NBTScale)obj);
+        }
+
+        public bool Equals(NBTScale other)
+        {
+            return Unknown1 == other.Unknown1 &&
+                Scale == other.Scale;
         }
     }
 }

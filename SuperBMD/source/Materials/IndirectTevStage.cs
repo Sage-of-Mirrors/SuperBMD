@@ -8,7 +8,7 @@ using SuperBMD.Materials.Enums;
 
 namespace SuperBMD.Materials
 {
-    public struct IndirectTevStage
+    public struct IndirectTevStage : IEquatable<IndirectTevStage>
     {
         public TevStageId TevStage;
         public IndirectFormat IndTexFormat;
@@ -60,6 +60,52 @@ namespace SuperBMD.Materials
             writer.Write((byte)AlphaSel);
 
             writer.Write(new byte[] { 0xFF, 0xFF, 0xFF });
+        }
+
+        public static bool operator ==(IndirectTevStage left, IndirectTevStage right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(IndirectTevStage left, IndirectTevStage right)
+        {
+            return !left.Equals(right);
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = (int)TevStage;
+            hash ^= (int)IndTexFormat << 4;
+            hash ^= (int)IndTexBiasSel << 3;
+            hash ^= (int)IndTexMtxId << 4;
+            hash ^= (int)IndTexWrapS << 5;
+            hash ^= (int)IndTexWrapT << 2;
+            hash ^= Convert.ToInt32(AddPrev);
+            hash ^= Convert.ToInt32(UtcLod);
+            hash ^= (int)AlphaSel << 7;
+
+            return hash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is IndirectTevStage))
+                return false;
+            else
+                return Equals((IndirectTevStage)obj);
+        }
+
+        public bool Equals(IndirectTevStage other)
+        {
+            return TevStage == other.TevStage &&
+                IndTexFormat == other.IndTexFormat &&
+                IndTexBiasSel == other.IndTexBiasSel &&
+                IndTexMtxId == other.IndTexMtxId &&
+                IndTexWrapS == other.IndTexWrapS &&
+                IndTexWrapT == other.IndTexWrapT &&
+                AddPrev == other.AddPrev &&
+                UtcLod == other.UtcLod &&
+                AlphaSel == other.AlphaSel;
         }
     }
 }

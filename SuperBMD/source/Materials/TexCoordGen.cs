@@ -8,7 +8,7 @@ using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    public struct TexCoordGen
+    public struct TexCoordGen : IEquatable<TexCoordGen>
     {
         public TexGenType Type;
         public TexGenSrc Source;
@@ -38,6 +38,40 @@ namespace SuperBMD.Materials
 
             // Pad entry to 4 bytes
             writer.Write((sbyte)-1);
+        }
+
+        public static bool operator ==(TexCoordGen left, TexCoordGen right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(TexCoordGen left, TexCoordGen right)
+        {
+            return !left.Equals(right);
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = (int)Type;
+            hash ^= (int)Source << 3;
+            hash ^= (int)TexMatrixSource << 4;
+
+            return hash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is TexCoordGen))
+                return false;
+            else
+                return Equals((TexCoordGen)obj);
+        }
+
+        public bool Equals(TexCoordGen other)
+        {
+            return Type == other.Type &&
+                Source == other.Source &&
+                TexMatrixSource == other.TexMatrixSource;
         }
     }
 }

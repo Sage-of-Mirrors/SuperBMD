@@ -8,7 +8,7 @@ using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    public struct BlendMode
+    public struct BlendMode : IEquatable<BlendMode>
     {
         /// <summary> Blending Type </summary>
         public Enums.BlendMode Type;
@@ -41,6 +41,42 @@ namespace SuperBMD.Materials
             write.Write((byte)SourceFact);
             write.Write((byte)DestinationFact);
             write.Write((byte)Operation);
+        }
+
+        public static bool operator==(BlendMode left, BlendMode right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator!=(BlendMode left, BlendMode right)
+        {
+            return !left.Equals(right);
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = (int)Type;
+            hash ^= (int)SourceFact << 3;
+            hash ^= (int)DestinationFact << 4;
+            hash ^= (int)Operation << 3;
+
+            return hash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is BlendMode))
+                return false;
+            else
+                return Equals((BlendMode)obj);
+        }
+
+        public bool Equals(BlendMode other)
+        {
+            return Type == other.Type &&
+                SourceFact == other.SourceFact &&
+                DestinationFact == other.DestinationFact &&
+                Operation == other.Operation;
         }
     }
 }

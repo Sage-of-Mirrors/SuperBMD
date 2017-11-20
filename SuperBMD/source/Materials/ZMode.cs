@@ -8,7 +8,7 @@ using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    public struct ZMode
+    public struct ZMode : IEquatable<ZMode>
     {
         /// <summary> If false, ZBuffering is disabled and the Z buffer is not updated. </summary>
         public bool Enable;
@@ -44,6 +44,40 @@ namespace SuperBMD.Materials
             writer.Write((byte)Function);
             writer.Write(UpdateEnable);
             writer.Write((sbyte)-1);
+        }
+
+        public static bool operator ==(ZMode left, ZMode right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ZMode left, ZMode right)
+        {
+            return !left.Equals(right);
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = Convert.ToInt32(Enable);
+            hash ^= (int)Function << 3;
+            hash ^= Convert.ToInt32(UpdateEnable) << 2;
+
+            return hash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is ZMode))
+                return false;
+            else
+                return Equals((ZMode)obj);
+        }
+
+        public bool Equals(ZMode other)
+        {
+            return Enable == other.Enable &&
+                Function == other.Function &&
+                UpdateEnable == other.UpdateEnable;
         }
     }
 }

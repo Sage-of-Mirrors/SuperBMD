@@ -10,7 +10,7 @@ using SuperBMD.Util;
 
 namespace SuperBMD.Materials
 {
-    public struct TexMatrix
+    public struct TexMatrix : IEquatable<TexMatrix>
     {
         public TexGenType Projection;
         public byte Type;
@@ -64,6 +64,48 @@ namespace SuperBMD.Materials
             writer.Write((short)-1);
             writer.Write(Translation);
             writer.Write(ProjectionMatrix);
+        }
+
+        public static bool operator ==(TexMatrix left, TexMatrix right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(TexMatrix left, TexMatrix right)
+        {
+            return !left.Equals(right);
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = (int)Projection;
+            hash ^= Type;
+            hash ^= EffectTranslation.GetHashCode() << 7;
+            hash ^= Scale.GetHashCode() << 2;
+            hash ^= Rotation.GetHashCode() << 6;
+            hash ^= Translation.GetHashCode() << 3;
+            hash ^= ProjectionMatrix.GetHashCode() << 6;
+
+            return hash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is TexMatrix))
+                return false;
+            else
+                return Equals((TexMatrix)obj);
+        }
+
+        public bool Equals(TexMatrix other)
+        {
+            return Projection == other.Projection &&
+                Type == other.Type &&
+                EffectTranslation == other.EffectTranslation &&
+                Scale == other.Scale &&
+                Rotation == other.Rotation &&
+                Translation == other.Translation &&
+                ProjectionMatrix == other.ProjectionMatrix;
         }
     }
 }

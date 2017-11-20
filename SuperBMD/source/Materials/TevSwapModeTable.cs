@@ -7,7 +7,7 @@ using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    public struct TevSwapModeTable
+    public struct TevSwapModeTable : IEquatable<TevSwapModeTable>
     {
         public byte R;
         public byte G;
@@ -36,6 +36,42 @@ namespace SuperBMD.Materials
             writer.Write(G);
             writer.Write(B);
             writer.Write(A);
+        }
+
+        public static bool operator ==(TevSwapModeTable left, TevSwapModeTable right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(TevSwapModeTable left, TevSwapModeTable right)
+        {
+            return !left.Equals(right);
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = R;
+            hash ^= G << 3;
+            hash ^= B << 2;
+            hash ^= A << 6;
+
+            return hash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is TevSwapModeTable))
+                return false;
+            else
+                return Equals((TevSwapModeTable)obj);
+        }
+
+        public bool Equals(TevSwapModeTable other)
+        {
+            return R == other.R &&
+                G == other.G &&
+                B == other.B &&
+                A == other.A;
         }
     }
 }

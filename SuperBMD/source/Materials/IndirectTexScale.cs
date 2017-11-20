@@ -8,16 +8,16 @@ using SuperBMD.Materials.Enums;
 
 namespace SuperBMD.Materials
 {
-    public class IndirectTexScale
+    public class IndirectTexScale : IEquatable<IndirectTexScale>
     {
         /// <summary>
         /// Scale value for the source texture coordinates' S (U) component
         /// </summary>
-        public IndirectScale ScaleS;
+        public IndirectScale ScaleS { get; private set; }
         /// <summary>
         /// Scale value for the source texture coordinates' T (V) component
         /// </summary>
-        public IndirectScale ScaleT;
+        public IndirectScale ScaleT { get; private set; }
 
         public IndirectTexScale(IndirectScale s, IndirectScale t)
         {
@@ -37,6 +37,35 @@ namespace SuperBMD.Materials
             writer.Write((byte)ScaleS);
             writer.Write((byte)ScaleT);
             writer.Write((short)-1);
+        }
+
+        public static bool operator==(IndirectTexScale left, IndirectTexScale right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(IndirectTexScale left, IndirectTexScale right)
+        {
+            return !left.Equals(right);
+        }
+
+        public override int GetHashCode()
+        {
+            return ((int)ScaleS << 5) ^ ((int)ScaleT << 2);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is IndirectTexScale))
+                return false;
+            else
+                return Equals((IndirectTexScale)obj);
+        }
+
+        public bool Equals(IndirectTexScale other)
+        {
+            return ScaleS == other.ScaleS &&
+                ScaleT == other.ScaleT;
         }
     }
 }

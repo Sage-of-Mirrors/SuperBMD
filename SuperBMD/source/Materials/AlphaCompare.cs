@@ -8,7 +8,7 @@ using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    public struct AlphaCompare
+    public struct AlphaCompare : IEquatable<AlphaCompare>
     {
         /// <summary> subfunction 0 </summary>
         public CompareType Comp0;
@@ -49,6 +49,44 @@ namespace SuperBMD.Materials
             writer.Write(Reference1);
             writer.Write((sbyte)-1);
             writer.Write((short)-1);
+        }
+
+        public static bool operator==(AlphaCompare left, AlphaCompare right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator!=(AlphaCompare left, AlphaCompare right)
+        {
+            return !left.Equals(right);
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = (int)Comp0;
+            hash ^= Reference0 << 4;
+            hash ^= (int)Operation << 7;
+            hash ^= (int)Comp1 << 2;
+            hash ^= Reference1 << 3;
+
+            return hash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is AlphaCompare))
+                return false;
+            else
+                return Equals((AlphaCompare)obj);
+        }
+
+        public bool Equals(AlphaCompare other)
+        {
+            return Comp0 == other.Comp0 &&
+                Reference0 == other.Reference0 &&
+                Operation == other.Operation &&
+                Comp1 == other.Comp1 &&
+                Reference1 == other.Reference1;
         }
     }
 }

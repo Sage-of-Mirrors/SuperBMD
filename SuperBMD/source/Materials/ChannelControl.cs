@@ -8,7 +8,7 @@ using GameFormatReader.Common;
 
 namespace SuperBMD.Materials
 {
-    public struct ChannelControl
+    public struct ChannelControl : IEquatable<ChannelControl>
     {
         public bool Enable;
         public ColorSrc MaterialSrcColor;
@@ -49,6 +49,46 @@ namespace SuperBMD.Materials
             writer.Write((byte)AmbientSrcColor);
 
             writer.Write((short)-1);
+        }
+
+        public static bool operator==(ChannelControl left, ChannelControl right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator!=(ChannelControl left, ChannelControl right)
+        {
+            return !left.Equals(right);
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = Convert.ToInt32(Enable);
+            hash ^= (int)MaterialSrcColor << 4;
+            hash ^= (int)LitMask << 4;
+            hash ^= (int)DiffuseFunction << 6;
+            hash ^= (int)AttenuationFunction << 5;
+            hash ^= (int)AmbientSrcColor << 2;
+
+            return hash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is ChannelControl))
+                return false;
+            else
+                return Equals((ChannelControl)obj);
+        }
+
+        public bool Equals(ChannelControl other)
+        {
+            return Enable == other.Enable &&
+                MaterialSrcColor == other.MaterialSrcColor &&
+                LitMask == other.LitMask &&
+                DiffuseFunction == other.DiffuseFunction &&
+                AttenuationFunction == other.AttenuationFunction &&
+                AmbientSrcColor == other.AmbientSrcColor;
         }
     }
 }

@@ -33,7 +33,7 @@ namespace SuperBMD.Materials
         public TevRegisterId AlphaRegId;
     }
 
-    public struct TevStage
+    public struct TevStage : IEquatable<TevStage>
     {
         public CombineColorInput ColorInA;
         public CombineColorInput ColorInB;
@@ -175,6 +175,73 @@ namespace SuperBMD.Materials
             ret += '\n';
 
             return ret;
+        }
+
+        public static bool operator ==(TevStage left, TevStage right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(TevStage left, TevStage right)
+        {
+            return !left.Equals(right);
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = (int)ColorInA;
+            hash ^= (int)ColorInB << 3;
+            hash ^= (int)ColorInC << 3;
+            hash ^= (int)ColorInD << 5;
+
+            hash ^= (int)ColorOp << 2;
+            hash ^= (int)ColorBias << 6;
+            hash ^= (int)ColorScale << 5;
+            hash ^= Convert.ToInt32(ColorClamp);
+            hash ^= (int)ColorRegId << 4;
+
+            hash ^= (int)AlphaInA;
+            hash ^= (int)AlphaInB << 2;
+            hash ^= (int)AlphaInC << 6;
+            hash ^= (int)AlphaInD << 5;
+
+            hash ^= (int)AlphaOp << 4;
+            hash ^= (int)AlphaBias << 5;
+            hash ^= (int)AlphaScale << 4;
+            hash ^= Convert.ToInt32(AlphaClamp);
+            hash ^= (int)AlphaRegId << 7;
+
+            return hash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is TevStage))
+                return false;
+            else
+                return Equals((TevStage)obj);
+        }
+
+        public bool Equals(TevStage other)
+        {
+            return ColorInA == other.ColorInA &&
+                ColorInB == other.ColorInB &&
+                ColorInC == other.ColorInC &&
+                ColorInD == other.ColorInD &&
+                ColorOp == other.ColorOp &&
+                ColorBias == other.ColorBias &&
+                ColorScale == other.ColorScale &&
+                ColorClamp == other.ColorClamp &&
+                ColorRegId == other.ColorRegId &&
+                AlphaInA == other.AlphaInA &&
+                AlphaInB == other.AlphaInB &&
+                AlphaInC == other.AlphaInC &&
+                AlphaInD == other.AlphaInD &&
+                AlphaOp == other.AlphaOp &&
+                AlphaBias == other.AlphaBias &&
+                AlphaScale == other.AlphaScale &&
+                AlphaClamp == other.AlphaClamp &&
+                AlphaRegId == other.AlphaRegId;
         }
     }
 }
