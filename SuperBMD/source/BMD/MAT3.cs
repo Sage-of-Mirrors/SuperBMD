@@ -13,11 +13,10 @@ namespace SuperBMD.BMD
 {
     public class MAT3
     {
-        public List<BinaryTextureImage> TextureList;
-
         private List<Material> m_Materials;
         private List<int> m_RemapIndices;
         private List<string> m_MaterialNames;
+
         private List<IndirectTexturing> m_IndirectTexBlock;
         private List<CullMode> m_CullModeBlock;
         private List<Color> m_MaterialColorBlock;
@@ -322,7 +321,7 @@ namespace SuperBMD.BMD
                 if (texGenIndex == -1)
                     continue;
                 else
-                    mat.PostTexMatrixGens[i] = m_TexCoord2GenBlock[texGenIndex];
+                    mat.PostTexCoordGens[i] = m_TexCoord2GenBlock[texGenIndex];
             }
 
             for (int i = 0; i < 10; i++)
@@ -340,7 +339,7 @@ namespace SuperBMD.BMD
                 if (texMatIndex == -1)
                     continue;
                 else
-                    mat.TexMatrix2[i] = m_TexMatrix2Block[texMatIndex];
+                    mat.PostTexMatrix[i] = m_TexMatrix2Block[texMatIndex];
             }
 
             for (int i = 0; i < 8; i++)
@@ -435,14 +434,11 @@ namespace SuperBMD.BMD
 
                 if (meshMat.HasTextureDiffuse)
                 {
-                    bmdMaterial.AddTexGen(TexGenType.Matrix2x4, TexGenSrc.TexCoord0, Materials.Enums.TexMatrix.Identity);
-                    bmdMaterial.AddTexMatrix(TexGenType.Matrix3x4, 0, OpenTK.Vector3.Zero, OpenTK.Vector2.One, 0, OpenTK.Vector2.Zero, OpenTK.Matrix4.Identity);
-
                     string texName = System.IO.Path.GetFileNameWithoutExtension(meshMat.TextureDiffuse.FilePath);
-                    bmdMaterial.AddTexIndex(textures.Textures.IndexOf(textures[texName]));
-
-                    bmdMaterial.AddTevStage(SetUpTevStageParametersForTexture());
+                    bmdMaterial.SetupTexture(textures.Textures.IndexOf(textures[texName]));
                 }
+                else
+                    bmdMaterial.SetupNoTexture();
             }
 
             FillMaterialDataBlocks();
@@ -486,199 +482,131 @@ namespace SuperBMD.BMD
             NumTevStagesBlock = new List<byte>();
         }
 
-        private TevStageParameters SetUpTevStageParametersForTexture()
-        {
-            TevStageParameters parameters = new TevStageParameters
-            {
-                ColorInA = CombineColorInput.TexColor,
-                ColorInB = CombineColorInput.TexColor,
-                ColorInC = CombineColorInput.Zero,
-                ColorInD = CombineColorInput.Zero,
-
-                ColorOp = TevOp.Add,
-                ColorBias = TevBias.Zero,
-                ColorScale = TevScale.Scale_1,
-                ColorClamp = true,
-                ColorRegId = TevRegisterId.TevPrev,
-
-                AlphaInA = CombineAlphaInput.TexAlpha,
-                AlphaInB = CombineAlphaInput.TexAlpha,
-                AlphaInC = CombineAlphaInput.Zero,
-                AlphaInD = CombineAlphaInput.Zero,
-
-                AlphaOp = TevOp.Add,
-                AlphaBias = TevBias.Zero,
-                AlphaScale = TevScale.Scale_1,
-                AlphaClamp = true,
-                AlphaRegId = TevRegisterId.TevPrev
-            };
-
-            return parameters;
-        }
-
         private void FillMaterialDataBlocks()
         {
             foreach (Material mat in m_Materials)
             {
-                if (!m_IndirectTexBlock.Contains(mat.IndTexEntry))
-                    m_IndirectTexBlock.Add(mat.IndTexEntry);
+                m_IndirectTexBlock.Add(mat.IndTexEntry);
 
                 if (!m_CullModeBlock.Contains(mat.CullMode))
                     m_CullModeBlock.Add(mat.CullMode);
 
                 for (int i = 0; i < 2; i++)
                 {
-                    if (!m_MaterialColorBlock.Contains(mat.MaterialColors[i]))
-                        m_MaterialColorBlock.Add(mat.MaterialColors[i]);
+                    if (mat.MaterialColors[i] == null)
+                        break;
+                    if (!m_MaterialColorBlock.Contains(mat.MaterialColors[i].Value))
+                        m_MaterialColorBlock.Add(mat.MaterialColors[i].Value);
                 }
 
                 for (int i = 0; i < 4; i++)
                 {
                     if (mat.ChannelControls[i] == null)
                         break;
-                    else
-                    {
-                        if (!m_ChannelControlBlock.Contains(mat.ChannelControls[i]))
-                            m_ChannelControlBlock.Add(mat.ChannelControls[i]);
-                    }
+                    if (!m_ChannelControlBlock.Contains(mat.ChannelControls[i].Value))
+                        m_ChannelControlBlock.Add(mat.ChannelControls[i].Value);
                 }
 
                 for (int i = 0; i < 2; i++)
                 {
-                    if (!m_AmbientColorBlock.Contains(mat.AmbientColors[i]))
-                        m_AmbientColorBlock.Add(mat.AmbientColors[i]);
+                    if (!m_AmbientColorBlock.Contains(mat.AmbientColors[i].Value))
+                        m_AmbientColorBlock.Add(mat.AmbientColors[i].Value);
                 }
 
                 for (int i = 0; i < 8; i++)
                 {
                     if (mat.LightingColors[i] == null)
                         break;
-                    else
-                    {
-                        if (!m_LightingColorBlock.Contains(mat.LightingColors[i]))
-                            m_LightingColorBlock.Add(mat.LightingColors[i]);
-                    }
+                    if (!m_LightingColorBlock.Contains(mat.LightingColors[i].Value))
+                        m_LightingColorBlock.Add(mat.LightingColors[i].Value);
                 }
 
                 for (int i = 0; i < 8; i++)
                 {
                     if (mat.TexCoord1Gens[i] == null)
                         break;
-                    else
-                    {
-                        if (!m_TexCoord1GenBlock.Contains(mat.TexCoord1Gens[i]))
-                            m_TexCoord1GenBlock.Add(mat.TexCoord1Gens[i]);
-                    }
+                    if (!m_TexCoord1GenBlock.Contains(mat.TexCoord1Gens[i].Value))
+                        m_TexCoord1GenBlock.Add(mat.TexCoord1Gens[i].Value);
                 }
 
                 for (int i = 0; i < 8; i++)
                 {
-                    if (mat.PostTexMatrixGens[i] == null)
+                    if (mat.PostTexCoordGens[i] == null)
                         break;
-                    else
-                    {
-                        if (!m_TexCoord2GenBlock.Contains(mat.PostTexMatrixGens[i]))
-                            m_TexCoord2GenBlock.Add(mat.PostTexMatrixGens[i]);
-                    }
+                    if (!m_TexCoord2GenBlock.Contains(mat.PostTexCoordGens[i].Value))
+                        m_TexCoord2GenBlock.Add(mat.PostTexCoordGens[i].Value);
                 }
 
                 for (int i = 0; i < 10; i++)
                 {
                     if (mat.TexMatrix1[i] == null)
                         break;
-                    else
-                    {
-                        if (!m_TexMatrix1Block.Contains(mat.TexMatrix1[i]))
-                            m_TexMatrix1Block.Add(mat.TexMatrix1[i]);
-                    }
+                    if (!m_TexMatrix1Block.Contains(mat.TexMatrix1[i].Value))
+                        m_TexMatrix1Block.Add(mat.TexMatrix1[i].Value);
                 }
 
                 for (int i = 0; i < 20; i++)
                 {
-                    if (mat.TexMatrix2[i] == null)
+                    if (mat.PostTexMatrix[i] == null)
                         break;
-                    else
-                    {
-                        if (!m_TexMatrix2Block.Contains(mat.TexMatrix2[i]))
-                            m_TexMatrix2Block.Add(mat.TexMatrix2[i]);
-                    }
+                    if (!m_TexMatrix2Block.Contains(mat.PostTexMatrix[i].Value))
+                        m_TexMatrix2Block.Add(mat.PostTexMatrix[i].Value);
                 }
 
                 for (int i = 0; i < 8; i++)
                 {
                     if (mat.TextureIndices[i] == -1)
                         break;
-                    else
-                    {
-                        if (!m_TexRemapBlock.Contains((short)mat.TextureIndices[i]))
-                            m_TexRemapBlock.Add((short)mat.TextureIndices[i]);
-                    }
+                    if (!m_TexRemapBlock.Contains((short)mat.TextureIndices[i]))
+                        m_TexRemapBlock.Add((short)mat.TextureIndices[i]);
                 }
 
                 for (int i = 0; i < 4; i++)
                 {
                     if (mat.KonstColors[i] == null)
                         break;
-                    else
-                    {
-                        if (!m_TevKonstColorBlock.Contains(mat.KonstColors[i]))
-                            m_TevKonstColorBlock.Add(mat.KonstColors[i]);
-                    }
+                    if (!m_TevKonstColorBlock.Contains(mat.KonstColors[i].Value))
+                        m_TevKonstColorBlock.Add(mat.KonstColors[i].Value);
                 }
 
                 for (int i = 0; i < 16; i++)
                 {
                     if (mat.TevOrders[i] == null)
                         break;
-                    else
-                    {
-                        if (!m_TevOrderBlock.Contains(mat.TevOrders[i]))
-                            m_TevOrderBlock.Add(mat.TevOrders[i]);
-                    }
+                    if (!m_TevOrderBlock.Contains(mat.TevOrders[i].Value))
+                        m_TevOrderBlock.Add(mat.TevOrders[i].Value);
                 }
 
                 for (int i = 0; i < 16; i++)
                 {
                     if (mat.TevColors[i] == null)
                         break;
-                    else
-                    {
-                        if (!m_TevColorBlock.Contains(mat.TevColors[i]))
-                            m_TevColorBlock.Add(mat.TevColors[i]);
-                    }
+                    if (!m_TevColorBlock.Contains(mat.TevColors[i].Value))
+                        m_TevColorBlock.Add(mat.TevColors[i].Value);
                 }
 
                 for (int i = 0; i < 16; i++)
                 {
                     if (mat.TevStages[i] == null)
                         break;
-                    else
-                    {
-                        if (!m_TevStageBlock.Contains(mat.TevStages[i]))
-                            m_TevStageBlock.Add(mat.TevStages[i]);
-                    }
+                    if (!m_TevStageBlock.Contains(mat.TevStages[i].Value))
+                        m_TevStageBlock.Add(mat.TevStages[i].Value);
                 }
 
                 for (int i = 0; i < 16; i++)
                 {
                     if (mat.SwapModes[i] == null)
                         break;
-                    else
-                    {
-                        if (!m_SwapModeBlock.Contains(mat.SwapModes[i]))
-                            m_SwapModeBlock.Add(mat.SwapModes[i]);
-                    }
+                    if (!m_SwapModeBlock.Contains(mat.SwapModes[i].Value))
+                        m_SwapModeBlock.Add(mat.SwapModes[i].Value);
                 }
 
                 for (int i = 0; i < 16; i++)
                 {
                     if (mat.SwapTables[i] == null)
                         break;
-                    else
-                    {
-                        if (!m_SwapTableBlock.Contains(mat.SwapTables[i]))
-                            m_SwapTableBlock.Add(mat.SwapTables[i]);
-                    }
+                    if (!m_SwapTableBlock.Contains(mat.SwapTables[i].Value))
+                        m_SwapTableBlock.Add(mat.SwapTables[i].Value);
                 }
 
                 if (!m_FogBlock.Contains(mat.FogInfo))
@@ -1068,40 +996,40 @@ namespace SuperBMD.BMD
             writer.Write((byte)m_zModeBlock.IndexOf(mat.ZMode));
             writer.Write((byte)m_ditherBlock.IndexOf(mat.Dither));
 
-            writer.Write((short)m_MaterialColorBlock.IndexOf(mat.MaterialColors[0]));
-            writer.Write((short)m_MaterialColorBlock.IndexOf(mat.MaterialColors[1]));
+            writer.Write((short)m_MaterialColorBlock.IndexOf(mat.MaterialColors[0].Value));
+            writer.Write((short)m_MaterialColorBlock.IndexOf(mat.MaterialColors[1].Value));
 
             for (int i = 0; i < 4; i++)
             {
                 if (mat.ChannelControls[i] != null)
-                    writer.Write((short)m_ChannelControlBlock.IndexOf(mat.ChannelControls[i]));
+                    writer.Write((short)m_ChannelControlBlock.IndexOf(mat.ChannelControls[i].Value));
                 else
                     writer.Write((short)-1);
             }
 
-            writer.Write((short)m_AmbientColorBlock.IndexOf(mat.AmbientColors[0]));
-            writer.Write((short)m_AmbientColorBlock.IndexOf(mat.AmbientColors[1]));
+            writer.Write((short)m_AmbientColorBlock.IndexOf(mat.AmbientColors[0].Value));
+            writer.Write((short)m_AmbientColorBlock.IndexOf(mat.AmbientColors[1].Value));
 
             for (int i = 0; i < 8; i++)
             {
-                if (m_LightingColorBlock.Count == 0)
-                    writer.Write((short)-1);
+                if (m_LightingColorBlock.Count != 0)
+                    writer.Write((short)m_LightingColorBlock.IndexOf(mat.LightingColors[i].Value));
                 else
-                    writer.Write((short)m_LightingColorBlock.IndexOf(mat.LightingColors[i]));
+                    writer.Write((short)-1);
             }
 
             for (int i = 0; i < 8; i++)
             {
                 if (mat.TexCoord1Gens[i] != null)
-                    writer.Write((short)m_TexCoord1GenBlock.IndexOf(mat.TexCoord1Gens[i]));
+                    writer.Write((short)m_TexCoord1GenBlock.IndexOf(mat.TexCoord1Gens[i].Value));
                 else
                     writer.Write((short)-1);
             }
 
             for (int i = 0; i < 8; i++)
             {
-                if (mat.PostTexMatrixGens[i] != null)
-                    writer.Write((short)m_TexCoord2GenBlock.IndexOf(mat.PostTexMatrixGens[i]));
+                if (mat.PostTexCoordGens[i] != null)
+                    writer.Write((short)m_TexCoord2GenBlock.IndexOf(mat.PostTexCoordGens[i].Value));
                 else
                     writer.Write((short)-1);
             }
@@ -1109,15 +1037,15 @@ namespace SuperBMD.BMD
             for (int i = 0; i < 10; i++)
             {
                 if (mat.TexMatrix1[i] != null)
-                    writer.Write((short)m_TexMatrix1Block.IndexOf(mat.TexMatrix1[i]));
+                    writer.Write((short)m_TexMatrix1Block.IndexOf(mat.TexMatrix1[i].Value));
                 else
                     writer.Write((short)-1);
             }
 
             for (int i = 0; i < 20; i++)
             {
-                if (mat.TexMatrix2[i] != null)
-                    writer.Write((short)m_TexMatrix2Block.IndexOf(mat.TexMatrix2[i]));
+                if (mat.PostTexMatrix[i] != null)
+                    writer.Write((short)m_TexMatrix2Block.IndexOf(mat.PostTexMatrix[i].Value));
                 else
                     writer.Write((short)-1);
             }
@@ -1133,7 +1061,7 @@ namespace SuperBMD.BMD
             for (int i = 0; i < 4; i++)
             {
                 if (mat.KonstColors[i] != null)
-                    writer.Write((short)m_TevKonstColorBlock.IndexOf(mat.KonstColors[i]));
+                    writer.Write((short)m_TevKonstColorBlock.IndexOf(mat.KonstColors[i].Value));
                 else
                     writer.Write((short)-1);
             }
@@ -1151,7 +1079,7 @@ namespace SuperBMD.BMD
             for (int i = 0; i < 16; i++)
             {
                 if (mat.TevOrders[i] != null)
-                    writer.Write((short)m_TevOrderBlock.IndexOf(mat.TevOrders[i]));
+                    writer.Write((short)m_TevOrderBlock.IndexOf(mat.TevOrders[i].Value));
                 else
                     writer.Write((short)-1);
             }
@@ -1159,7 +1087,7 @@ namespace SuperBMD.BMD
             for (int i = 0; i < 4; i++)
             {
                 if (mat.TevColors[i] != null)
-                    writer.Write((short)m_TevColorBlock.IndexOf(mat.TevColors[i]));
+                    writer.Write((short)m_TevColorBlock.IndexOf(mat.TevColors[i].Value));
                 else
                     writer.Write((short)-1);
             }
@@ -1167,7 +1095,7 @@ namespace SuperBMD.BMD
             for (int i = 0; i < 16; i++)
             {
                 if (mat.TevStages[i] != null)
-                    writer.Write((short)m_TevStageBlock.IndexOf(mat.TevStages[i]));
+                    writer.Write((short)m_TevStageBlock.IndexOf(mat.TevStages[i].Value));
                 else
                     writer.Write((short)-1);
             }
@@ -1175,7 +1103,7 @@ namespace SuperBMD.BMD
             for (int i = 0; i < 16; i++)
             {
                 if (mat.SwapModes[i] != null)
-                    writer.Write((short)m_SwapModeBlock.IndexOf(mat.SwapModes[i]));
+                    writer.Write((short)m_SwapModeBlock.IndexOf(mat.SwapModes[i].Value));
                 else
                     writer.Write((short)-1);
             }
@@ -1183,7 +1111,7 @@ namespace SuperBMD.BMD
             for (int i = 0; i < 16; i++)
             {
                 if (mat.SwapTables[i] != null)
-                    writer.Write((short)m_SwapTableBlock.IndexOf(mat.SwapTables[i]));
+                    writer.Write((short)m_SwapTableBlock.IndexOf(mat.SwapTables[i].Value));
                 else
                     writer.Write((short)-1);
             }

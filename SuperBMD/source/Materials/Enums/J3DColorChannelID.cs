@@ -12,5 +12,7 @@ namespace SuperBMD.Materials.Enums
         Alpha0 = 1,
         Color1 = 2,
         Alpha1 = 3,
+
+        Null = 255
     }
 }
