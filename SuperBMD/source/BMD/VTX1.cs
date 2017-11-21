@@ -14,10 +14,12 @@ namespace SuperBMD.BMD
     public class VTX1
     {
         public VertexData Attributes { get; private set; }
+        public SortedDictionary<GXVertexAttribute, Tuple<GXDataType, byte>> StorageFormats { get; private set; }
 
         public VTX1(EndianBinaryReader reader, int offset)
         {
             Attributes = new VertexData();
+            StorageFormats = new SortedDictionary<GXVertexAttribute, Tuple<GXDataType, byte>>();
 
             reader.BaseStream.Seek(offset, System.IO.SeekOrigin.Begin);
 
@@ -37,6 +39,8 @@ namespace SuperBMD.BMD
                 GXComponentCount componentCount = (GXComponentCount)reader.ReadInt32();
                 GXDataType componentType = (GXDataType)reader.ReadInt32();
                 byte fractionalBitCount = reader.ReadByte();
+                StorageFormats.Add(attrib, new Tuple<GXDataType, byte>(componentType, fractionalBitCount));
+
                 reader.Skip(3);
                 long curPos = reader.BaseStream.Position;
 
@@ -55,30 +59,35 @@ namespace SuperBMD.BMD
         public VTX1(Assimp.Scene scene)
         {
             Attributes = new VertexData();
+            StorageFormats = new SortedDictionary<GXVertexAttribute, Tuple<GXDataType, byte>>();
 
             foreach (Assimp.Mesh mesh in scene.Meshes)
             {
                 if (mesh.HasVertices)
                 {
                     SetAssimpPositionAttribute(mesh);
+                    StorageFormats.Add(GXVertexAttribute.Position, new Tuple<GXDataType, byte>(GXDataType.Float32, 0));
                 }
                 else
                     throw new Exception($"Mesh \"{ mesh.Name }\" has no vertices!");
                 if (mesh.HasNormals)
                 {
                     SetAssimpNormalAttribute(mesh);
+                    StorageFormats.Add(GXVertexAttribute.Normal, new Tuple<GXDataType, byte>(GXDataType.Float32, 0));
                 }
                 else
                     Console.WriteLine($"Mesh \"{ mesh.Name }\" has no normals.");
                 if (mesh.HasVertexColors(0))
                 {
                     SetAssimpColorAttribute(0, GXVertexAttribute.Color0, mesh);
+                    StorageFormats.Add(GXVertexAttribute.Color0, new Tuple<GXDataType, byte>(GXDataType.RGBA8, 0));
                 }
                 else
                     Console.WriteLine($"Mesh \"{ mesh.Name }\" has no colors on channel 0.");
                 if (mesh.HasVertexColors(1))
                 {
                     SetAssimpColorAttribute(1, GXVertexAttribute.Color1, mesh);
+                    StorageFormats.Add(GXVertexAttribute.Color1, new Tuple<GXDataType, byte>(GXDataType.RGBA8, 0));
                 }
                 else
                     Console.WriteLine($"Mesh \"{ mesh.Name }\" has no colors on channel 1.");
@@ -87,6 +96,7 @@ namespace SuperBMD.BMD
                     if (mesh.HasTextureCoords(texCoords))
                     {
                         SetAssimpTexCoordAttribute(texCoords, GXVertexAttribute.Tex0 + texCoords, mesh);
+                        StorageFormats.Add(GXVertexAttribute.Tex0 + texCoords, new Tuple<GXDataType, byte>(GXDataType.Float32, 0));
                     }
                     else
                         Console.WriteLine($"Mesh \"{ mesh.Name }\" has no texture coordinates on channel { texCoords }.");
@@ -630,23 +640,23 @@ namespace SuperBMD.BMD
                         break;
                     case GXVertexAttribute.Position:
                         writer.Write(1);
-                        writer.Write((int)GXDataType.Float32);
-                        writer.Write((byte)0);
+                        writer.Write((int)StorageFormats[attrib].Item1);
+                        writer.Write(StorageFormats[attrib].Item2);
                         writer.Write((sbyte)-1);
                         writer.Write((short)-1);
                         break;
                     case GXVertexAttribute.Normal:
                         writer.Write(0);
-                        writer.Write((int)GXDataType.Float32);
-                        writer.Write((byte)0);
+                        writer.Write((int)StorageFormats[attrib].Item1);
+                        writer.Write(StorageFormats[attrib].Item2);
                         writer.Write((sbyte)-1);
                         writer.Write((short)-1);
                         break;
                     case GXVertexAttribute.Color0:
                     case GXVertexAttribute.Color1:
                         writer.Write(1);
-                        writer.Write((int)GXDataType.RGBA8);
-                        writer.Write((byte)0);
+                        writer.Write((int)StorageFormats[attrib].Item1);
+                        writer.Write(StorageFormats[attrib].Item2);
                         writer.Write((sbyte)-1);
                         writer.Write((short)-1);
                         break;
@@ -659,8 +669,8 @@ namespace SuperBMD.BMD
                     case GXVertexAttribute.Tex6:
                     case GXVertexAttribute.Tex7:
                         writer.Write(1);
-                        writer.Write((int)GXDataType.Float32);
-                        writer.Write((byte)0);
+                        writer.Write((int)StorageFormats[attrib].Item1);
+                        writer.Write(StorageFormats[attrib].Item2);
                         writer.Write((sbyte)-1);
                         writer.Write((short)-1);
                         break;
@@ -691,16 +701,70 @@ namespace SuperBMD.BMD
                         writer.Write((int)(writer.BaseStream.Length - baseOffset));
                         writer.Seek((int)endOffset, System.IO.SeekOrigin.Begin);
 
-                        foreach (Vector3 vec3 in Attributes.Positions)
-                            writer.Write(vec3);
+                        foreach (Vector3 posVec in (List<Vector3>)Attributes.GetAttributeData(attrib))
+                        {
+                            switch (StorageFormats[attrib].Item1)
+                            {
+                                case GXDataType.Unsigned8:
+                                    writer.Write((byte)(posVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((byte)(posVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((byte)(posVec.Z * (1 << StorageFormats[attrib].Item2)));
+                                    break;
+                                case GXDataType.Signed8:
+                                    writer.Write((sbyte)(posVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((sbyte)(posVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((sbyte)(posVec.Z * (1 << StorageFormats[attrib].Item2)));
+                                    break;
+                                case GXDataType.Unsigned16:
+                                    writer.Write((ushort)(posVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((ushort)(posVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((ushort)(posVec.Z * (1 << StorageFormats[attrib].Item2)));
+                                    break;
+                                case GXDataType.Signed16:
+                                    writer.Write((short)(posVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((short)(posVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((short)(posVec.Z * (1 << StorageFormats[attrib].Item2)));
+                                    break;
+                                case GXDataType.Float32:
+                                    writer.Write(posVec);
+                                    break;
+                            }
+                        }
                         break;
                     case GXVertexAttribute.Normal:
                         writer.Seek(baseOffset + 0x10, System.IO.SeekOrigin.Begin);
                         writer.Write((int)(writer.BaseStream.Length - baseOffset));
                         writer.Seek((int)endOffset, System.IO.SeekOrigin.Begin);
 
-                        foreach (Vector3 vec3 in Attributes.Normals)
-                            writer.Write(vec3);
+                        foreach (Vector3 normVec in Attributes.Normals)
+                        {
+                            switch (StorageFormats[attrib].Item1)
+                            {
+                                case GXDataType.Unsigned8:
+                                    writer.Write((byte)(normVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((byte)(normVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((byte)(normVec.Z * (1 << StorageFormats[attrib].Item2)));
+                                    break;
+                                case GXDataType.Signed8:
+                                    writer.Write((sbyte)(normVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((sbyte)(normVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((sbyte)(normVec.Z * (1 << StorageFormats[attrib].Item2)));
+                                    break;
+                                case GXDataType.Unsigned16:
+                                    writer.Write((ushort)(normVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((ushort)(normVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((ushort)(normVec.Z * (1 << StorageFormats[attrib].Item2)));
+                                    break;
+                                case GXDataType.Signed16:
+                                    writer.Write((short)(normVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((short)(normVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((short)(normVec.Z * (1 << StorageFormats[attrib].Item2)));
+                                    break;
+                                case GXDataType.Float32:
+                                    writer.Write(normVec);
+                                    break;
+                            }
+                        }
                         break;
                     case GXVertexAttribute.Color0:
                     case GXVertexAttribute.Color1:
@@ -723,8 +787,31 @@ namespace SuperBMD.BMD
                         writer.Write((int)(writer.BaseStream.Length - baseOffset));
                         writer.Seek((int)endOffset, System.IO.SeekOrigin.Begin);
 
-                        foreach (Vector2 vec2 in (List<Vector2>)Attributes.GetAttributeData(attrib))
-                            writer.Write(vec2);
+                        foreach (Vector2 texVec in (List<Vector2>)Attributes.GetAttributeData(attrib))
+                        {
+                            switch (StorageFormats[attrib].Item1)
+                            {
+                                case GXDataType.Unsigned8:
+                                    writer.Write((byte)(texVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((byte)(texVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    break;
+                                case GXDataType.Signed8:
+                                    writer.Write((sbyte)(texVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((sbyte)(texVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    break;
+                                case GXDataType.Unsigned16:
+                                    writer.Write((ushort)(texVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((ushort)(texVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    break;
+                                case GXDataType.Signed16:
+                                    writer.Write((short)(texVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((short)(texVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    break;
+                                case GXDataType.Float32:
+                                    writer.Write(texVec);
+                                    break;
+                            }
+                        }
                         break;
                 }
 
