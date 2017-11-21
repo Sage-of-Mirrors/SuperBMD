@@ -73,7 +73,7 @@ namespace SuperBMD.BMD
                 if (mesh.HasNormals)
                 {
                     SetAssimpNormalAttribute(mesh);
-                    StorageFormats.Add(GXVertexAttribute.Normal, new Tuple<GXDataType, byte>(GXDataType.Float32, 0));
+                    StorageFormats.Add(GXVertexAttribute.Normal, new Tuple<GXDataType, byte>(GXDataType.Signed16, 14));
                 }
                 else
                     Console.WriteLine($"Mesh \"{ mesh.Name }\" has no normals.");
@@ -96,7 +96,7 @@ namespace SuperBMD.BMD
                     if (mesh.HasTextureCoords(texCoords))
                     {
                         SetAssimpTexCoordAttribute(texCoords, GXVertexAttribute.Tex0 + texCoords, mesh);
-                        StorageFormats.Add(GXVertexAttribute.Tex0 + texCoords, new Tuple<GXDataType, byte>(GXDataType.Float32, 0));
+                        StorageFormats.Add(GXVertexAttribute.Tex0 + texCoords, new Tuple<GXDataType, byte>(GXDataType.Signed16, 8));
                     }
                     else
                         Console.WriteLine($"Mesh \"{ mesh.Name }\" has no texture coordinates on channel { texCoords }.");
