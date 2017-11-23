@@ -88,12 +88,19 @@ namespace SuperBMD.BMD
             }
 
             if (root == null)
-                throw new Exception("Skeleton root was not found. Please make sure the root is under a node called \"skeleton_root.\"");
+            {
+                SkeletonRoot = new Rigging.Bone("root");
+                FlatSkeleton.Add(SkeletonRoot);
+                BoneNameIndices.Add("root", 0);
+            }
 
-            SkeletonRoot = AssimpNodesToBonesRecursive(root, null, FlatSkeleton);
+            else
+            {
+                SkeletonRoot = AssimpNodesToBonesRecursive(root, null, FlatSkeleton);
 
-            foreach (Rigging.Bone bone in FlatSkeleton)
-                BoneNameIndices.Add(bone.Name, FlatSkeleton.IndexOf(bone));
+                foreach (Rigging.Bone bone in FlatSkeleton)
+                    BoneNameIndices.Add(bone.Name, FlatSkeleton.IndexOf(bone));
+            }
         }
 
         private Rigging.Bone AssimpNodesToBonesRecursive(Assimp.Node node, Rigging.Bone parent, List<Rigging.Bone> boneList)

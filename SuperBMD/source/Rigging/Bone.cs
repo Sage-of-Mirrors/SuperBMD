@@ -24,6 +24,12 @@ namespace SuperBMD.Rigging
         private Quaternion m_Rotation;
         private Vector3 m_Translation;
 
+        public Bone(string name)
+        {
+            Name = name;
+            Children = new List<Bone>();
+        }
+
         public Bone(EndianBinaryReader reader, string name)
         {
             Children = new List<Bone>();

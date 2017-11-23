@@ -74,15 +74,18 @@ namespace SuperBMD.BMD
                 FlatNodes.Add(shapeNode);
             }
 
-            foreach (Rigging.Bone bone in skeleton.SkeletonRoot.Children)
+            if (skeleton.FlatSkeleton.Count > 1)
             {
-                SceneNode rootChildDown = new SceneNode(NodeType.OpenChild, 0, Root);
-                FlatNodes.Add(rootChildDown);
+                foreach (Rigging.Bone bone in skeleton.SkeletonRoot.Children)
+                {
+                    SceneNode rootChildDown = new SceneNode(NodeType.OpenChild, 0, Root);
+                    FlatNodes.Add(rootChildDown);
 
-                GetNodesRecursive(bone, skeleton.FlatSkeleton, Root);
+                    GetNodesRecursive(bone, skeleton.FlatSkeleton, Root);
 
-                SceneNode rootChildUp = new SceneNode(NodeType.CloseChild, 0, Root);
-                FlatNodes.Add(rootChildUp);
+                    SceneNode rootChildUp = new SceneNode(NodeType.CloseChild, 0, Root);
+                    FlatNodes.Add(rootChildUp);
+                }
             }
 
             for (int i = 0; i < scene.MeshCount * 2; i++)

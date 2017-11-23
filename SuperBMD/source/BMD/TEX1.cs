@@ -55,6 +55,8 @@ namespace SuperBMD.BMD
                     img.Load(mat.TextureDiffuse, modelDirectory);
                     Textures.Add(img);
                 }
+                else
+                    throw new Exception($"Material \"{ mat.Name }\" has no texture!");
             }
         }
 
