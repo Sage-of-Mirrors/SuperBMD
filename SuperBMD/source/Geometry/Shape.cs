@@ -46,13 +46,31 @@ namespace SuperBMD.Geometry
             MatrixType = (byte)matrixType;
         }
 
-        public Shape(Mesh mesh)
+        /*public void FillMatrices()
         {
-            Packets = new List<Packet>();
+            uint matrixIndex = 0;
 
+            foreach (Primitive prim in Primitives)
+            {
+                foreach (Vertex vert in prim.Vertices)
+                {
+                    m_PositionMatrices[0 + matrixIndex] = vert.VertexWeight.FinalTransformation.Row0;
+                    m_PositionMatrices[1 + matrixIndex] = vert.VertexWeight.FinalTransformation.Row1;
+                    m_PositionMatrices[2 + matrixIndex] = vert.VertexWeight.FinalTransformation.Row2;
+                    m_PositionMatrices[3 + matrixIndex] = vert.VertexWeight.FinalTransformation.Row3;
+
+                    vert.PositionMatrixIndex = matrixIndex;
+                    matrixIndex += 4;
+                }
+            }
+        }*/
+
+        public void SetDescriptorAttributes(Mesh mesh, int jointCount)
+        {
             int indexOffset = 0;
-            Descriptor = new ShapeVertexDescriptor();
-            Descriptor.SetAttribute(Enums.GXVertexAttribute.PositionMatrixIdx, Enums.VertexInputType.Direct, indexOffset++);
+
+            if (jointCount > 1)
+                Descriptor.SetAttribute(Enums.GXVertexAttribute.PositionMatrixIdx, Enums.VertexInputType.Direct, indexOffset++);
 
             if (mesh.HasVertices)
                 Descriptor.SetAttribute(Enums.GXVertexAttribute.Position, Enums.VertexInputType.Index16, indexOffset++);
@@ -71,22 +89,97 @@ namespace SuperBMD.Geometry
             }
         }
 
-        /*public void FillMatrices()
+        public void ProcessVerticesWithoutWeights(Mesh mesh, VertexData vertData)
         {
-            uint matrixIndex = 0;
 
-            foreach (Primitive prim in Primitives)
+        }
+
+        /*private void ProcessVerticesWithWeights(Mesh mesh, Shape shape, VertexData vertData, Dictionary<string, int> boneNames, EVP1 envelopes, DRW1 partialWeight)
+        {
+            Primitive prim = new Primitive();
+            List<int> matrixIndices = new List<int>();
+            List<Rigging.Weight> totalWeights = new List<Rigging.Weight>();
+            int totalMatrixCount = 0;
+
+            for (int i = 0; i < mesh.FaceCount; i++)
             {
-                foreach (Vertex vert in prim.Vertices)
-                {
-                    m_PositionMatrices[0 + matrixIndex] = vert.VertexWeight.FinalTransformation.Row0;
-                    m_PositionMatrices[1 + matrixIndex] = vert.VertexWeight.FinalTransformation.Row1;
-                    m_PositionMatrices[2 + matrixIndex] = vert.VertexWeight.FinalTransformation.Row2;
-                    m_PositionMatrices[3 + matrixIndex] = vert.VertexWeight.FinalTransformation.Row3;
+                List<Vertex> faceVertices = new List<Vertex>();
+                Face meshFace = mesh.Faces[i];
 
-                    vert.PositionMatrixIndex = matrixIndex;
-                    matrixIndex += 4;
+                for (int j = 0; j < meshFace.IndexCount; j++)
+                {
+                    Vertex vert = new Vertex();
+                    int vertIndex = meshFace.Indices[j];
+                    SetVertexIndices(mesh, vert, vertData, shape.Descriptor, vertIndex);
+
+                    foreach (Assimp.Bone bone in mesh.Bones)
+                    {
+                        foreach (Assimp.VertexWeight weight in bone.VertexWeights)
+                        {
+                            if (weight.VertexID == vertIndex)
+                            {
+                                vert.VertexWeight.AddWeight(weight.Weight, boneNames[bone.Name]);
+                            }
+                        }
+                    }
+
+                    faceVertices.Add(vert);
                 }
+
+                List<Rigging.Weight> currentWeights = new List<Rigging.Weight>();
+
+                int currentMatrixCount = 0;
+                for (int j = 0; j < meshFace.IndexCount; j++)
+                    currentWeights.Add(faceVertices[j].VertexWeight);
+
+                List<Rigging.Weight> newWeights = currentWeights.Except(totalWeights, new WeightEqualityComparer()).ToList();
+                for (int j = 0; j < newWeights.Count; j++)
+                    currentMatrixCount += newWeights[j].WeightCount;
+
+                if (totalMatrixCount + currentMatrixCount > 10)
+                {
+                    //shape.Primitives.Add(prim);
+                    //shape.MatrixDataIndices.Add(matrixIndices.ToArray());
+
+                    prim = new Primitive();
+                    matrixIndices = new List<int>();
+                    totalWeights.Clear();
+                    totalMatrixCount = 0;
+
+                    prim.Vertices.AddRange(faceVertices);
+                }
+                else
+                {
+                    totalMatrixCount += currentMatrixCount;
+
+                    for (int j = 0; j < currentWeights.Count; j++)
+                    {
+                        if (!totalWeights.Contains(currentWeights[j]))
+                            totalWeights.Add(currentWeights[j]);
+                    }
+
+                    prim.Vertices.AddRange(faceVertices);
+                }
+
+                // The following needs to be fixed so that the correct indices are given to the vertex and EVP1/DRW1
+                for (int j = 0; j < meshFace.IndexCount; j++)
+                {
+                    faceVertices[j].SetAttributeIndex(GXVertexAttribute.PositionMatrixIdx, (uint)matrixIndices.Count);
+                    matrixIndices.Add(partialWeight.WeightTypeCheck.Count);
+
+                    if (faceVertices[j].VertexWeight.WeightCount > 1)
+                    {
+                        partialWeight.WeightTypeCheck.Add(true);
+                        partialWeight.Indices.Add(envelopes.Weights.Count);
+                        envelopes.Weights.Add(faceVertices[j].VertexWeight);
+                    }
+                    else
+                    {
+                        partialWeight.WeightTypeCheck.Add(false);
+                        partialWeight.Indices.Add(faceVertices[j].VertexWeight.BoneIndices[0]);
+                    }
+                }
+                //SetMatrixIndices(faceVertices[j], envelopes, partialWeight, matrixIndices);
             }
         }*/
 
