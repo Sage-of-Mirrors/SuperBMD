@@ -15,6 +15,12 @@ namespace SuperBMD.Geometry
         private int m_Size;
         private int m_Offset;
 
+        public Packet()
+        {
+            Primitives = new List<Primitive>();
+            MatrixIndices = new List<int>();
+        }
+
         public Packet(int size, int offset, int[] matrixIndices)
         {
             m_Size = size;

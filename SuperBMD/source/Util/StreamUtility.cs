@@ -12,7 +12,7 @@ namespace SuperBMD.Util
     {
         public static void PadStreamWithString(EndianBinaryWriter writer, int padValue)
         {
-            string padding = "This is padding data to align";
+            string padding = "This is padding data to align ";
 
             // Pad up to a 32 byte alignment
             // Formula: (x + (n-1)) & ~(n-1)

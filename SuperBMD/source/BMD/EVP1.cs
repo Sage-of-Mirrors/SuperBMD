@@ -141,6 +141,19 @@ namespace SuperBMD.BMD
             writer.Write((short)Weights.Count);
             writer.Write((short)-1);
 
+            if (Weights.Count == 0)
+            {
+                writer.Write((int)0);
+                writer.Write((int)0);
+                writer.Write((int)0);
+                writer.Write((int)0);
+                writer.Seek((int)start + 4, System.IO.SeekOrigin.Begin);
+                writer.Write(32);
+                writer.Seek(0, System.IO.SeekOrigin.End);
+                StreamUtility.PadStreamWithString(writer, 8);
+                return;
+            }
+
             writer.Write(28); // Offset to weight count data. Always 28
             writer.Write(28 + Weights.Count); // Offset to bone/weight indices. Always 28 + the number of weights
             writer.Write(0); // Placeholder for weight data offset

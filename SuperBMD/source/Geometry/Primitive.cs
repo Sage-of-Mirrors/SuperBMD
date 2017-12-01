@@ -19,6 +19,12 @@ namespace SuperBMD.Geometry
             Vertices = new List<Vertex>();
         }
 
+        public Primitive(GXPrimitiveType primType)
+        {
+            PrimitiveType = primType;
+            Vertices = new List<Vertex>();
+        }
+
         public Primitive(EndianBinaryReader reader, ShapeVertexDescriptor activeAttribs)
         {
             Vertices = new List<Vertex>();

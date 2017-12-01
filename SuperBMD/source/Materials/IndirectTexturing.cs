@@ -48,7 +48,7 @@ namespace SuperBMD.Materials
                 Matrices[i] = new IndirectTexMatrix(new OpenTK.Matrix2x3(0.5f, 0.0f, 0.0f, 0.0f, 0.5f, 0.0f), 1);
 
             Scales = new IndirectTexScale[4];
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 4; i++)
                 Scales[i] = new IndirectTexScale(IndirectScale.ITS_1, IndirectScale.ITS_1);
 
             TevStages = new IndirectTevStage[16];

@@ -28,6 +28,7 @@ namespace SuperBMD.Geometry
             AttributeData = new VertexData();
             Descriptor = new ShapeVertexDescriptor();
             Packets = new List<Packet>();
+            Bounds = new BoundingVolume();
 
             m_PositionMatrices = new Vector4[64];
             m_NormalMatrices = new Vector4[32];
@@ -69,8 +70,8 @@ namespace SuperBMD.Geometry
         {
             int indexOffset = 0;
 
-            if (jointCount > 1)
-                Descriptor.SetAttribute(Enums.GXVertexAttribute.PositionMatrixIdx, Enums.VertexInputType.Direct, indexOffset++);
+            //if (jointCount > 1)
+                //Descriptor.SetAttribute(Enums.GXVertexAttribute.PositionMatrixIdx, Enums.VertexInputType.Direct, indexOffset++);
 
             if (mesh.HasVertices)
                 Descriptor.SetAttribute(Enums.GXVertexAttribute.Position, Enums.VertexInputType.Index16, indexOffset++);
@@ -91,7 +92,103 @@ namespace SuperBMD.Geometry
 
         public void ProcessVerticesWithoutWeights(Mesh mesh, VertexData vertData)
         {
+            Packet pack = new Packet();
 
+            Primitive prim = new Primitive(Enums.GXPrimitiveType.Triangles);
+            List<Enums.GXVertexAttribute> activeAttribs = Descriptor.GetActiveAttributes();
+
+            foreach (Face face in mesh.Faces)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    Vertex vert = new Vertex();
+                    int vertIndex = face.Indices[i];
+
+                    foreach (Enums.GXVertexAttribute attrib in activeAttribs)
+                    {
+                        switch (attrib)
+                        {
+                            case Enums.GXVertexAttribute.Position:
+                                List<Vector3> posData = (List<Vector3>)vertData.GetAttributeData(Enums.GXVertexAttribute.Position);
+                                Vector3 vertPos = mesh.Vertices[vertIndex].ToOpenTKVector3();
+                                AttributeData.Positions.Add(vertPos);
+
+                                vert.SetAttributeIndex(Enums.GXVertexAttribute.Position, (uint)posData.IndexOf(vertPos));
+                                break;
+                            case Enums.GXVertexAttribute.Normal:
+                                List<Vector3> normData = (List<Vector3>)vertData.GetAttributeData(Enums.GXVertexAttribute.Normal);
+                                Vector3 vertNrm = mesh.Normals[vertIndex].ToOpenTKVector3();
+                                AttributeData.Normals.Add(vertNrm);
+
+                                vert.SetAttributeIndex(Enums.GXVertexAttribute.Normal, (uint)normData.IndexOf(vertNrm));
+                                break;
+                            case Enums.GXVertexAttribute.Color0:
+                            case Enums.GXVertexAttribute.Color1:
+                                int colNo = (int)attrib - 11;
+                                List<Color> colData = (List<Color>)vertData.GetAttributeData(Enums.GXVertexAttribute.Color0 + colNo);
+                                Color vertCol = mesh.VertexColorChannels[colNo][vertIndex].ToSuperBMDColorRGBA();
+
+                                if (colNo == 0)
+                                    AttributeData.Color_0.Add(vertCol);
+                                else
+                                    AttributeData.Color_1.Add(vertCol);
+
+                                vert.SetAttributeIndex(Enums.GXVertexAttribute.Color0 + colNo, (uint)colData.IndexOf(vertCol));
+                                break;
+                            case Enums.GXVertexAttribute.Tex0:
+                            case Enums.GXVertexAttribute.Tex1:
+                            case Enums.GXVertexAttribute.Tex2:
+                            case Enums.GXVertexAttribute.Tex3:
+                            case Enums.GXVertexAttribute.Tex4:
+                            case Enums.GXVertexAttribute.Tex5:
+                            case Enums.GXVertexAttribute.Tex6:
+                            case Enums.GXVertexAttribute.Tex7:
+                                int texNo = (int)attrib - 13;
+                                List<Vector2> texCoordData = (List<Vector2>)vertData.GetAttributeData(Enums.GXVertexAttribute.Tex0 + texNo);
+                                Vector2 vertTexCoord = mesh.TextureCoordinateChannels[texNo][vertIndex].ToOpenTKVector2();
+
+                                switch (texNo)
+                                {
+                                    case 0:
+                                        AttributeData.TexCoord_0.Add(vertTexCoord);
+                                        break;
+                                    case 1:
+                                        AttributeData.TexCoord_1.Add(vertTexCoord);
+                                        break;
+                                    case 2:
+                                        AttributeData.TexCoord_2.Add(vertTexCoord);
+                                        break;
+                                    case 3:
+                                        AttributeData.TexCoord_3.Add(vertTexCoord);
+                                        break;
+                                    case 4:
+                                        AttributeData.TexCoord_4.Add(vertTexCoord);
+                                        break;
+                                    case 5:
+                                        AttributeData.TexCoord_5.Add(vertTexCoord);
+                                        break;
+                                    case 6:
+                                        AttributeData.TexCoord_6.Add(vertTexCoord);
+                                        break;
+                                    case 7:
+                                        AttributeData.TexCoord_7.Add(vertTexCoord);
+                                        break;
+                                }
+
+                                vert.SetAttributeIndex(Enums.GXVertexAttribute.Tex0 + texNo, (uint)texCoordData.IndexOf(vertTexCoord));
+                                break;
+                        }
+                    }
+
+                    prim.Vertices.Add(vert);
+                }
+            }
+
+            pack.Primitives.Add(prim);
+            pack.MatrixIndices.Add(0);
+            Packets.Add(pack);
+
+            Bounds.GetBoundsValues(AttributeData.Positions);
         }
 
         /*private void ProcessVerticesWithWeights(Mesh mesh, Shape shape, VertexData vertData, Dictionary<string, int> boneNames, EVP1 envelopes, DRW1 partialWeight)

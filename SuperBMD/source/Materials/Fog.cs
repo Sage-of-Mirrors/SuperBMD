@@ -20,6 +20,19 @@ namespace SuperBMD.Materials
         public Color Color;
         public float[] RangeAdjustmentTable;
 
+        public Fog(byte type, bool enable, ushort center, float startZ, float endZ, float nearZ, float farZ, Color color, float[] rangeAdjust)
+        {
+            Type = type;
+            Enable = enable;
+            Center = center;
+            StartZ = startZ;
+            EndZ = endZ;
+            NearZ = nearZ;
+            FarZ = farZ;
+            Color = color;
+            RangeAdjustmentTable = rangeAdjust;
+        }
+
         public Fog(EndianBinaryReader reader)
         {
             RangeAdjustmentTable = new float[10];

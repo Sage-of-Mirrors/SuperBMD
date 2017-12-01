@@ -439,6 +439,8 @@ namespace SuperBMD.BMD
                 }
                 else
                     bmdMaterial.SetupNoTexture();
+
+                m_Materials.Add(bmdMaterial);
             }
 
             FillMaterialDataBlocks();
@@ -509,6 +511,8 @@ namespace SuperBMD.BMD
 
                 for (int i = 0; i < 2; i++)
                 {
+                    if (mat.AmbientColors[i] == null)
+                        break;
                     if (!m_AmbientColorBlock.Contains(mat.AmbientColors[i].Value))
                         m_AmbientColorBlock.Add(mat.AmbientColors[i].Value);
                 }

@@ -54,6 +54,7 @@ namespace SuperBMD.Materials
             ChannelControls = new ChannelControl?[4];
             ChannelControls[0] = new ChannelControl(false, ColorSrc.Register, LightId.None, DiffuseFn.Clamp, J3DAttenuationFn.None_0, ColorSrc.Register);
 
+            IndTexEntry = new IndirectTexturing();
 
             AmbientColors = new Color?[2] { new Color(50f/255f, 50f/255f, 50f/255f, 50f/255f), null};
             LightingColors = new Color?[8];
@@ -90,6 +91,7 @@ namespace SuperBMD.Materials
             ZMode = new ZMode(true, CompareType.LEqual, true);
             BMode = new BlendMode(Enums.BlendMode.Blend, BlendModeControl.SrcAlpha, BlendModeControl.InverseSrcAlpha, LogicOp.NoOp);
             NBTScale = new NBTScale(0, Vector3.Zero);
+            FogInfo = new Fog(0, false, 0, 0, 0, 0, 0, new Color(0, 0, 0, 0), new float[10]);
         }
 
         public void SetupNoTexture()
