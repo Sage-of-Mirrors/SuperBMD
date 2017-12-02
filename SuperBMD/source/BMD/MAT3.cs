@@ -441,6 +441,8 @@ namespace SuperBMD.BMD
                     bmdMaterial.SetupNoTexture();
 
                 m_Materials.Add(bmdMaterial);
+                m_RemapIndices.Add(mesh.MaterialIndex);
+                m_MaterialNames.Add(meshMat.Name);
             }
 
             FillMaterialDataBlocks();
@@ -1000,8 +1002,14 @@ namespace SuperBMD.BMD
             writer.Write((byte)m_zModeBlock.IndexOf(mat.ZMode));
             writer.Write((byte)m_ditherBlock.IndexOf(mat.Dither));
 
-            writer.Write((short)m_MaterialColorBlock.IndexOf(mat.MaterialColors[0].Value));
-            writer.Write((short)m_MaterialColorBlock.IndexOf(mat.MaterialColors[1].Value));
+            if (mat.MaterialColors[0].HasValue)
+                writer.Write((short)m_MaterialColorBlock.IndexOf(mat.MaterialColors[0].Value));
+            else
+                writer.Write((short)-1);
+            if (mat.MaterialColors[1].HasValue)
+                writer.Write((short)m_MaterialColorBlock.IndexOf(mat.MaterialColors[1].Value));
+            else
+                writer.Write((short)-1);
 
             for (int i = 0; i < 4; i++)
             {
@@ -1011,8 +1019,14 @@ namespace SuperBMD.BMD
                     writer.Write((short)-1);
             }
 
-            writer.Write((short)m_AmbientColorBlock.IndexOf(mat.AmbientColors[0].Value));
-            writer.Write((short)m_AmbientColorBlock.IndexOf(mat.AmbientColors[1].Value));
+            if (mat.AmbientColors[0].HasValue)
+                writer.Write((short)m_AmbientColorBlock.IndexOf(mat.AmbientColors[0].Value));
+            else
+                writer.Write((short)-1);
+            if (mat.AmbientColors[1].HasValue)
+                writer.Write((short)m_AmbientColorBlock.IndexOf(mat.AmbientColors[1].Value));
+            else
+                writer.Write((short)-1);
 
             for (int i = 0; i < 8; i++)
             {
