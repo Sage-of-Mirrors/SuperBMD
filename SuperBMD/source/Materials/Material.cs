@@ -50,9 +50,7 @@ namespace SuperBMD.Materials
         {
             MaterialColors = new Color?[2] { new Color(1, 1, 1, 1), null};
 
-            ColorChannelControlsCount = 1;
             ChannelControls = new ChannelControl?[4];
-            ChannelControls[0] = new ChannelControl(false, ColorSrc.Register, LightId.None, DiffuseFn.Clamp, J3DAttenuationFn.None_0, ColorSrc.Register);
 
             IndTexEntry = new IndirectTexturing();
 
@@ -94,19 +92,101 @@ namespace SuperBMD.Materials
             FogInfo = new Fog(0, false, 0, 0, 0, 0, 0, new Color(0, 0, 0, 0), new float[10]);
         }
 
-        public void SetupNoTexture()
+        public void SetUpTev(bool hasTexture, bool hasVtxColor, int texIndex)
         {
-            AddTevOrder(TexCoordId.Null, TexMapId.Null, J3DColorChannelId.Null);
-            AddTevStage(SetUpTevStageParametersForNoTexture());
+            // Set up channel control 0 to use vertex colors, if they're present
+            if (hasVtxColor)
+            {
+                AddChannelControl(J3DColorChannelId.Color0, false, ColorSrc.Vertex, LightId.None, DiffuseFn.None, J3DAttenuationFn.None_0, ColorSrc.Register);
+                AddChannelControl(J3DColorChannelId.Alpha0, false, ColorSrc.Vertex, LightId.None, DiffuseFn.None, J3DAttenuationFn.None_0, ColorSrc.Register);
+            }
+
+            // These settings are common to all the configurations we can use
+            TevStageParameters stageParams = new TevStageParameters
+            {
+                ColorInD = CombineColorInput.Zero,
+                ColorOp = TevOp.Add,
+                ColorBias = TevBias.Zero,
+                ColorScale = TevScale.Scale_1,
+                ColorClamp = true,
+                ColorRegId = TevRegisterId.TevPrev,
+
+                AlphaInD = CombineAlphaInput.Zero,
+                AlphaOp = TevOp.Add,
+                AlphaBias = TevBias.Zero,
+                AlphaScale = TevScale.Scale_1,
+                AlphaClamp = true,
+                AlphaRegId = TevRegisterId.TevPrev
+            };
+
+            if (hasTexture)
+            {
+                // Generate texture stuff
+                AddTexGen(TexGenType.Matrix2x4, TexGenSrc.TexCoord0, Enums.TexMatrix.Identity);
+                AddTexMatrix(TexGenType.Matrix3x4, 0, OpenTK.Vector3.Zero, OpenTK.Vector2.One, 0, OpenTK.Vector2.Zero, OpenTK.Matrix4.Identity);
+                AddTevOrder(TexCoordId.TexCoord0, TexMapId.TexMap0, J3DColorChannelId.Null);
+                AddTexIndex(texIndex);
+
+                // Texture + Vertex Color
+                if (hasVtxColor)
+                {
+                    stageParams.ColorInA = CombineColorInput.Zero;
+                    stageParams.ColorInB = CombineColorInput.RasColor;
+                    stageParams.ColorInC = CombineColorInput.TexColor;
+                    stageParams.AlphaInA = CombineAlphaInput.Zero;
+                    stageParams.AlphaInB = CombineAlphaInput.RasAlpha;
+                    stageParams.AlphaInC = CombineAlphaInput.TexAlpha;
+                }
+                // Texture alone
+                else
+                {
+                    stageParams.ColorInA = CombineColorInput.TexColor;
+                    stageParams.ColorInB = CombineColorInput.Zero;
+                    stageParams.ColorInC = CombineColorInput.Zero;
+                    stageParams.AlphaInA = CombineAlphaInput.TexAlpha;
+                    stageParams.AlphaInB = CombineAlphaInput.Zero;
+                    stageParams.AlphaInC = CombineAlphaInput.Zero;
+                }
+            }
+            // No texture!
+            else
+            {
+                // No vertex colors either, so make sure there's a material color (white) to use instead
+                if (!hasVtxColor)
+                {
+                    MaterialColors[0] = new Color(1, 1, 1, 1);
+                    AddChannelControl(J3DColorChannelId.Color0, false, ColorSrc.Register, LightId.None, DiffuseFn.None, J3DAttenuationFn.None_0, ColorSrc.Register);
+                    AddChannelControl(J3DColorChannelId.Alpha0, false, ColorSrc.Register, LightId.None, DiffuseFn.None, J3DAttenuationFn.None_0, ColorSrc.Register);
+                }
+
+                // Set up TEV to use the material color we just set
+                stageParams.ColorInA = CombineColorInput.RasColor;
+                stageParams.ColorInB = CombineColorInput.Zero;
+                stageParams.ColorInC = CombineColorInput.Zero;
+                stageParams.AlphaInA = CombineAlphaInput.RasAlpha;
+                stageParams.AlphaInB = CombineAlphaInput.Zero;
+                stageParams.AlphaInC = CombineAlphaInput.Zero;
+            }
+
+            AddTevStage(stageParams);
         }
 
-        public void SetupTexture(int texIndex)
+        public void AddChannelControl(J3DColorChannelId id, bool enable, ColorSrc MatSrcColor, LightId litId, DiffuseFn diffuse, J3DAttenuationFn atten, ColorSrc ambSrcColor)
         {
-            AddTexGen(TexGenType.Matrix2x4, TexGenSrc.TexCoord0, Materials.Enums.TexMatrix.Identity);
-            AddTexMatrix(TexGenType.Matrix3x4, 0, OpenTK.Vector3.Zero, OpenTK.Vector2.One, 0, OpenTK.Vector2.Zero, OpenTK.Matrix4.Identity);
-            AddTevOrder(TexCoordId.TexCoord0, TexMapId.TexMap0, J3DColorChannelId.Color0);
-            AddTevStage(SetUpTevStageParametersForTexture());
-            AddTexIndex(texIndex);
+            ChannelControl control = new ChannelControl
+            {
+                Enable = enable,
+                MaterialSrcColor = MatSrcColor,
+                LitMask = litId,
+                DiffuseFunction = diffuse,
+                AttenuationFunction = atten,
+                AmbientSrcColor = ambSrcColor
+            };
+
+            if (ChannelControls[(int)id] == null)
+                ColorChannelControlsCount++;
+
+            ChannelControls[(int)id] = control;
         }
 
         public void AddTexGen(TexGenType genType, TexGenSrc genSrc, Enums.TexMatrix mtrx)
@@ -188,36 +268,6 @@ namespace SuperBMD.Materials
             }
 
             NumTevStagesCount++;
-        }
-
-        private TevStageParameters SetUpTevStageParametersForNoTexture()
-        {
-            TevStageParameters parameters = new TevStageParameters
-            {
-                ColorInA = CombineColorInput.RasColor,
-                ColorInB = CombineColorInput.Zero,
-                ColorInC = CombineColorInput.Zero,
-                ColorInD = CombineColorInput.ColorPrev,
-
-                ColorOp = TevOp.Add,
-                ColorBias = TevBias.Zero,
-                ColorScale = TevScale.Scale_1,
-                ColorClamp = true,
-                ColorRegId = TevRegisterId.TevPrev,
-
-                AlphaInA = CombineAlphaInput.RasAlpha,
-                AlphaInB = CombineAlphaInput.Zero,
-                AlphaInC = CombineAlphaInput.Zero,
-                AlphaInD = CombineAlphaInput.AlphaPrev,
-
-                AlphaOp = TevOp.Add,
-                AlphaBias = TevBias.Zero,
-                AlphaScale = TevScale.Scale_1,
-                AlphaClamp = true,
-                AlphaRegId = TevRegisterId.TevPrev
-            };
-
-            return parameters;
         }
 
         private TevStageParameters SetUpTevStageParametersForTexture()

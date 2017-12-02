@@ -168,5 +168,10 @@ namespace SuperBMD.Geometry
                     break;
             }
         }
+
+        public void SetAttributesFromList(List<GXVertexAttribute> attributes)
+        {
+            m_Attributes = new List<GXVertexAttribute>(attributes);
+        }
     }
 }

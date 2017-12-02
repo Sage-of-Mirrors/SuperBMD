@@ -66,28 +66,32 @@ namespace SuperBMD.BMD
                 if (mesh.HasVertices)
                 {
                     SetAssimpPositionAttribute(mesh);
-                    StorageFormats.Add(GXVertexAttribute.Position, new Tuple<GXDataType, byte>(GXDataType.Float32, 0));
+                    if (!StorageFormats.ContainsKey(GXVertexAttribute.Position))
+                        StorageFormats.Add(GXVertexAttribute.Position, new Tuple<GXDataType, byte>(GXDataType.Float32, 0));
                 }
                 else
                     throw new Exception($"Mesh \"{ mesh.Name }\" has no vertices!");
                 if (mesh.HasNormals)
                 {
                     SetAssimpNormalAttribute(mesh);
-                    StorageFormats.Add(GXVertexAttribute.Normal, new Tuple<GXDataType, byte>(GXDataType.Signed16, 14));
+                    if (!StorageFormats.ContainsKey(GXVertexAttribute.Normal))
+                        StorageFormats.Add(GXVertexAttribute.Normal, new Tuple<GXDataType, byte>(GXDataType.Signed16, 14));
                 }
                 else
                     Console.WriteLine($"Mesh \"{ mesh.Name }\" has no normals.");
                 if (mesh.HasVertexColors(0))
                 {
                     SetAssimpColorAttribute(0, GXVertexAttribute.Color0, mesh);
-                    StorageFormats.Add(GXVertexAttribute.Color0, new Tuple<GXDataType, byte>(GXDataType.RGBA8, 0));
+                    if (!StorageFormats.ContainsKey(GXVertexAttribute.Color0))
+                        StorageFormats.Add(GXVertexAttribute.Color0, new Tuple<GXDataType, byte>(GXDataType.RGBA8, 0));
                 }
                 else
                     Console.WriteLine($"Mesh \"{ mesh.Name }\" has no colors on channel 0.");
                 if (mesh.HasVertexColors(1))
                 {
                     SetAssimpColorAttribute(1, GXVertexAttribute.Color1, mesh);
-                    StorageFormats.Add(GXVertexAttribute.Color1, new Tuple<GXDataType, byte>(GXDataType.RGBA8, 0));
+                    if (!StorageFormats.ContainsKey(GXVertexAttribute.Color1))
+                        StorageFormats.Add(GXVertexAttribute.Color1, new Tuple<GXDataType, byte>(GXDataType.RGBA8, 0));
                 }
                 else
                     Console.WriteLine($"Mesh \"{ mesh.Name }\" has no colors on channel 1.");
@@ -96,7 +100,8 @@ namespace SuperBMD.BMD
                     if (mesh.HasTextureCoords(texCoords))
                     {
                         SetAssimpTexCoordAttribute(texCoords, GXVertexAttribute.Tex0 + texCoords, mesh);
-                        StorageFormats.Add(GXVertexAttribute.Tex0 + texCoords, new Tuple<GXDataType, byte>(GXDataType.Signed16, 8));
+                        if (!StorageFormats.ContainsKey(GXVertexAttribute.Tex0 + texCoords))
+                            StorageFormats.Add(GXVertexAttribute.Tex0 + texCoords, new Tuple<GXDataType, byte>(GXDataType.Signed16, 8));
                     }
                     else
                         Console.WriteLine($"Mesh \"{ mesh.Name }\" has no texture coordinates on channel { texCoords }.");

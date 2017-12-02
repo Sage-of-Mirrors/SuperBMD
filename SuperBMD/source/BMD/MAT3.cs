@@ -8,6 +8,8 @@ using SuperBMD.Util;
 using SuperBMD.Materials.Enums;
 using SuperBMD.Materials.IO;
 using GameFormatReader.Common;
+using SuperBMD.Geometry.Enums;
+using System.IO;
 
 namespace SuperBMD.BMD
 {
@@ -423,25 +425,27 @@ namespace SuperBMD.BMD
             m_Materials.Add(mat);
         }
 
-        public MAT3(Assimp.Scene scene, TEX1 textures)
+        public MAT3(Assimp.Scene scene, TEX1 textures, SHP1 shapes)
         {
             InitLists();
 
-            foreach (Assimp.Mesh mesh in scene.Meshes)
+            for (int i = 0; i < scene.MeshCount; i++)
             {
-                Assimp.Material meshMat = scene.Materials[mesh.MaterialIndex];
+                Assimp.Material meshMat = scene.Materials[scene.Meshes[i].MaterialIndex];
                 Materials.Material bmdMaterial = new Material();
 
+                bool hasVtxColor0 = shapes.Shapes[i].AttributeData.CheckAttribute(GXVertexAttribute.Color0);
+                int texIndex = -1;
                 if (meshMat.HasTextureDiffuse)
                 {
-                    string texName = System.IO.Path.GetFileNameWithoutExtension(meshMat.TextureDiffuse.FilePath);
-                    bmdMaterial.SetupTexture(textures.Textures.IndexOf(textures[texName]));
+                    string texName = Path.GetFileNameWithoutExtension(meshMat.TextureDiffuse.FilePath);
+                    texIndex = textures.Textures.IndexOf(textures[texName]);
                 }
-                else
-                    bmdMaterial.SetupNoTexture();
+
+                bmdMaterial.SetUpTev(meshMat.HasTextureDiffuse, hasVtxColor0, texIndex);
 
                 m_Materials.Add(bmdMaterial);
-                m_RemapIndices.Add(mesh.MaterialIndex);
+                m_RemapIndices.Add(scene.Meshes[i].MaterialIndex);
                 m_MaterialNames.Add(meshMat.Name);
             }
 
@@ -695,6 +699,7 @@ namespace SuperBMD.BMD
             writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
 
             NameTableIO.Write(writer, names);
+            StreamUtility.PadStreamWithString(writer, 8);
 
             curOffset = writer.BaseStream.Position;
 

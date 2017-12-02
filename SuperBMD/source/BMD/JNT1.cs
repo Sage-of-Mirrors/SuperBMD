@@ -72,7 +72,7 @@ namespace SuperBMD.BMD
             }
         }
 
-        public JNT1(Assimp.Scene scene)
+        public JNT1(Assimp.Scene scene, VTX1 vertexData)
         {
             BoneNameIndices = new Dictionary<string, int>();
             FlatSkeleton = new List<Rigging.Bone>();
@@ -90,6 +90,7 @@ namespace SuperBMD.BMD
             if (root == null)
             {
                 SkeletonRoot = new Rigging.Bone("root");
+                SkeletonRoot.Bounds.GetBoundsValues(vertexData.Attributes.Positions);
                 FlatSkeleton.Add(SkeletonRoot);
                 BoneNameIndices.Add("root", 0);
             }

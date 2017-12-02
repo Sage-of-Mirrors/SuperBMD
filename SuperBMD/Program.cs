@@ -38,7 +38,7 @@ namespace SuperBMD
 
             // AssImp adds dummy nodes for pivots from FBX, so we'll force them off
             cont.SetConfig(new Assimp.Configs.FBXPreservePivotsConfig(false));
-            cont.ZAxisRotation = -90.0f;
+            //cont.ZAxisRotation = -90.0f;
             return cont.ImportFile(fileName, Assimp.PostProcessSteps.Triangulate);
         }
     }

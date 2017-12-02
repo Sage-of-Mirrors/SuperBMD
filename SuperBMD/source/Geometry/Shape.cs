@@ -96,6 +96,7 @@ namespace SuperBMD.Geometry
 
             Primitive prim = new Primitive(Enums.GXPrimitiveType.Triangles);
             List<Enums.GXVertexAttribute> activeAttribs = Descriptor.GetActiveAttributes();
+            AttributeData.SetAttributesFromList(activeAttribs);
 
             foreach (Face face in mesh.Faces)
             {

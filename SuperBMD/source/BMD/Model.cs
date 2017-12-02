@@ -67,10 +67,9 @@ namespace SuperBMD.BMD
         public Model(Scene scene, string modelDirectory)
         {
             VertexData = new VTX1(scene);
-            Joints = new JNT1(scene);
+            Joints = new JNT1(scene, VertexData);
             Scenegraph = new INF1(scene, Joints);
             Textures = new TEX1(scene, modelDirectory);
-            Materials = new MAT3(scene, Textures);
 
             EVP1 evpFromScene;
             DRW1 drwFromScene;
@@ -78,6 +77,8 @@ namespace SuperBMD.BMD
 
             SkinningEnvelopes = evpFromScene;
             PartialWeightData = drwFromScene;
+
+            Materials = new MAT3(scene, Textures, Shapes);
 
             foreach (Geometry.Shape shape in Shapes.Shapes)
                 packetCount += shape.Packets.Count;

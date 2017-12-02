@@ -216,7 +216,7 @@ namespace SuperBMD.Materials
                 {
                     Console.WriteLine($"Cannot find texture { fileName }. Using a checkboard texture instead...");
                     texData = new Bitmap(SuperBMD.Properties.Resources.default_checker);
-                    Name = "default_checker";
+                    Name = Path.GetFileNameWithoutExtension(texPath);
                 }
                 else
                 {

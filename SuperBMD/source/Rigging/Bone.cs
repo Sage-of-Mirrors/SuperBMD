@@ -28,6 +28,8 @@ namespace SuperBMD.Rigging
         {
             Name = name;
             Children = new List<Bone>();
+            Bounds = new BoundingVolume();
+            m_Scale = Vector3.One;
         }
 
         public Bone(EndianBinaryReader reader, string name)
