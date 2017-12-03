@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 using GameFormatReader.Common;
 using Assimp;
 using System.IO;
+using SuperBMD.BMD;
 
-namespace SuperBMD.BMD
+namespace SuperBMD
 {
     public class Model
     {
@@ -22,6 +23,33 @@ namespace SuperBMD.BMD
 
         private int packetCount;
         private int vertexCount;
+
+        public static Model Load(string filePath)
+        {
+            string extension = Path.GetExtension(filePath);
+            Model output = null;
+
+            if (extension == ".bmd" || extension == ".bdl")
+            {
+                using (FileStream str = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    EndianBinaryReader reader = new EndianBinaryReader(str, Endian.Big);
+                    output = new Model(reader);
+                }
+            }
+            else
+            {
+                Assimp.AssimpContext cont = new Assimp.AssimpContext();
+
+                // AssImp adds dummy nodes for pivots from FBX, so we'll force them off
+                cont.SetConfig(new Assimp.Configs.FBXPreservePivotsConfig(false));
+                Assimp.Scene aiScene = cont.ImportFile(filePath, Assimp.PostProcessSteps.Triangulate);
+
+                output = new Model(aiScene, filePath);
+            }
+
+            return output;
+        }
 
         public Model(EndianBinaryReader reader)
         {
