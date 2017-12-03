@@ -105,6 +105,7 @@ namespace SuperBMD
 
             SkinningEnvelopes = evpFromScene;
             PartialWeightData = drwFromScene;
+            SkinningEnvelopes.SetInverseBindMatrices(Joints.FlatSkeleton);
 
             Materials = new MAT3(scene, Textures, Shapes);
 

@@ -82,6 +82,8 @@ namespace SuperBMD.Rigging
             m_Rotation = TransformationMatrix.ExtractRotation();
             m_Translation = TransformationMatrix.Column3.Xyz;
 
+            TransformationMatrix = Matrix4.CreateScale(m_Scale) * Matrix4.CreateFromQuaternion(m_Rotation) * Matrix4.CreateTranslation(m_Translation);
+
             Bounds = new BoundingVolume();
         }
 

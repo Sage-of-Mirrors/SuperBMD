@@ -132,6 +132,33 @@ namespace SuperBMD.BMD
             }
         }
 
+        public void SetInverseBindMatrices(List<Rigging.Bone> flatSkeleton)
+        {
+            foreach (Rigging.Bone bone in flatSkeleton)
+            {
+                Matrix4 inverseBind = CalculateInverseBindMatrix(bone);
+                bone.SetInverseBindMatrix(inverseBind);
+
+                Matrix3x4 mat3x4 = new Matrix3x4(inverseBind.Row0, inverseBind.Row1, inverseBind.Row2);
+                InverseBindMatrices.Add(mat3x4);
+            }
+        }
+
+        private Matrix4 CalculateInverseBindMatrix(Rigging.Bone bone)
+        {
+            Matrix4 mat = bone.TransformationMatrix;
+
+            Rigging.Bone next = bone.Parent;
+
+            while (next != null)
+            {
+                mat *= next.TransformationMatrix;
+                next = next.Parent;
+            }
+
+            return mat.Inverted();
+        }
+
         public void Write(EndianBinaryWriter writer)
         {
             long start = writer.BaseStream.Position;

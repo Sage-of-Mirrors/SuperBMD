@@ -139,11 +139,11 @@ namespace SuperBMD.BMD
                 Shape meshShape = new Shape();
                 meshShape.SetDescriptorAttributes(mesh, boneNames.Count);
 
-                //if (boneNames.Count > 1)
-                    //meshShape.ProcessVerticesWithWeights(mesh, meshShape, vertData, boneNames, envelopes, partialWeight);
-                //else
+                if (boneNames.Count > 1)
+                    meshShape.ProcessVerticesWithWeights(mesh, vertData, boneNames, envelopes, partialWeight);
+                else
+                    meshShape.ProcessVerticesWithoutWeights(mesh, vertData);
 
-                meshShape.ProcessVerticesWithoutWeights(mesh, vertData);
                 partialWeight.WeightTypeCheck.Add(false);
                 partialWeight.Indices.Add(0);
 
