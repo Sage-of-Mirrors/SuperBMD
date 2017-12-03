@@ -12,7 +12,7 @@ namespace SuperBMD_UnitTest
         static void Main(string[] args)
         {
             Model mod = Model.Load(args[0]);
-            mod.Export(@"D:\SZS Tools\SuperBMD\test.bmd");
+            mod.Export(args[0] + ".bmd");
         }
     }
 }
