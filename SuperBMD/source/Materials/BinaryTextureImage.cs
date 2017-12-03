@@ -187,7 +187,7 @@ namespace SuperBMD.Materials
 
         public void Load(Assimp.TextureSlot texture, string modelDirectory)
         {
-            Format = TextureFormats.RGBA32;
+            Format = TextureFormats.CMPR;
             AlphaSetting = 0;
             WrapS = texture.WrapModeU.ToGXWrapMode();
             WrapT = texture.WrapModeV.ToGXWrapMode();

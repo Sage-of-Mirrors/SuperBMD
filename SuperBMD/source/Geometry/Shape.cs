@@ -147,6 +147,7 @@ namespace SuperBMD.Geometry
                                 int texNo = (int)attrib - 13;
                                 List<Vector2> texCoordData = (List<Vector2>)vertData.GetAttributeData(Enums.GXVertexAttribute.Tex0 + texNo);
                                 Vector2 vertTexCoord = mesh.TextureCoordinateChannels[texNo][vertIndex].ToOpenTKVector2();
+                                vertTexCoord = new Vector2(vertTexCoord.X, 1.0f - vertTexCoord.Y);
 
                                 switch (texNo)
                                 {

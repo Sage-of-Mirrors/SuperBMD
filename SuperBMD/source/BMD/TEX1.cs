@@ -47,16 +47,16 @@ namespace SuperBMD.BMD
         {
             Textures = new List<BinaryTextureImage>();
 
-            foreach (Assimp.Material mat in scene.Materials)
+            foreach (Assimp.Mesh mesh in scene.Meshes)
             {
+                Assimp.Material mat = scene.Materials[mesh.MaterialIndex];
+
                 if (mat.HasTextureDiffuse)
                 {
                     BinaryTextureImage img = new BinaryTextureImage();
                     img.Load(mat.TextureDiffuse, modelDirectory);
                     Textures.Add(img);
                 }
-                else
-                    throw new Exception($"Material \"{ mat.Name }\" has no texture!");
             }
         }
 

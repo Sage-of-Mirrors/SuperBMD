@@ -284,8 +284,12 @@ namespace SuperBMD.BMD
             else
                 mat.Dither = m_ditherBlock[reader.ReadByte()];
 
-            mat.MaterialColors[0] = m_MaterialColorBlock[reader.ReadInt16()];
-            mat.MaterialColors[1] = m_MaterialColorBlock[reader.ReadInt16()];
+            int matColorIndex = reader.ReadInt16();
+            if (matColorIndex != -1)
+                mat.MaterialColors[0] = m_MaterialColorBlock[matColorIndex];
+            matColorIndex = reader.ReadInt16();
+            if (matColorIndex != -1)
+                mat.MaterialColors[1] = m_MaterialColorBlock[matColorIndex];
 
             for (int i = 0; i < 4; i++)
             {
@@ -296,8 +300,12 @@ namespace SuperBMD.BMD
                     mat.ChannelControls[i] = m_ChannelControlBlock[chanIndex];
             }
 
-            mat.AmbientColors[0] = m_AmbientColorBlock[reader.ReadInt16()];
-            mat.AmbientColors[1] = m_AmbientColorBlock[reader.ReadInt16()];
+            int ambColorIndex = reader.ReadInt16();
+            if (ambColorIndex != -1)
+                mat.AmbientColors[0] = m_AmbientColorBlock[ambColorIndex];
+            ambColorIndex = reader.ReadInt16();
+            if (ambColorIndex != -1)
+                mat.AmbientColors[1] = m_AmbientColorBlock[ambColorIndex];
 
             for (int i = 0; i  < 8; i++)
             {
@@ -445,7 +453,7 @@ namespace SuperBMD.BMD
                 bmdMaterial.SetUpTev(meshMat.HasTextureDiffuse, hasVtxColor0, texIndex);
 
                 m_Materials.Add(bmdMaterial);
-                m_RemapIndices.Add(scene.Meshes[i].MaterialIndex);
+                m_RemapIndices.Add(i);
                 m_MaterialNames.Add(meshMat.Name);
             }
 

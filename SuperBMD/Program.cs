@@ -28,7 +28,7 @@ namespace SuperBMD
             {
                 EndianBinaryReader reader = new EndianBinaryReader(str, Endian.Big);
                 Model testModel = new Model(reader);
-                testModel.Export("D:\\SZS Tools\\SuperBMD\\test.bmd");
+                testModel.Export("D:\\SZS Tools\\SuperBMD\\test_man.bmd");
             }*/
         }
 

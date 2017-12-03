@@ -587,7 +587,10 @@ namespace SuperBMD.BMD
             List<Vector2> tempList = new List<Vector2>();
 
             for (int vec = 0; vec < mesh.TextureCoordinateChannels[channel].Count; vec++)
-                tempList.Add(mesh.TextureCoordinateChannels[channel][vec].ToOpenTKVector2());
+            {
+                Vector2 tempCoord = mesh.TextureCoordinateChannels[channel][vec].ToOpenTKVector2();
+                tempList.Add(new Vector2(tempCoord.X, 1.0f - tempCoord.Y));
+            }
 
             if (!Attributes.CheckAttribute(texCoordAttrib))
                 Attributes.SetAttributeData(texCoordAttrib, tempList);
