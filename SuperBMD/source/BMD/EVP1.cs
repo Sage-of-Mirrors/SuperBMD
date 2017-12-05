@@ -14,18 +14,18 @@ namespace SuperBMD.BMD
     public class EVP1
     {
         public List<Weight> Weights {get; private set;}
-        public List<Matrix3x4> InverseBindMatrices { get; private set; }
+        public List<Matrix4> InverseBindMatrices { get; private set; }
 
         public EVP1()
         {
             Weights = new List<Weight>();
-            InverseBindMatrices = new List<Matrix3x4>();
+            InverseBindMatrices = new List<Matrix4>();
         }
 
         public EVP1(EndianBinaryReader reader, int offset)
         {
             Weights = new List<Weight>();
-            InverseBindMatrices = new List<Matrix3x4>();
+            InverseBindMatrices = new List<Matrix4>();
 
             reader.BaseStream.Seek(offset, System.IO.SeekOrigin.Begin);
             reader.SkipInt32();
@@ -88,7 +88,7 @@ namespace SuperBMD.BMD
                                                   reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(),
                                                   reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
 
-                InverseBindMatrices.Add(invBind);
+                InverseBindMatrices.Add(new Matrix4(invBind.Row0, invBind.Row1, invBind.Row2, Vector4.UnitW));
             }
 
             reader.BaseStream.Seek(offset + evp1Size, System.IO.SeekOrigin.Begin);
@@ -132,66 +132,27 @@ namespace SuperBMD.BMD
             }
         }
 
-        /*public void SetInverseBindMatrices(List<Rigging.Bone> flatSkeleton)
-        {
-            foreach (Rigging.Bone bone in flatSkeleton)
-            {
-                Matrix4 inverseBind = CalculateInverseBindMatrix(bone);
-                bone.SetInverseBindMatrix(inverseBind);
-                //Matrix4 test = bone.TransformationMatrix.Inverted();
-
-                Matrix3x4 mat3x4 = new Matrix3x4(inverseBind.Row0, inverseBind.Row1, inverseBind.Row2);
-                InverseBindMatrices.Add(mat3x4);
-            }
-        }*/
-
         public void SetInverseBindMatrices(Assimp.Scene scene, List<Rigging.Bone> flatSkel)
         {
             for (int i = 0; i < flatSkel.Count; i++)
-                InverseBindMatrices.Add(new Matrix3x4(Vector4.UnitX, Vector4.UnitY, Vector4.UnitZ));
+                InverseBindMatrices.Add(new Matrix4(Vector4.UnitX, Vector4.UnitY, Vector4.UnitZ, Vector4.UnitW));
 
             foreach (Mesh mesh in scene.Meshes)
             {
                 foreach (Assimp.Bone bone in mesh.Bones)
                 {
-                    Matrix3x4 mat = new Matrix3x4();
                     Matrix4x4 assMat = bone.OffsetMatrix;
 
-                    Vector3D scale = new Vector3D();
-                    Assimp.Quaternion rot = new Assimp.Quaternion();
-                    Vector3D trans = new Vector3D();
-                    assMat.Decompose(out scale, out rot, out trans);
-
-                    mat = Matrix3x4.CreateTranslation(trans.ToOpenTKVector3()) * Matrix3x4.CreateFromQuaternion(new OpenTK.Quaternion(rot.X, rot.Y, rot.Z, rot.W)) * Matrix3x4.CreateScale(scale.ToOpenTKVector3());
+                    Matrix4 transposed = new Matrix4(assMat.A1, assMat.B1, assMat.C1, assMat.D1,
+                                                     assMat.A2, assMat.B2, assMat.C2, assMat.D2,
+                                                     assMat.A3, assMat.B3, assMat.C3, assMat.D3,
+                                                     assMat.A4, assMat.B4, assMat.C4, assMat.D4);
 
                     int index = flatSkel.FindIndex(x => x.Name == bone.Name);
-                    InverseBindMatrices[index] = mat;
-                    flatSkel[index].SetInverseBindMatrix(new Matrix4(mat.Row0, mat.Row1, mat.Row2, new Vector4(0, 0, 0, 1)));
+                    InverseBindMatrices[index] = transposed;
+                    flatSkel[index].SetInverseBindMatrix(transposed);
                 }
             }
-        }
-
-        private Matrix4 CalculateInverseBindMatrix(Rigging.Bone bone)
-        {
-            List<Matrix4> matList = new List<Matrix4>();
-            matList.Add(bone.TransformationMatrix);
-
-            Matrix4 mat = Matrix4.Identity;
-
-            Rigging.Bone next = bone.Parent;
-
-            while (next != null)
-            {
-                matList.Add(next.TransformationMatrix);
-                next = next.Parent;
-            }
-
-            for (int i = matList.Count - 1; i > -1; i--)
-            {
-                mat *= matList[i];
-            }
-
-            return mat.Inverted();
         }
 
         public void Write(EndianBinaryWriter writer)
@@ -250,8 +211,27 @@ namespace SuperBMD.BMD
             writer.Write((int)(curOffset - start));
             writer.Seek((int)curOffset, System.IO.SeekOrigin.Begin);
 
-            foreach (Matrix3x4 mat in InverseBindMatrices)
-                writer.Write(mat);
+            foreach (Matrix4 mat in InverseBindMatrices)
+            {
+                Vector4 Row1 = mat.Column0;
+                Vector4 Row2 = mat.Column1;
+                Vector4 Row3 = mat.Column2;
+
+                writer.Write(Row1.X);
+                writer.Write(Row1.Y);
+                writer.Write(Row1.Z);
+                writer.Write(Row1.W);
+
+                writer.Write(Row2.X);
+                writer.Write(Row2.Y);
+                writer.Write(Row2.Z);
+                writer.Write(Row2.W);
+
+                writer.Write(Row3.X);
+                writer.Write(Row3.Y);
+                writer.Write(Row3.Z);
+                writer.Write(Row3.W);
+            }
 
             StreamUtility.PadStreamWithString(writer, 32);
 

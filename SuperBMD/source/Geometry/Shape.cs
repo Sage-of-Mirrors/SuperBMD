@@ -305,10 +305,9 @@ namespace SuperBMD.Geometry
 
                                 if (curWeight.WeightCount == 1)
                                 {
-                                    Matrix3x4 ibm = envelopes.InverseBindMatrices[curWeight.BoneIndices[0]];
-                                    Matrix4 ibm4 = new Matrix4(ibm.Row0, ibm.Row1, ibm.Row2, Vector4.UnitW);
+                                    Matrix4 ibm = envelopes.InverseBindMatrices[curWeight.BoneIndices[0]];
 
-                                    Vector3 transVec = Vector3.TransformPosition(vertPos, ibm4);
+                                    Vector3 transVec = Vector3.TransformPosition(vertPos, ibm);
                                     posData.Add(transVec);
                                     AttributeData.Positions.Add(transVec);
                                     vert.SetAttributeIndex(Enums.GXVertexAttribute.Position, (uint)posData.IndexOf(transVec));
