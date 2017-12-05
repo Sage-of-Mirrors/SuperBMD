@@ -132,7 +132,7 @@ namespace SuperBMD.BMD
             }
         }
 
-        public void SetInverseBindMatrices(List<Rigging.Bone> flatSkeleton)
+        /*public void SetInverseBindMatrices(List<Rigging.Bone> flatSkeleton)
         {
             foreach (Rigging.Bone bone in flatSkeleton)
             {
@@ -143,7 +143,7 @@ namespace SuperBMD.BMD
                 Matrix3x4 mat3x4 = new Matrix3x4(inverseBind.Row0, inverseBind.Row1, inverseBind.Row2);
                 InverseBindMatrices.Add(mat3x4);
             }
-        }
+        }*/
 
         public void SetInverseBindMatrices(Assimp.Scene scene, List<Rigging.Bone> flatSkel)
         {

@@ -242,7 +242,7 @@ namespace SuperBMD.Geometry
                     pack.Primitives.Add(prim);
                     Packets.Add(pack);
 
-                    prim = new Primitive();
+                    prim = new Primitive(Enums.GXPrimitiveType.Triangles);
                     pack = new Packet();
 
                     packetWeights.Clear();
