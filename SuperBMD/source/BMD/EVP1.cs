@@ -138,22 +138,57 @@ namespace SuperBMD.BMD
             {
                 Matrix4 inverseBind = CalculateInverseBindMatrix(bone);
                 bone.SetInverseBindMatrix(inverseBind);
+                //Matrix4 test = bone.TransformationMatrix.Inverted();
 
                 Matrix3x4 mat3x4 = new Matrix3x4(inverseBind.Row0, inverseBind.Row1, inverseBind.Row2);
                 InverseBindMatrices.Add(mat3x4);
             }
         }
 
+        public void SetInverseBindMatrices(Assimp.Scene scene, List<Rigging.Bone> flatSkel)
+        {
+            for (int i = 0; i < flatSkel.Count; i++)
+                InverseBindMatrices.Add(new Matrix3x4(Vector4.UnitX, Vector4.UnitY, Vector4.UnitZ));
+
+            foreach (Mesh mesh in scene.Meshes)
+            {
+                foreach (Assimp.Bone bone in mesh.Bones)
+                {
+                    Matrix3x4 mat = new Matrix3x4();
+                    Matrix4x4 assMat = bone.OffsetMatrix;
+
+                    Vector3D scale = new Vector3D();
+                    Assimp.Quaternion rot = new Assimp.Quaternion();
+                    Vector3D trans = new Vector3D();
+                    assMat.Decompose(out scale, out rot, out trans);
+
+                    mat = Matrix3x4.CreateTranslation(trans.ToOpenTKVector3()) * Matrix3x4.CreateFromQuaternion(new OpenTK.Quaternion(rot.X, rot.Y, rot.Z, rot.W)) * Matrix3x4.CreateScale(scale.ToOpenTKVector3());
+
+                    int index = flatSkel.FindIndex(x => x.Name == bone.Name);
+                    InverseBindMatrices[index] = mat;
+                    flatSkel[index].SetInverseBindMatrix(new Matrix4(mat.Row0, mat.Row1, mat.Row2, new Vector4(0, 0, 0, 1)));
+                }
+            }
+        }
+
         private Matrix4 CalculateInverseBindMatrix(Rigging.Bone bone)
         {
-            Matrix4 mat = bone.TransformationMatrix;
+            List<Matrix4> matList = new List<Matrix4>();
+            matList.Add(bone.TransformationMatrix);
+
+            Matrix4 mat = Matrix4.Identity;
 
             Rigging.Bone next = bone.Parent;
 
             while (next != null)
             {
-                mat *= next.TransformationMatrix;
+                matList.Add(next.TransformationMatrix);
                 next = next.Parent;
+            }
+
+            for (int i = matList.Count - 1; i > -1; i--)
+            {
+                mat *= matList[i];
             }
 
             return mat.Inverted();

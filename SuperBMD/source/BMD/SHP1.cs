@@ -142,10 +142,11 @@ namespace SuperBMD.BMD
                 if (boneNames.Count > 1)
                     meshShape.ProcessVerticesWithWeights(mesh, vertData, boneNames, envelopes, partialWeight);
                 else
+                {
                     meshShape.ProcessVerticesWithoutWeights(mesh, vertData);
-
-                partialWeight.WeightTypeCheck.Add(false);
-                partialWeight.Indices.Add(0);
+                    partialWeight.WeightTypeCheck.Add(false);
+                    partialWeight.Indices.Add(0);
+                }
 
                 Shapes.Add(meshShape);
             }
@@ -156,11 +157,8 @@ namespace SuperBMD.BMD
             return new SHP1(reader, offset);
         }
 
-        public static SHP1 Create(Scene scene, Dictionary<string, int> boneNames, VertexData vertData, out EVP1 evp1, out DRW1 drw1)
+        public static SHP1 Create(Scene scene, Dictionary<string, int> boneNames, VertexData vertData, EVP1 evp1, DRW1 drw1)
         {
-            evp1 = new EVP1();
-            drw1 = new DRW1();
-
             SHP1 shp1 = new SHP1(scene, vertData, boneNames, evp1, drw1);
 
             return shp1;

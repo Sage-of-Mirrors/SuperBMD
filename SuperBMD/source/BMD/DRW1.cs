@@ -51,6 +51,22 @@ namespace SuperBMD.BMD
 
         }
 
+        public int AddEntry(bool isWeighted, int index)
+        {
+            for (int i = 0; i < WeightTypeCheck.Count; i++)
+            {
+                if (WeightTypeCheck[i] == isWeighted && Indices[i] == index)
+                    return i;
+            }
+
+            int ret = WeightTypeCheck.Count;
+
+            WeightTypeCheck.Add(isWeighted);
+            Indices.Add(index);
+
+            return ret;
+        }
+
         public void Write(EndianBinaryWriter writer)
         {
             long start = writer.BaseStream.Position;

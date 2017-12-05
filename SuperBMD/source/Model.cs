@@ -99,13 +99,12 @@ namespace SuperBMD
             Scenegraph = new INF1(scene, Joints);
             Textures = new TEX1(scene, modelDirectory);
 
-            EVP1 evpFromScene;
-            DRW1 drwFromScene;
-            Shapes = SHP1.Create(scene, Joints.BoneNameIndices, VertexData.Attributes, out evpFromScene, out drwFromScene);
-
-            SkinningEnvelopes = evpFromScene;
-            PartialWeightData = drwFromScene;
+            SkinningEnvelopes = new EVP1();
             SkinningEnvelopes.SetInverseBindMatrices(Joints.FlatSkeleton);
+
+            PartialWeightData = new DRW1();
+
+            Shapes = SHP1.Create(scene, Joints.BoneNameIndices, VertexData.Attributes, SkinningEnvelopes, PartialWeightData);
 
             Materials = new MAT3(scene, Textures, Shapes);
 

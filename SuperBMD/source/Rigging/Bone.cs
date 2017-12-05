@@ -73,16 +73,16 @@ namespace SuperBMD.Rigging
             Parent = parent;
 
             TransformationMatrix = new Matrix4(
-                node.Transform.A1, node.Transform.A2, node.Transform.A3, node.Transform.A4,
-                node.Transform.B1, node.Transform.B2, node.Transform.B3, node.Transform.B4,
-                node.Transform.C1, node.Transform.C2, node.Transform.C3, node.Transform.C4,
-                node.Transform.D1, node.Transform.D2, node.Transform.D3, node.Transform.D4);
+                node.Transform.A1, node.Transform.B1, node.Transform.C1, node.Transform.D1,
+                node.Transform.A2, node.Transform.B2, node.Transform.C2, node.Transform.D2,
+                node.Transform.A3, node.Transform.B3, node.Transform.C3, node.Transform.D3,
+                node.Transform.A4, node.Transform.B4, node.Transform.C4, node.Transform.D4);
 
             m_Scale = TransformationMatrix.ExtractScale();
             m_Rotation = TransformationMatrix.ExtractRotation();
-            m_Translation = TransformationMatrix.Column3.Xyz;
+            m_Translation = TransformationMatrix.ExtractTranslation();
 
-            TransformationMatrix = Matrix4.CreateScale(m_Scale) * Matrix4.CreateFromQuaternion(m_Rotation) * Matrix4.CreateTranslation(m_Translation);
+            //TransformationMatrix = Matrix4.CreateScale(m_Scale) * Matrix4.CreateFromQuaternion(m_Rotation) * Matrix4.CreateTranslation(m_Translation);
 
             Bounds = new BoundingVolume();
         }

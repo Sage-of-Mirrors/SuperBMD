@@ -273,24 +273,52 @@ namespace SuperBMD.Geometry
 
                     foreach (Enums.GXVertexAttribute attrib in activeAttribs)
                     {
+                        Weight curWeight = vertWeightArray[i];
+
                         switch (attrib)
                         {
                             case Enums.GXVertexAttribute.PositionMatrixIdx:
-                                Weight curWeight = vertWeightArray[i];
-                                if (!envelopes.Weights.Contains(curWeight))
-                                    envelopes.Weights.Add(curWeight);
+                                int newMatrixIndex = -1;
 
-                                pack.MatrixIndices.Add(partialWeight.Indices.Count);
-                                vert.SetAttributeIndex(Enums.GXVertexAttribute.Position, (uint)partialWeight.Indices.Count * 3);
-                                partialWeight.Indices.Add(envelopes.Weights.IndexOf(curWeight));
-                                partialWeight.WeightTypeCheck.Add(curWeight.WeightCount > 1 ? true : false);
+                                if (curWeight.WeightCount == 1)
+                                {
+                                    newMatrixIndex = partialWeight.AddEntry(false, curWeight.BoneIndices[0]);
+                                }
+                                else
+                                {
+                                    if (!envelopes.Weights.Contains(curWeight))
+                                        envelopes.Weights.Add(curWeight);
+
+                                    int index = envelopes.Weights.IndexOf(curWeight);
+
+                                    newMatrixIndex = partialWeight.AddEntry(true, index);
+                                }
+
+                                if (!pack.MatrixIndices.Contains(newMatrixIndex))
+                                    pack.MatrixIndices.Add(newMatrixIndex);
+
+                                vert.SetAttributeIndex(Enums.GXVertexAttribute.PositionMatrixIdx, (uint)pack.MatrixIndices.IndexOf(newMatrixIndex));
                                 break;
                             case Enums.GXVertexAttribute.Position:
                                 List<Vector3> posData = (List<Vector3>)vertData.GetAttributeData(Enums.GXVertexAttribute.Position);
                                 Vector3 vertPos = mesh.Vertices[vertIndex].ToOpenTKVector3();
-                                AttributeData.Positions.Add(vertPos);
 
-                                vert.SetAttributeIndex(Enums.GXVertexAttribute.Position, (uint)posData.IndexOf(vertPos));
+                                if (curWeight.WeightCount == 1)
+                                {
+                                    Matrix3x4 ibm = envelopes.InverseBindMatrices[curWeight.BoneIndices[0]];
+                                    Matrix4 ibm4 = new Matrix4(ibm.Row0, ibm.Row1, ibm.Row2, Vector4.UnitW);
+
+                                    Vector3 transVec = Vector3.TransformPosition(vertPos, ibm4);
+                                    posData.Add(transVec);
+                                    AttributeData.Positions.Add(transVec);
+                                    vert.SetAttributeIndex(Enums.GXVertexAttribute.Position, (uint)posData.IndexOf(transVec));
+                                }
+                                else
+                                {
+                                    AttributeData.Positions.Add(vertPos);
+
+                                    vert.SetAttributeIndex(Enums.GXVertexAttribute.Position, (uint)posData.IndexOf(vertPos));
+                                }
                                 break;
                             case Enums.GXVertexAttribute.Normal:
                                 List<Vector3> normData = (List<Vector3>)vertData.GetAttributeData(Enums.GXVertexAttribute.Normal);
