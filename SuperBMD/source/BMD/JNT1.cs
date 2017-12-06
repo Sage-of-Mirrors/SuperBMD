@@ -146,7 +146,7 @@ namespace SuperBMD.BMD
             for (int i = 0; i < FlatSkeleton.Count; i++)
                 writer.Write((short)i);
 
-            StreamUtility.PadStreamWithString(writer, 8);
+            StreamUtility.PadStreamWithString(writer, 4);
 
             curOffset = writer.BaseStream.Position;
 

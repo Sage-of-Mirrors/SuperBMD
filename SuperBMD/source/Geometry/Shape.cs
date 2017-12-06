@@ -27,6 +27,7 @@ namespace SuperBMD.Geometry
 
         public Shape()
         {
+            MatrixType = 3;
             AttributeData = new VertexData();
             Descriptor = new ShapeVertexDescriptor();
             Packets = new List<Packet>();
@@ -251,6 +252,13 @@ namespace SuperBMD.Geometry
                     packetWeights.Add(vert1Weight);
                     packetWeights.Add(vert2Weight);
                     packetWeights.Add(vert3Weight);
+
+                    if (!packetWeights.Contains(vert1Weight))
+                        numMatrices += vert1Weight.WeightCount;
+                    if (!packetWeights.Contains(vert2Weight))
+                        numMatrices += vert2Weight.WeightCount;
+                    if (!packetWeights.Contains(vert3Weight))
+                        numMatrices += vert1Weight.WeightCount;
                 }
                 // Matrix count is below 10, we can continue using the current packet
                 else
