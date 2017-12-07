@@ -25,5 +25,5 @@ To convert a model, drag it onto the executable or run the program via command l
 
 ### Textures
 * SuperBMD supports models that have no textures. These models will appear white when imported into a game.
-* It is recommended that the model's textures be in the same directory as the model being converted. <b>If SuperBMD find cannot the model's textures, it will use a black and white checkerboard image instead.</b>
+* It is recommended that the model's textures be in the same directory as the model being converted. <b>If SuperBMD cannot find the model's textures, it will use a black and white checkerboard image instead.</b>
 * Textures must be in either BMP or PNG format. TGA is currently not supported.
