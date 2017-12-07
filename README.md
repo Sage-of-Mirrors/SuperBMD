@@ -1,9 +1,11 @@
 # SuperBMD
 A library to import and export various 3D model formats into the Binary Model (BMD) format.
 
+This API uses the Open Asset Import Library (AssImp); A list of supported model formats can be found [here](http://assimp.org/main_features_formats.html).
+
 # Usage
 
-The UnitTest program can be used to convert models to the BMD format. This API uses the Open Asset Import Library (AssImp); A list of supported model formats can be found [here](http://assimp.org/main_features_formats.html).
+The UnitTest program can be used to convert models to the BMD format.
 
 To convert a model, drag it onto the executable or run the program via command line:
 
