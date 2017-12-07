@@ -12,6 +12,9 @@ To convert a model, drag it onto the executable or run the program via command l
 `SuperBMD.exe <model path>`
 
 ## Notes
+### Modeling
+* When exporting a model for conversion to BMD, rotate the model about the X axis by -90 degrees. Most modeling programs define the Z axis as the up axis, but Nintendo games use the Y axis instead. Rotating the model ensures that the model is not sideways when imported into a game.
+
 ### Skinning
 * SuperBMD supports both skinned and unskinned models.
 * For skinned meshes, <b>make the root of the model's skeleton the child of a dummy object called `skeleton_root`.</b> SuperBMD uses the name of this dummy object to find the root of the skeleton so that it can process it.
