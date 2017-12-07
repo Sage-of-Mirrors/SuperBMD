@@ -69,6 +69,7 @@ namespace SuperBMD.Rigging
         {
             Children = new List<Bone>();
 
+            m_MatrixType = 1;
             Name = node.Name;
             Parent = parent;
 
@@ -81,8 +82,6 @@ namespace SuperBMD.Rigging
             m_Scale = TransformationMatrix.ExtractScale();
             m_Rotation = TransformationMatrix.ExtractRotation();
             m_Translation = TransformationMatrix.ExtractTranslation();
-
-            //TransformationMatrix = Matrix4.CreateScale(m_Scale) * Matrix4.CreateFromQuaternion(m_Rotation) * Matrix4.CreateTranslation(m_Translation);
 
             Bounds = new BoundingVolume();
         }

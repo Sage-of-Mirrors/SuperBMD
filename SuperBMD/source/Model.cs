@@ -102,7 +102,7 @@ namespace SuperBMD
             SkinningEnvelopes = new EVP1();
             SkinningEnvelopes.SetInverseBindMatrices(scene, Joints.FlatSkeleton);
 
-            PartialWeightData = new DRW1();
+            PartialWeightData = new DRW1(scene, Joints.BoneNameIndices);
 
             Shapes = SHP1.Create(scene, Joints.BoneNameIndices, VertexData.Attributes, SkinningEnvelopes, PartialWeightData);
 

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using GameFormatReader.Common;
 using Assimp;
 using SuperBMD.Util;
+using SuperBMD.Rigging;
 
 namespace SuperBMD.BMD
 {
@@ -14,10 +15,13 @@ namespace SuperBMD.BMD
         public List<bool> WeightTypeCheck { get; private set; }
         public List<int> Indices { get; private set; }
 
+        public List<Weight> MeshWeights { get; private set; }
+
         public DRW1()
         {
             WeightTypeCheck = new List<bool>();
             Indices = new List<int>();
+            MeshWeights = new List<Weight>();
         }
 
         public DRW1(EndianBinaryReader reader, int offset)
@@ -46,25 +50,68 @@ namespace SuperBMD.BMD
             reader.BaseStream.Seek(offset + drw1Size, System.IO.SeekOrigin.Begin);
         }
 
-        public DRW1(Scene scene)
+        public DRW1(Scene scene, Dictionary<string, int> boneNameDict)
         {
+            WeightTypeCheck = new List<bool>();
+            Indices = new List<int>();
 
-        }
+            MeshWeights = new List<Weight>();
+            List<Weight> fullyWeighted = new List<Weight>();
+            List<Weight> partiallyWeighted = new List<Weight>();
 
-        public int AddEntry(bool isWeighted, int index)
-        {
-            for (int i = 0; i < WeightTypeCheck.Count; i++)
+            SortedDictionary<int, Weight> weights = new SortedDictionary<int, Weight>();
+
+            foreach (Mesh mesh in scene.Meshes)
             {
-                if (WeightTypeCheck[i] == isWeighted && Indices[i] == index)
-                    return i;
+                foreach (Assimp.Bone bone in mesh.Bones)
+                {
+                    foreach (VertexWeight assWeight in bone.VertexWeights)
+                    {
+                        if (!weights.ContainsKey(assWeight.VertexID))
+                        {
+                            weights.Add(assWeight.VertexID, new Weight());
+                            weights[assWeight.VertexID].AddWeight(assWeight.Weight, boneNameDict[bone.Name]);
+                        }
+                        else
+                        {
+                            weights[assWeight.VertexID].AddWeight(assWeight.Weight, boneNameDict[bone.Name]);
+                        }
+                    }
+                }
+
+                foreach (Weight weight in weights.Values)
+                {
+                    if (weight.WeightCount == 1)
+                    {
+                        if (!fullyWeighted.Contains(weight))
+                            fullyWeighted.Add(weight);
+                    }
+                    else
+                    {
+                        if (!partiallyWeighted.Contains(weight))
+                            partiallyWeighted.Add(weight);
+                    }
+                }
+
+                weights.Clear();
             }
 
-            int ret = WeightTypeCheck.Count;
+            MeshWeights.AddRange(fullyWeighted);
+            MeshWeights.AddRange(partiallyWeighted);
 
-            WeightTypeCheck.Add(isWeighted);
-            Indices.Add(index);
-
-            return ret;
+            foreach (Weight weight in MeshWeights)
+            {
+                if (weight.WeightCount == 1)
+                {
+                    WeightTypeCheck.Add(false);
+                    Indices.Add(weight.BoneIndices[0]);
+                }
+                else
+                {
+                    WeightTypeCheck.Add(true);
+                    Indices.Add(0); // This will get filled with the correct value when SHP1 is generated
+                }
+            }
         }
 
         public void Write(EndianBinaryWriter writer)
