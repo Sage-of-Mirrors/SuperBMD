@@ -1,7 +1,7 @@
 # SuperBMD
 A library to import and export various 3D model formats into the Binary Model (BMD) format.
 
-This API uses the Open Asset Import Library (AssImp); A list of supported model formats can be found [here](http://assimp.org/main_features_formats.html).
+This API uses the Open Asset Import Library (AssImp). A list of supported model formats can be found [here](http://assimp.org/main_features_formats.html).
 
 # Usage
 
