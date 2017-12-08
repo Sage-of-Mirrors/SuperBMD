@@ -165,6 +165,11 @@ namespace SuperBMD.Util
             return sb.ToString();
         }
 
+        public Assimp.Color4D ToColor4D()
+        {
+            return new Assimp.Color4D(R, G, B, A);
+        }
+
         public static Color Lerp(Color a, Color b, float t)
         {
             //t = MathE.ClampNormalized(t);

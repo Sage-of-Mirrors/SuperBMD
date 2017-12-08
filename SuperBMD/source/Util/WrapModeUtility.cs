@@ -26,5 +26,20 @@ namespace SuperBMD.Util
                     throw new ArgumentException("mode");
             }
         }
+
+        public static Assimp.TextureWrapMode ToAssImpWrapMode(this BinaryTextureImage.WrapModes mode)
+        {
+            switch (mode)
+            {
+                case BinaryTextureImage.WrapModes.ClampToEdge:
+                    return TextureWrapMode.Clamp;
+                case BinaryTextureImage.WrapModes.MirroredRepeat:
+                    return TextureWrapMode.Mirror;
+                case BinaryTextureImage.WrapModes.Repeat:
+                    return TextureWrapMode.Wrap;
+                default:
+                    throw new ArgumentException("mode");
+            }
+        }
     }
 }

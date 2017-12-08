@@ -114,7 +114,7 @@ namespace SuperBMD
             vertexCount = VertexData.Attributes.Positions.Count;
         }
 
-        public void Export(string fileName)
+        public void ExportBMD(string fileName)
         {
             using (FileStream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
             {
@@ -140,6 +140,28 @@ namespace SuperBMD
                 writer.Seek(8, SeekOrigin.Begin);
                 writer.Write((int)writer.BaseStream.Length);
             }
+        }
+
+        public void ExportAssImp(string fileName, string modelType)
+        {
+            string outDir = Path.GetDirectoryName(fileName);
+
+            Scene outScene = new Scene();
+            outScene.RootNode = new Node("RootNode");
+            Assimp.Node geomNode = new Node(Path.GetFileNameWithoutExtension(fileName), outScene.RootNode);
+
+            for (int i = 0; i < Shapes.Shapes.Count; i++)
+            {
+                geomNode.MeshIndices.Add(i);
+            }
+
+            outScene.RootNode.Children.Add(geomNode);
+
+            Materials.FillScene(outScene, Textures, outDir);
+
+
+            AssimpContext cont = new AssimpContext();
+            cont.ExportFile(outScene, fileName, modelType, PostProcessSteps.ValidateDataStructure);
         }
     }
 }

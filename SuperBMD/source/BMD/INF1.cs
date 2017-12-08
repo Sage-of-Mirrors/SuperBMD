@@ -111,6 +111,11 @@ namespace SuperBMD.BMD
             }
         }
 
+        public void FillScene(Scene scene, List<Rigging.Bone> flatSkeleton)
+        {
+
+        }
+
         public void Write(EndianBinaryWriter writer, int packetCount, int vertexCount)
         {
             long start = writer.BaseStream.Position;

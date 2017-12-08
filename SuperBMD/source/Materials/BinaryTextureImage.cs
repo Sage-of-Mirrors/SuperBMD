@@ -236,7 +236,7 @@ namespace SuperBMD.Materials
             texData.Dispose();
         }
 
-        public void SaveImageToDisk(string outputFile)
+        public string SaveImageToDisk(string outputFile)
         {
             string fileName = Path.Combine(outputFile, $"{ Name }.bmp");
 
@@ -246,6 +246,8 @@ namespace SuperBMD.Materials
                 Directory.CreateDirectory(Path.GetDirectoryName(fileName));
                 bmp.Save(fileName);
             }
+
+            return fileName;
         }
 
         public Bitmap CreateBitmap()

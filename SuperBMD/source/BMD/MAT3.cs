@@ -659,6 +659,38 @@ namespace SuperBMD.BMD
             }
         }
 
+        public void FillScene(Assimp.Scene scene, TEX1 textures, string fileDir)
+        {
+            foreach (Material mat in m_Materials)
+            {
+                Assimp.Material assMat = new Assimp.Material();
+
+                if (mat.TextureIndices[0] != -1)
+                {
+                    int texIndex = mat.TextureIndices[0];
+                    string texPath = textures[texIndex].SaveImageToDisk(fileDir);
+
+                    Assimp.TextureSlot tex = new Assimp.TextureSlot(texPath, Assimp.TextureType.Diffuse, 0,
+                        Assimp.TextureMapping.FromUV, 0, 1.0f, Assimp.TextureOperation.Add,
+                        textures[texIndex].WrapS.ToAssImpWrapMode(), textures[texIndex].WrapT.ToAssImpWrapMode(), 0);
+
+                    assMat.AddMaterialTexture(ref tex);
+                }
+
+                if (mat.MaterialColors[0] != null)
+                {
+                    assMat.ColorDiffuse = mat.MaterialColors[0].Value.ToColor4D();
+                }
+
+                if (mat.AmbientColors[0] != null)
+                {
+                    assMat.ColorAmbient = mat.AmbientColors[0].Value.ToColor4D();
+                }
+
+                scene.Materials.Add(assMat);
+            }
+        }
+
         public void Write(EndianBinaryWriter writer)
         {
             long start = writer.BaseStream.Position;
