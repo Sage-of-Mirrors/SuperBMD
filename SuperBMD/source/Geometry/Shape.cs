@@ -82,6 +82,11 @@ namespace SuperBMD.Geometry
                 for (int i = 0; i < 3; i++)
                 {
                     Vertex vert = new Vertex();
+
+                    Weight rootWeight = new Weight();
+                    rootWeight.AddWeight(1.0f, 0);
+
+                    vert.SetWeight(rootWeight);
                     int vertIndex = face.Indices[i];
 
                     foreach (Enums.GXVertexAttribute attrib in activeAttribs)
@@ -254,11 +259,12 @@ namespace SuperBMD.Geometry
                 {
                     Vertex vert = new Vertex();
                     int vertIndex = vertexIndexArray[i];
+                    Weight curWeight = vertWeightArray[i];
+
+                    vert.SetWeight(curWeight);
 
                     foreach (Enums.GXVertexAttribute attrib in activeAttribs)
                     {
-                        Weight curWeight = vertWeightArray[i];
-
                         switch (attrib)
                         {
                             case Enums.GXVertexAttribute.PositionMatrixIdx:

@@ -7,6 +7,7 @@ using SuperBMD.Scenegraph;
 using SuperBMD.Scenegraph.Enums;
 using GameFormatReader.Common;
 using Assimp;
+using SuperBMD.Util;
 
 namespace SuperBMD.BMD
 {
@@ -111,9 +112,36 @@ namespace SuperBMD.BMD
             }
         }
 
-        public void FillScene(Scene scene, List<Rigging.Bone> flatSkeleton)
+        public void FillScene(Scene scene, List<Rigging.Bone> flatSkeleton, bool useSkeletonRoot)
         {
+            Node root = scene.RootNode;
 
+            if (useSkeletonRoot)
+                root = new Node("skeleton_root");
+
+            ProcessNodesRecursive(root, Root, flatSkeleton);
+
+            if (useSkeletonRoot)
+                scene.RootNode.Children.Add(root);
+        }
+
+        private void ProcessNodesRecursive(Node rootAssNode, SceneNode rootSceneNode, List<Rigging.Bone> flatSkeleton)
+        {
+            foreach (SceneNode sceneNode in rootSceneNode.Children)
+            {
+                if (sceneNode.Type == NodeType.Joint)
+                {
+                    Rigging.Bone joint = flatSkeleton[sceneNode.Index];
+
+                    Node newAssNode = new Node(joint.Name);
+                    newAssNode.Transform = joint.TransformationMatrix.ToMatrix4x4();
+
+                    rootAssNode.Children.Add(newAssNode);
+                    ProcessNodesRecursive(newAssNode, sceneNode, flatSkeleton);
+                }
+                else
+                    ProcessNodesRecursive(rootAssNode, sceneNode, flatSkeleton);
+            }
         }
 
         public void Write(EndianBinaryWriter writer, int packetCount, int vertexCount)

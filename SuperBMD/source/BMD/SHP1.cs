@@ -9,6 +9,7 @@ using Assimp;
 using SuperBMD.Geometry.Enums;
 using SuperBMD.Util;
 using SuperBMD.Rigging;
+using OpenTK;
 
 namespace SuperBMD.BMD
 {
@@ -162,6 +163,68 @@ namespace SuperBMD.BMD
             SHP1 shp1 = new SHP1(scene, vertData, boneNames, evp1, drw1);
 
             return shp1;
+        }
+
+        public void FillScene(Scene scene, VertexData vertData, List<Rigging.Bone> flatSkeleton, List<Matrix4> inverseBindMatrices)
+        {
+            for (int i = 0; i < Shapes.Count; i++)
+            {
+                Mesh mesh = new Mesh($"mesh_{ i }", PrimitiveType.Triangle);
+                mesh.MaterialIndex = i;
+
+                int vertexID = 0;
+                Shape curShape = Shapes[i];
+                foreach (Packet pack in curShape.Packets)
+                {
+                    foreach (Primitive prim in pack.Primitives)
+                    {
+                        List<Vertex> triVertices = J3DUtility.PrimitiveToTriangles(prim);
+
+                        for (int triIndex = 0; triIndex < triVertices.Count / 3; triIndex += 3)
+                        {
+                            Face newFace = new Face(new int[] { vertexID, vertexID + 1, vertexID + 2 });
+                            mesh.Faces.Add(newFace);
+
+                            for (int triVertIndex = 0; triVertIndex < 3; triVertIndex++)
+                            {
+                                Vertex vert = triVertices[triIndex + triVertIndex];
+
+                                for (int j = 0; j < vert.VertexWeight.WeightCount; j++)
+                                {
+                                    Rigging.Bone curWeightBone = flatSkeleton[vert.VertexWeight.BoneIndices[j]];
+
+                                    int assBoneIndex = mesh.Bones.FindIndex(x => x.Name == curWeightBone.Name);
+
+                                    if (assBoneIndex == -1)
+                                    {
+                                        Assimp.Bone newBone = new Assimp.Bone();
+                                        newBone.Name = curWeightBone.Name;
+                                        mesh.Bones.Add(newBone);
+                                        assBoneIndex = mesh.Bones.IndexOf(newBone);
+                                    }
+
+                                    mesh.Bones[assBoneIndex].VertexWeights.Add(new VertexWeight(vertexID, vert.VertexWeight.Weights[j]));
+                                }
+
+                                OpenTK.Vector4 openTKVec = new Vector4(vertData.Positions[(int)vert.GetAttributeIndex(GXVertexAttribute.Position)], 1);
+                                Vector3D vertVec = new Vector3D(openTKVec.X, openTKVec.Y, openTKVec.Z);
+
+                                if (vert.VertexWeight.WeightCount == 1)
+                                {
+                                    Vector4 trans = OpenTK.Vector4.Transform(openTKVec, inverseBindMatrices[vert.VertexWeight.BoneIndices[0]].Inverted());
+                                    vertVec = new Vector3D(trans.X, trans.Y, trans.Z);
+                                }
+
+                                mesh.Vertices.Add(vertVec);
+
+                                vertexID++;
+                            }
+                        }
+                    }
+                }
+
+                scene.Meshes.Add(mesh);
+            }
         }
 
         public void Write(EndianBinaryWriter writer)

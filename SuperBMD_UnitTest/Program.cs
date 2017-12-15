@@ -12,8 +12,10 @@ namespace SuperBMD_UnitTest
         static void Main(string[] args)
         {
             Model mod = Model.Load(args[0]);
-            //mod.ExportBMD(args[0] + ".bmd");
-            mod.ExportAssImp(args[2], args[1]);
+            mod.ExportBMD(args[0] + ".bmd");
+            //ExportSettings exSet = new ExportSettings();
+
+            //mod.ExportAssImp(args[2], args[1], exSet);
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using SuperBMD.Materials.Enums;
 using GameFormatReader.Common;
 using OpenTK;
+using SuperBMD.Geometry;
 
 namespace SuperBMD.Util
 {
@@ -155,6 +156,51 @@ namespace SuperBMD.Util
             vec.Z = vec.Z * (float)(180.0f / Math.PI);
 
             return vec;
+        }
+
+        public static List<Vertex> PrimitiveToTriangles(Primitive prim)
+        {
+            List<Vertex> vertList = new List<Vertex>();
+
+            if (prim.PrimitiveType == Geometry.Enums.GXPrimitiveType.Triangles)
+                return prim.Vertices;
+            if (prim.PrimitiveType == Geometry.Enums.GXPrimitiveType.TriangleStrip)
+            {
+                for (int v = 2; v < prim.Vertices.Count; v++)
+                {
+                    bool isEven = v % 2 != 0;
+                    Vertex[] newTri = new Vertex[3];
+
+                    newTri[0] = prim.Vertices[v - 2];
+                    newTri[1] = isEven ? prim.Vertices[v] : prim.Vertices[v - 1];
+                    newTri[2] = isEven ? prim.Vertices[v - 1] : prim.Vertices[v];
+
+                    // Check against degenerate triangles (a triangle which shares indexes)
+                    if (newTri[0] != newTri[1] && newTri[1] != newTri[2] && newTri[2] != newTri[0])
+                        vertList.AddRange(newTri);
+                    else
+                        System.Console.WriteLine("Degenerate triangle detected, skipping TriangleStrip conversion to triangle.");
+                }
+            }
+            else if (prim.PrimitiveType == Geometry.Enums.GXPrimitiveType.TriangleFan)
+            {
+                for (int v = 1; v < prim.Vertices.Count - 1; v++)
+                {
+                    // Triangle is always, v, v+1, and index[0]?
+                    Vertex[] newTri = new Vertex[3];
+                    newTri[0] = prim.Vertices[v];
+                    newTri[1] = prim.Vertices[v + 1];
+                    newTri[2] = prim.Vertices[0];
+
+                    // Check against degenerate triangles (a triangle which shares indexes)
+                    if (newTri[0] != newTri[1] && newTri[1] != newTri[2] && newTri[2] != newTri[0])
+                        vertList.AddRange(newTri);
+                    else
+                        System.Console.WriteLine("Degenerate triangle detected, skipping TriangleFan conversion to triangle.");
+                }
+            }
+
+            return vertList;
         }
     }
 }

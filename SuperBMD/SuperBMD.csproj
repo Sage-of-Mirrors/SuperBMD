@@ -83,6 +83,7 @@
     <Compile Include="source\BMD\INF1.cs" />
     <Compile Include="source\BMD\JNT1.cs" />
     <Compile Include="source\BMD\MAT3.cs" />
+    <Compile Include="source\ExportSettings.cs" />
     <Compile Include="source\Model.cs" />
     <Compile Include="source\BMD\SHP1.cs" />
     <Compile Include="source\BMD\TEX1.cs" />

@@ -62,6 +62,10 @@ namespace SuperBMD.Rigging
 
             m_Translation = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
 
+            TransformationMatrix = Matrix4.CreateScale(m_Scale) *
+                                   Matrix4.CreateFromQuaternion(m_Rotation) *
+                                   Matrix4.CreateTranslation(m_Translation);
+
             Bounds = new BoundingVolume(reader);
         }
 

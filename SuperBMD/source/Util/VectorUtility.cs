@@ -16,6 +16,11 @@ namespace SuperBMD.Util
             return new OpenTK.Vector3(vec3.X, vec3.Y, vec3.Z);
         }
 
+        public static Assimp.Vector3D ToVector3D(this OpenTK.Vector3 vec3)
+        {
+            return new Vector3D(vec3.X, vec3.Y, vec3.Z);
+        }
+
         public static OpenTK.Vector2 ToOpenTKVector2(this Assimp.Vector3D vec3)
         {
             return new OpenTK.Vector2(vec3.X, vec3.Y);
@@ -34,6 +39,17 @@ namespace SuperBMD.Util
         public static Color ToSuperBMDColorRGBA(this Assimp.Color4D color4)
         {
             return new Color(color4.R, color4.G, color4.B, color4.A);
+        }
+
+        public static Matrix4x4 ToMatrix4x4(this OpenTK.Matrix4 mat4)
+        {
+            Matrix4x4 outMat = new Matrix4x4(mat4.M11, mat4.M12, mat4.M13, mat4.M14,
+                mat4.M21, mat4.M22, mat4.M23, mat4.M24,
+                mat4.M31, mat4.M32, mat4.M33, mat4.M34,
+                mat4.M41, mat4.M42, mat4.M43, mat4.M44);
+
+            outMat.Transpose();
+            return outMat;
         }
     }
 }

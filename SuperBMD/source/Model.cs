@@ -97,7 +97,7 @@ namespace SuperBMD
             VertexData = new VTX1(scene);
             Joints = new JNT1(scene, VertexData);
             Scenegraph = new INF1(scene, Joints);
-            Textures = new TEX1(scene, modelDirectory);
+            Textures = new TEX1(scene, Path.GetDirectoryName(modelDirectory));
 
             SkinningEnvelopes = new EVP1();
             SkinningEnvelopes.SetInverseBindMatrices(scene, Joints.FlatSkeleton);
@@ -142,11 +142,14 @@ namespace SuperBMD
             }
         }
 
-        public void ExportAssImp(string fileName, string modelType)
+        public void ExportAssImp(string fileName, string modelType, ExportSettings settings)
         {
+            throw new NotImplementedException();
+
             string outDir = Path.GetDirectoryName(fileName);
 
             Scene outScene = new Scene();
+
             outScene.RootNode = new Node("RootNode");
             Assimp.Node geomNode = new Node(Path.GetFileNameWithoutExtension(fileName), outScene.RootNode);
 
@@ -157,11 +160,12 @@ namespace SuperBMD
 
             outScene.RootNode.Children.Add(geomNode);
 
+            Scenegraph.FillScene(outScene, Joints.FlatSkeleton, settings.UseSkeletonRoot);
             Materials.FillScene(outScene, Textures, outDir);
-
+            Shapes.FillScene(outScene, VertexData.Attributes, Joints.FlatSkeleton, SkinningEnvelopes.InverseBindMatrices);
 
             AssimpContext cont = new AssimpContext();
-            cont.ExportFile(outScene, fileName, modelType, PostProcessSteps.ValidateDataStructure);
+            cont.ExportFile(outScene, fileName, "collada", PostProcessSteps.ValidateDataStructure);
         }
     }
 }
