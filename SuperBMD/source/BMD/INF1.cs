@@ -119,29 +119,77 @@ namespace SuperBMD.BMD
             if (useSkeletonRoot)
                 root = new Node("skeleton_root");
 
-            ProcessNodesRecursive(root, Root, flatSkeleton);
+            SceneNode curRoot = Root;
+            SceneNode lastNode = Root;
+
+            Node curAssRoot = new Node(flatSkeleton[0].Name, root);
+            Node lastAssNode = curAssRoot;
+            root.Children.Add(curAssRoot);
+
+            for (int i = 1; i < FlatNodes.Count; i++)
+            {
+                SceneNode curNode = FlatNodes[i];
+
+                if (curNode.Type == NodeType.OpenChild)
+                {
+                    curRoot = lastNode;
+                    curAssRoot = lastAssNode;
+                }
+                else if (curNode.Type == NodeType.CloseChild)
+                {
+                    curRoot = curRoot.Parent;
+                    curAssRoot = curAssRoot.Parent;
+                }
+                else if (curNode.Type == NodeType.Joint)
+                {
+                    Node assCurNode = new Node(flatSkeleton[curNode.Index].Name, curAssRoot);
+                    assCurNode.Transform = flatSkeleton[curNode.Index].TransformationMatrix.ToMatrix4x4();
+                    curAssRoot.Children.Add(assCurNode);
+
+                    lastNode = curNode;
+                    lastAssNode = assCurNode;
+                }
+                else if (curNode.Type == NodeType.Terminator)
+                    break;
+                else
+                {
+                    Node assCurNode = new Node($"delete", curAssRoot);
+                    curAssRoot.Children.Add(assCurNode);
+
+                    lastNode = curNode;
+                    lastAssNode = assCurNode;
+                }
+            }
+
+            DeleteNodesRecursive(root);
 
             if (useSkeletonRoot)
+            {
                 scene.RootNode.Children.Add(root);
+            }
         }
 
-        private void ProcessNodesRecursive(Node rootAssNode, SceneNode rootSceneNode, List<Rigging.Bone> flatSkeleton)
+        private void DeleteNodesRecursive(Node assNode)
         {
-            foreach (SceneNode sceneNode in rootSceneNode.Children)
+            if (assNode.Name == "delete")
             {
-                if (sceneNode.Type == NodeType.Joint)
+                for (int i = 0; i < assNode.Children.Count; i++)
                 {
-                    Rigging.Bone joint = flatSkeleton[sceneNode.Index];
+                    Node newChild = new Node(assNode.Children[i].Name, assNode.Parent);
+                    newChild.Transform = assNode.Children[i].Transform;
 
-                    Node newAssNode = new Node(joint.Name);
-                    newAssNode.Transform = joint.TransformationMatrix.ToMatrix4x4();
+                    for (int j = 0; j < assNode.Children[i].Children.Count; j++)
+                        newChild.Children.Add(assNode.Children[i].Children[j]);
 
-                    rootAssNode.Children.Add(newAssNode);
-                    ProcessNodesRecursive(newAssNode, sceneNode, flatSkeleton);
+                    assNode.Children[i] = newChild;
+                    assNode.Parent.Children.Add(assNode.Children[i]);
                 }
-                else
-                    ProcessNodesRecursive(rootAssNode, sceneNode, flatSkeleton);
+
+                assNode.Parent.Children.Remove(assNode);
             }
+
+            for (int i = 0; i < assNode.Children.Count; i++)
+                DeleteNodesRecursive(assNode.Children[i]);
         }
 
         public void CorrectMaterialIndices(Scene scene, MAT3 materials)

@@ -21,9 +21,6 @@ namespace SuperBMD.Scenegraph
             Children = new List<SceneNode>();
             Parent = parent;
 
-            if (parent != null)
-                parent.Children.Add(this);
-
             Type = (NodeType)reader.ReadInt16();
             Index = reader.ReadInt16();
         }

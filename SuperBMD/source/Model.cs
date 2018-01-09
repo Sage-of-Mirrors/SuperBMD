@@ -169,6 +169,48 @@ namespace SuperBMD
 
             AssimpContext cont = new AssimpContext();
             cont.ExportFile(outScene, fileName, "collada", PostProcessSteps.ValidateDataStructure);
+
+            if (SkinningEnvelopes.Weights.Count == 0)
+                return; // There's no skinning information, so we can stop here
+
+            // Now we need to add some skinning info, since AssImp doesn't do it for some bizarre reason
+
+            StreamWriter test = new StreamWriter(fileName + ".dae");
+            StreamReader dae = File.OpenText(fileName);
+            
+            while (!dae.EndOfStream)
+            {
+                string line = dae.ReadLine();
+
+                if (line.Contains("<node"))
+                {
+                    string[] testLn = line.Split('\"');
+                    string name = testLn[3];
+
+                    if (Joints.FlatSkeleton.Exists(x => x.Name == name))
+                    {
+                        string jointLine = line.Replace(">", $" sid=\"{ name }\" type=\"JOINT\">\n");
+                        test.WriteLine(jointLine);
+                        test.Flush();
+                    }
+                    else
+                    {
+                        test.WriteLine(line);
+                        test.Flush();
+                    }
+                }
+                else if (line.Contains("<matrix") && !line.Contains("//"))
+                {
+                    string matLine = line.Replace("<matrix>", "<matrix sid=\"matrix\">\n");
+                    test.WriteLine(matLine);
+                    test.Flush();
+                }
+                else
+                {
+                    test.WriteLine(line);
+                    test.Flush();
+                }
+            }
         }
     }
 }
