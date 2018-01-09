@@ -21,6 +21,11 @@ namespace SuperBMD.Util
             return new Vector3D(vec3.X, vec3.Y, vec3.Z);
         }
 
+        public static Assimp.Vector3D ToVector2D(this OpenTK.Vector2 vec2)
+        {
+            return new Vector3D(vec2.X, 1.0F - vec2.Y, 0);
+        }
+
         public static OpenTK.Vector2 ToOpenTKVector2(this Assimp.Vector3D vec3)
         {
             return new OpenTK.Vector2(vec3.X, vec3.Y);

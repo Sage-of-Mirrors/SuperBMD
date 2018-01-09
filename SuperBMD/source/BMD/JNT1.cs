@@ -64,12 +64,12 @@ namespace SuperBMD.BMD
             reader.BaseStream.Seek(offset + jnt1Size, System.IO.SeekOrigin.Begin);
         }
 
-        public void SetInverseBindMatrices(List<Matrix3x4> matrices)
+        public void SetInverseBindMatrices(List<Matrix4> matrices)
         {
-            for (int i = 0; i < FlatSkeleton.Count; i++)
+            /*for (int i = 0; i < FlatSkeleton.Count; i++)
             {
-                FlatSkeleton[i].SetInverseBindMatrix(new Matrix4(matrices[i].Row0, matrices[i].Row1, matrices[i].Row2, new Vector4(0, 0, 0, 1)));
-            }
+                FlatSkeleton[i].SetInverseBindMatrix(matrices[i]);
+            }*/
         }
 
         public JNT1(Assimp.Scene scene, VTX1 vertexData)

@@ -144,6 +144,21 @@ namespace SuperBMD.BMD
             }
         }
 
+        public void CorrectMaterialIndices(Scene scene, MAT3 materials)
+        {
+            foreach (SceneNode node in FlatNodes)
+            {
+                if (node.Type == NodeType.Shape)
+                {
+                    if (node.Index < scene.Meshes.Count)
+                    {
+                        int matIndex = node.Parent.Index;
+                        scene.Meshes[node.Index].MaterialIndex = materials.m_RemapIndices[matIndex];
+                    }
+                }
+            }
+        }
+
         public void Write(EndianBinaryWriter writer, int packetCount, int vertexCount)
         {
             long start = writer.BaseStream.Position;

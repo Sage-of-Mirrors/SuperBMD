@@ -11,11 +11,29 @@ namespace SuperBMD_UnitTest
     {
         static void Main(string[] args)
         {
-            Model mod = Model.Load(args[0]);
-            mod.ExportBMD(args[0] + ".bmd");
-            //ExportSettings exSet = new ExportSettings();
+            if (args.Length > 0)
+            {
+                if (args[0] == "help")
+                {
+                    DisplayHelp();
+                    return;
+                }
 
-            //mod.ExportAssImp(args[2], args[1], exSet);
+                Model mod = Model.Load(args[0]);
+                //mod.ExportBMD(args[0] + ".bmd");
+                mod.ExportAssImp(args[0] + ".dae", "dae", new ExportSettings());
+            }
+            else
+                DisplayHelp();
+        }
+
+        private static void DisplayHelp()
+        {
+            Console.WriteLine();
+            Console.WriteLine("SuperBMD: A tool to import and export various 3D model formats into the Binary Model (BMD) format.");
+            Console.WriteLine("Written by Sage_of_Mirrors/Gamma (@SageOfMirrors).");
+            Console.WriteLine("Made possible with help from arookas, LordNed, xDaniel, and many others.");
+            Console.WriteLine("Visit https://github.com/Sage-of-Mirrors/SuperBMD/wiki for more information.");
         }
     }
 }

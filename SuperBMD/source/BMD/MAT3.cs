@@ -16,7 +16,7 @@ namespace SuperBMD.BMD
     public class MAT3
     {
         private List<Material> m_Materials;
-        private List<int> m_RemapIndices;
+        public List<int> m_RemapIndices;
         private List<string> m_MaterialNames;
 
         private List<IndirectTexturing> m_IndirectTexBlock;
@@ -668,6 +668,7 @@ namespace SuperBMD.BMD
                 if (mat.TextureIndices[0] != -1)
                 {
                     int texIndex = mat.TextureIndices[0];
+                    //texIndex = m_TexRemapBlock[texIndex];
                     string texPath = textures[texIndex].SaveImageToDisk(fileDir);
 
                     Assimp.TextureSlot tex = new Assimp.TextureSlot(texPath, Assimp.TextureType.Diffuse, 0,

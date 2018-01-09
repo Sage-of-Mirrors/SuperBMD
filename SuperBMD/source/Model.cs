@@ -72,7 +72,9 @@ namespace SuperBMD
             SkinningEnvelopes = new EVP1(reader, (int)reader.BaseStream.Position);
             PartialWeightData = new DRW1(reader, (int)reader.BaseStream.Position);
             Joints            = new JNT1(reader, (int)reader.BaseStream.Position);
+            Joints.SetInverseBindMatrices(SkinningEnvelopes.InverseBindMatrices);
             Shapes            = SHP1.Create(reader, (int)reader.BaseStream.Position);
+            Shapes.SetVertexWeights(SkinningEnvelopes, PartialWeightData);
             Materials         = new MAT3(reader, (int)reader.BaseStream.Position);
             SkipMDL3(reader);
             Textures          = new TEX1(reader, (int)reader.BaseStream.Position);
@@ -144,7 +146,7 @@ namespace SuperBMD
 
         public void ExportAssImp(string fileName, string modelType, ExportSettings settings)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
 
             string outDir = Path.GetDirectoryName(fileName);
 
@@ -163,6 +165,7 @@ namespace SuperBMD
             Scenegraph.FillScene(outScene, Joints.FlatSkeleton, settings.UseSkeletonRoot);
             Materials.FillScene(outScene, Textures, outDir);
             Shapes.FillScene(outScene, VertexData.Attributes, Joints.FlatSkeleton, SkinningEnvelopes.InverseBindMatrices);
+            Scenegraph.CorrectMaterialIndices(outScene, Materials);
 
             AssimpContext cont = new AssimpContext();
             cont.ExportFile(outScene, fileName, "collada", PostProcessSteps.ValidateDataStructure);

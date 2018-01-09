@@ -165,6 +165,50 @@ namespace SuperBMD.BMD
             return shp1;
         }
 
+        public void SetVertexWeights(EVP1 envelopes, DRW1 drawList)
+        {
+            for (int i = 0; i < Shapes.Count; i++)
+            {
+                for (int j = 0; j < Shapes[i].Packets.Count; j++)
+                {
+                    foreach (Primitive prim in Shapes[i].Packets[j].Primitives)
+                    {
+                        foreach (Vertex vert in prim.Vertices)
+                        {
+                            if (Shapes[i].Descriptor.CheckAttribute(GXVertexAttribute.PositionMatrixIdx))
+                            {
+                                int drw1Index = Shapes[i].Packets[j].MatrixIndices[(int)vert.PositionMatrixIDxIndex];
+                                int curPacketIndex = j;
+                                while (drw1Index == -1)
+                                {
+                                    curPacketIndex--;
+                                    drw1Index = Shapes[i].Packets[curPacketIndex].MatrixIndices[(int)vert.PositionMatrixIDxIndex];
+                                }
+
+                                if (drawList.WeightTypeCheck[(int)drw1Index])
+                                {
+                                    int evp1Index = drawList.Indices[(int)drw1Index];
+                                    vert.SetWeight(envelopes.Weights[evp1Index]);
+                                }
+                                else
+                                {
+                                    Weight vertWeight = new Weight();
+                                    vertWeight.AddWeight(1.0f, drawList.Indices[(int)drw1Index]);
+                                    vert.SetWeight(vertWeight);
+                                }
+                            }
+                            else
+                            {
+                                Weight vertWeight = new Weight();
+                                vertWeight.AddWeight(1.0f, drawList.Indices[Shapes[i].Packets[j].MatrixIndices[0]]);
+                                vert.SetWeight(vertWeight);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         public void FillScene(Scene scene, VertexData vertData, List<Rigging.Bone> flatSkeleton, List<Matrix4> inverseBindMatrices)
         {
             for (int i = 0; i < Shapes.Count; i++)
@@ -180,9 +224,9 @@ namespace SuperBMD.BMD
                     {
                         List<Vertex> triVertices = J3DUtility.PrimitiveToTriangles(prim);
 
-                        for (int triIndex = 0; triIndex < triVertices.Count / 3; triIndex += 3)
+                        for (int triIndex = 0; triIndex < triVertices.Count; triIndex += 3)
                         {
-                            Face newFace = new Face(new int[] { vertexID, vertexID + 1, vertexID + 2 });
+                            Face newFace = new Face(new int[] { vertexID + 2, vertexID + 1, vertexID });
                             mesh.Faces.Add(newFace);
 
                             for (int triVertIndex = 0; triVertIndex < 3; triVertIndex++)
@@ -199,6 +243,7 @@ namespace SuperBMD.BMD
                                     {
                                         Assimp.Bone newBone = new Assimp.Bone();
                                         newBone.Name = curWeightBone.Name;
+                                        newBone.OffsetMatrix = curWeightBone.InverseBindMatrix.ToMatrix4x4();
                                         mesh.Bones.Add(newBone);
                                         assBoneIndex = mesh.Bones.IndexOf(newBone);
                                     }
@@ -211,11 +256,78 @@ namespace SuperBMD.BMD
 
                                 if (vert.VertexWeight.WeightCount == 1)
                                 {
-                                    Vector4 trans = OpenTK.Vector4.Transform(openTKVec, inverseBindMatrices[vert.VertexWeight.BoneIndices[0]].Inverted());
-                                    vertVec = new Vector3D(trans.X, trans.Y, trans.Z);
+                                    if (inverseBindMatrices.Count > vert.VertexWeight.BoneIndices[0])
+                                    {
+                                        Vector4 trans = OpenTK.Vector4.Transform(openTKVec, inverseBindMatrices[vert.VertexWeight.BoneIndices[0]].Inverted());
+                                        vertVec = new Vector3D(trans.X, trans.Y, trans.Z);
+                                    }
+                                    else
+                                    {
+                                        Vector4 trans = OpenTK.Vector4.Transform(openTKVec, flatSkeleton[vert.VertexWeight.BoneIndices[0]].TransformationMatrix);
+                                        vertVec = new Vector3D(trans.X, trans.Y, trans.Z);
+                                    }
                                 }
+                                /*else
+                                {
+                                    Vector4 intermediate = new Vector4();
+
+                                    for (int m = 0; m < vert.VertexWeight.WeightCount; m++)
+                                    {
+                                        intermediate += 
+                                    }
+
+                                    vertVec = new Vector3D(intermediate.X, intermediate.Y, intermediate.Z);
+                                }*/
 
                                 mesh.Vertices.Add(vertVec);
+
+                                if (curShape.Descriptor.CheckAttribute(GXVertexAttribute.Normal))
+                                {
+                                    mesh.Normals.Add(vertData.Normals[(int)vert.NormalIndex].ToVector3D());
+                                }
+
+                                if (curShape.Descriptor.CheckAttribute(GXVertexAttribute.Color0))
+                                    mesh.VertexColorChannels[0].Add(vertData.Color_0[(int)vert.Color0Index].ToColor4D());
+
+                                if (curShape.Descriptor.CheckAttribute(GXVertexAttribute.Color1))
+                                    mesh.VertexColorChannels[1].Add(vertData.Color_1[(int)vert.Color1Index].ToColor4D());
+
+                                for (int texCoordNum = 0; texCoordNum < 8; texCoordNum++)
+                                {
+                                    if (curShape.Descriptor.CheckAttribute(GXVertexAttribute.Tex0 + texCoordNum))
+                                    {
+                                        Vector3D texCoord = new Vector3D();
+                                        switch (texCoordNum)
+                                        {
+                                            case 0:
+                                                texCoord = vertData.TexCoord_0[(int)vert.TexCoord0Index].ToVector2D();
+                                                break;
+                                            case 1:
+                                                texCoord = vertData.TexCoord_1[(int)vert.TexCoord1Index].ToVector2D();
+                                                break;
+                                            case 2:
+                                                texCoord = vertData.TexCoord_2[(int)vert.TexCoord2Index].ToVector2D();
+                                                break;
+                                            case 3:
+                                                texCoord = vertData.TexCoord_3[(int)vert.TexCoord3Index].ToVector2D();
+                                                break;
+                                            case 4:
+                                                texCoord = vertData.TexCoord_4[(int)vert.TexCoord4Index].ToVector2D();
+                                                break;
+                                            case 5:
+                                                texCoord = vertData.TexCoord_5[(int)vert.TexCoord5Index].ToVector2D();
+                                                break;
+                                            case 6:
+                                                texCoord = vertData.TexCoord_6[(int)vert.TexCoord6Index].ToVector2D();
+                                                break;
+                                            case 7:
+                                                texCoord = vertData.TexCoord_7[(int)vert.TexCoord7Index].ToVector2D();
+                                                break;
+                                        }
+
+                                        mesh.TextureCoordinateChannels[texCoordNum].Add(texCoord);
+                                    }
+                                }
 
                                 vertexID++;
                             }
