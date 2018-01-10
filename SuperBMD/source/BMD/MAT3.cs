@@ -321,8 +321,8 @@ namespace SuperBMD.BMD
                 int texGenIndex = reader.ReadInt16();
                 if (texGenIndex == -1)
                     continue;
-                else
-                    mat.TexCoord1Gens[i] = m_TexCoord1GenBlock[texGenIndex];
+                //else
+                    //mat.TexCoord1Gens[i] = m_TexCoord1GenBlock[texGenIndex];
             }
 
             for (int i = 0; i < 8; i++)
@@ -348,8 +348,8 @@ namespace SuperBMD.BMD
                 int texMatIndex = reader.ReadInt16();
                 if (texMatIndex == -1)
                     continue;
-                else
-                    mat.PostTexMatrix[i] = m_TexMatrix2Block[texMatIndex];
+                //else
+                    //mat.PostTexMatrix[i] = m_TexMatrix2Block[texMatIndex];
             }
 
             for (int i = 0; i < 8; i++)

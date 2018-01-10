@@ -155,6 +155,18 @@ namespace SuperBMD.BMD
             }
         }
 
+        public void SetInverseBindMatrices(List<Rigging.Bone> flatSkel)
+        {
+            if (InverseBindMatrices.Count == 0)
+                return;
+
+            for (int i = 0; i < flatSkel.Count; i++)
+            {
+                Matrix4 newMat = InverseBindMatrices[i];
+                flatSkel[i].SetInverseBindMatrix(newMat);
+            }
+        }
+
         public void Write(EndianBinaryWriter writer)
         {
             long start = writer.BaseStream.Position;

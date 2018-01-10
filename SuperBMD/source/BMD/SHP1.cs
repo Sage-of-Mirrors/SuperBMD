@@ -251,14 +251,18 @@ namespace SuperBMD.BMD
                                     mesh.Bones[assBoneIndex].VertexWeights.Add(new VertexWeight(vertexID, vert.VertexWeight.Weights[j]));
                                 }
 
-                                OpenTK.Vector4 openTKVec = new Vector4(vertData.Positions[(int)vert.GetAttributeIndex(GXVertexAttribute.Position)], 1);
+                                OpenTK.Vector3 posVec = vertData.Positions[(int)vert.GetAttributeIndex(GXVertexAttribute.Position)];
+                                OpenTK.Vector4 openTKVec = new Vector4(posVec.X, posVec.Y, posVec.Z, 1);
+
                                 Vector3D vertVec = new Vector3D(openTKVec.X, openTKVec.Y, openTKVec.Z);
 
                                 if (vert.VertexWeight.WeightCount == 1)
                                 {
                                     if (inverseBindMatrices.Count > vert.VertexWeight.BoneIndices[0])
                                     {
-                                        Vector4 trans = OpenTK.Vector4.Transform(openTKVec, inverseBindMatrices[vert.VertexWeight.BoneIndices[0]].Inverted());
+                                        Matrix4 test = inverseBindMatrices[vert.VertexWeight.BoneIndices[0]].Inverted();
+                                        test.Transpose();
+                                        Vector4 trans = OpenTK.Vector4.Transform(openTKVec, test);
                                         vertVec = new Vector3D(trans.X, trans.Y, trans.Z);
                                     }
                                     else
@@ -269,14 +273,21 @@ namespace SuperBMD.BMD
                                 }
                                 /*else
                                 {
-                                    Vector4 intermediate = new Vector4();
+                                    Matrix4 finalMatrix = Matrix4.Zero;
 
                                     for (int m = 0; m < vert.VertexWeight.WeightCount; m++)
                                     {
-                                        intermediate += 
+                                        Matrix4 sm1 = inverseBindMatrices[vert.VertexWeight.BoneIndices[m]];
+                                        //sm1.Transpose();
+                                        Matrix4 sm2 = flatSkeleton[vert.VertexWeight.BoneIndices[m]].TransformationMatrix;
+                                        //sm2.Transpose();
+
+                                        finalMatrix += Matrix4.Mult(sm1, vert.VertexWeight.Weights[m]);
                                     }
 
-                                    vertVec = new Vector3D(intermediate.X, intermediate.Y, intermediate.Z);
+                                    Vector4 final = Vector4.Transform(openTKVec, finalMatrix);
+
+                                    vertVec = new Vector3D(final.X, final.Y, final.Z);
                                 }*/
 
                                 mesh.Vertices.Add(vertVec);

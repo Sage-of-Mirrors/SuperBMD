@@ -39,8 +39,6 @@ namespace SuperBMD.BMD
                 img.Load(reader, (offset + 0x20 + (0x20 * i)));
                 Textures.Add(img);
             }
-
-            DumpTextures("D:\\SuperBMD\\TexTest\\gnd_textest");
         }
 
         public TEX1(Assimp.Scene scene, string modelDirectory)
