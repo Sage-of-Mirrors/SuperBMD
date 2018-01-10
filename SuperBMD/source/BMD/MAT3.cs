@@ -72,7 +72,12 @@ namespace SuperBMD.BMD
                 int nextOffset = reader.PeekReadInt32();
                 int sectionSize = 0;
 
-                if (nextOffset == 0)
+                if (i == Mat3OffsetIndex.NBTScaleData)
+                {
+
+                }
+
+                if (nextOffset == 0 && i != Mat3OffsetIndex.NBTScaleData)
                 {
                     long saveReaderPos = reader.BaseStream.Position;
 

@@ -173,7 +173,7 @@ namespace SuperBMD
             }
 
             AssimpContext cont = new AssimpContext();
-            cont.ExportFile(outScene, fileName, "collada", PostProcessSteps.ValidateDataStructure);
+            cont.ExportFile(outScene, fileName, "collada", PostProcessSteps.ValidateDataStructure | PostProcessSteps.JoinIdenticalVertices);
 
             if (SkinningEnvelopes.Weights.Count == 0)
                 return; // There's no skinning information, so we can stop here
@@ -200,7 +200,7 @@ namespace SuperBMD
 
                     if (Joints.FlatSkeleton.Exists(x => x.Name == name))
                     {
-                        string jointLine = line.Replace(">", $" sid=\"{ name }\" type=\"JOINT\">\n");
+                        string jointLine = line.Replace(">", $" sid=\"{ name }\" type=\"JOINT\">");
                         test.WriteLine(jointLine);
                         test.Flush();
                     }
@@ -214,22 +214,27 @@ namespace SuperBMD
                 {
                     foreach (Mesh mesh in outScene.Meshes)
                     {
-                        test.WriteLine($"<node id=\"{ mesh.Name }\" name=\"{ mesh.Name }\" type=\"NODE\">");
+                        test.WriteLine($"      <node id=\"{ mesh.Name }\" name=\"{ mesh.Name }\" type=\"NODE\">");
 
-                        test.WriteLine($"<instance_controller url=\"#{ mesh.Name }-skin\">");
-                        test.WriteLine("<skeleton>#skeleton_root</skeleton>");
-                        test.WriteLine("</instance_controller>");
+                        test.WriteLine($"       <instance_controller url=\"#{ mesh.Name }-skin\">");
+                        test.WriteLine("        <skeleton>#skeleton_root</skeleton>");
+                        test.WriteLine("        <bind_material>");
+                        test.WriteLine("         <technique_common>");
+                        test.WriteLine($"          <instance_material symbol=\"theresonlyone\" target=\"#m{ mesh.MaterialIndex }mat\" />");
+                        test.WriteLine("         </technique_common>");
+                        test.WriteLine("        </bind_material>");
+                        test.WriteLine("       </instance_controller>");
 
-                        test.WriteLine("</node>");
+                        test.WriteLine("      </node>");
                         test.Flush();
                     }
 
                     test.WriteLine(line);
                     test.Flush();
                 }
-                else if (line.Contains("<matrix") && !line.Contains("//"))
+                else if (line.Contains("<matrix"))
                 {
-                    string matLine = line.Replace("<matrix>", "<matrix sid=\"matrix\">\n");
+                    string matLine = line.Replace("<matrix>", "<matrix sid=\"matrix\">");
                     test.WriteLine(matLine);
                     test.Flush();
                 }
@@ -239,6 +244,12 @@ namespace SuperBMD
                     test.Flush();
                 }
             }
+
+            test.Close();
+            dae.Close();
+
+            File.Copy(fileName + ".dae", fileName, true);
+            File.Delete(fileName + ".dae");
         }
 
         private void AddControllerLibrary(Scene scene, StreamWriter writer)
