@@ -85,9 +85,9 @@ namespace SuperBMD.Materials
             SwapTables = new TevSwapModeTable?[16];
             SwapTables[0] = new TevSwapModeTable(0, 1, 2, 3);
 
-            AlphCompare = new AlphaCompare(CompareType.Always, 0, AlphaOp.And, CompareType.Always, 0);
+            AlphCompare = new AlphaCompare(CompareType.Greater, 0, AlphaOp.And, CompareType.Always, 0);
             ZMode = new ZMode(true, CompareType.LEqual, true);
-            BMode = new BlendMode(Enums.BlendMode.Blend, BlendModeControl.SrcAlpha, BlendModeControl.InverseSrcAlpha, LogicOp.NoOp);
+            BMode = new BlendMode(Enums.BlendMode.None, BlendModeControl.SrcAlpha, BlendModeControl.InverseSrcAlpha, LogicOp.NoOp);
             NBTScale = new NBTScale(0, Vector3.Zero);
             FogInfo = new Fog(0, false, 0, 0, 0, 0, 0, new Color(0, 0, 0, 0), new float[10]);
         }
