@@ -22,7 +22,7 @@ namespace SuperBMD_UnitTest
                 Model mod = Model.Load(args[0]);
 
                 if (args[0].EndsWith(".bmd") || args[0].EndsWith(".bdl"))
-                    mod.ExportAssImp(args[0] + ".dae", "dae", new ExportSettings());
+                    mod.ExportAssImp(args[0], "dae", new ExportSettings());
                 else
                     mod.ExportBMD(args[0] + ".bmd");
             }

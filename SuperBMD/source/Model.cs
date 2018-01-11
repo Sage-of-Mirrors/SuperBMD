@@ -119,6 +119,16 @@ namespace SuperBMD
 
         public void ExportBMD(string fileName)
         {
+            string outDir = Path.GetDirectoryName(fileName);
+            string fileNameNoExt = Path.GetFileNameWithoutExtension(fileName);
+            fileNameNoExt = fileNameNoExt.Split('.')[0];
+            fileName = Path.Combine(outDir, fileNameNoExt + ".bmd");
+
+            if (File.Exists(fileName))
+            {
+                fileName = Path.Combine(outDir, fileNameNoExt + "_2.bmd");
+            }
+
             using (FileStream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
             {
                 EndianBinaryWriter writer = new EndianBinaryWriter(stream, Endian.Big);
@@ -146,6 +156,8 @@ namespace SuperBMD
         public void ExportAssImp(string fileName, string modelType, ExportSettings settings)
         {
             string outDir = Path.GetDirectoryName(fileName);
+            string fileNameNoExt = Path.GetFileNameWithoutExtension(fileName);
+            fileName = Path.Combine(outDir, fileNameNoExt + ".dae");
 
             Scene outScene = new Scene();
 
@@ -176,7 +188,7 @@ namespace SuperBMD
 
             // Now we need to add some skinning info, since AssImp doesn't do it for some bizarre reason
 
-            StreamWriter test = new StreamWriter(fileName + ".dae");
+            StreamWriter test = new StreamWriter(fileName + ".tmp");
             StreamReader dae = File.OpenText(fileName);
             
             while (!dae.EndOfStream)
@@ -244,8 +256,8 @@ namespace SuperBMD
             test.Close();
             dae.Close();
 
-            File.Copy(fileName + ".dae", fileName, true);
-            File.Delete(fileName + ".dae");
+            File.Copy(fileName + ".tmp", fileName, true);
+            File.Delete(fileName + ".tmp");
         }
 
         private void AddControllerLibrary(Scene scene, StreamWriter writer)
