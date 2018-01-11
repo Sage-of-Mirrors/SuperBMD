@@ -127,9 +127,7 @@ namespace SuperBMD
                 writer.Write(0); // Placeholder for file size
                 writer.Write(8); // Number of sections; bmd has 8, bdl has 9
 
-                writer.Write("SVR3".ToCharArray());
-                writer.Write(-1);
-                writer.Write((long)-1);
+                writer.Write("SuperBMD - Gamma".ToCharArray());
 
                 Scenegraph.Write(writer, packetCount, vertexCount);
                 VertexData.Write(writer);
@@ -147,8 +145,6 @@ namespace SuperBMD
 
         public void ExportAssImp(string fileName, string modelType, ExportSettings settings)
         {
-            //throw new NotImplementedException();
-
             string outDir = Path.GetDirectoryName(fileName);
 
             Scene outScene = new Scene();
