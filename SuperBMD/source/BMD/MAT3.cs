@@ -315,7 +315,7 @@ namespace SuperBMD.BMD
             for (int i = 0; i  < 8; i++)
             {
                 int lightIndex = reader.ReadInt16();
-                if (lightIndex == -1)
+                if ((lightIndex == -1) || (lightIndex > m_LightingColorBlock.Count) || (m_LightingColorBlock.Count == 0))
                     continue;
                 else
                     mat.LightingColors[i] = m_LightingColorBlock[lightIndex];
@@ -424,7 +424,7 @@ namespace SuperBMD.BMD
             for (int i = 0; i < 16; i++)
             {
                 int tevSwapModeTableIndex = reader.ReadInt16();
-                if (tevSwapModeTableIndex == -1)
+                if ((tevSwapModeTableIndex < 0) || (tevSwapModeTableIndex > m_SwapTableBlock.Count))
                     continue;
                 else
                     mat.SwapTables[i] = m_SwapTableBlock[tevSwapModeTableIndex];

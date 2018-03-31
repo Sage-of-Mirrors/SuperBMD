@@ -72,7 +72,7 @@ namespace SuperBMD.Materials
             AlphaSels = new KonstAlphaSel[16];
 
             TevOrders = new TevOrder?[16];
-            TevOrders[0] = new TevOrder(TexCoordId.TexCoord0, TexMapId.TexMap0, J3DColorChannelId.Color0);
+            TevOrders[0] = new TevOrder(TexCoordId.TexCoord0, TexMapId.TexMap0, GXColorChannelId.Color0);
 
             TevColors = new Color?[16];
             TevColors[0] = new Color(1, 1, 1, 1);
@@ -85,7 +85,7 @@ namespace SuperBMD.Materials
             SwapTables = new TevSwapModeTable?[16];
             SwapTables[0] = new TevSwapModeTable(0, 1, 2, 3);
 
-            AlphCompare = new AlphaCompare(CompareType.Greater, 0, AlphaOp.And, CompareType.Always, 0);
+            AlphCompare = new AlphaCompare(CompareType.Greater, 127, AlphaOp.And, CompareType.Always, 0);
             ZMode = new ZMode(true, CompareType.LEqual, true);
             BMode = new BlendMode(Enums.BlendMode.None, BlendModeControl.SrcAlpha, BlendModeControl.InverseSrcAlpha, LogicOp.NoOp);
             NBTScale = new NBTScale(0, Vector3.Zero);
@@ -124,7 +124,7 @@ namespace SuperBMD.Materials
                 // Generate texture stuff
                 AddTexGen(TexGenType.Matrix2x4, TexGenSrc.Tex0, Enums.TexMatrix.Identity);
                 AddTexMatrix(TexGenType.Matrix3x4, 0, OpenTK.Vector3.Zero, OpenTK.Vector2.One, 0, OpenTK.Vector2.Zero, OpenTK.Matrix4.Identity);
-                AddTevOrder(TexCoordId.TexCoord0, TexMapId.TexMap0, J3DColorChannelId.Null);
+                AddTevOrder(TexCoordId.TexCoord0, TexMapId.TexMap0, GXColorChannelId.ColorNull);
                 AddTexIndex(texIndex);
 
                 // Texture + Vertex Color
@@ -238,7 +238,7 @@ namespace SuperBMD.Materials
             }
         }
 
-        public void AddTevOrder(TexCoordId coordId, TexMapId mapId, J3DColorChannelId colorChanId)
+        public void AddTevOrder(TexCoordId coordId, TexMapId mapId, GXColorChannelId colorChanId)
         {
             for (int i = 0; i < 8; i++)
             {

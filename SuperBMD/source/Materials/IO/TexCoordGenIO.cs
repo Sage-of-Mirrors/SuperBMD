@@ -15,7 +15,7 @@ namespace SuperBMD.Materials.IO
             List<TexCoordGen> gens = new List<TexCoordGen>();
             int count = size / 4;
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < count; i++)
                 gens.Add(new TexCoordGen(reader));
 
             return gens;

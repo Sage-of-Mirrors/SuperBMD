@@ -12,9 +12,9 @@ namespace SuperBMD.Materials
     {
         public TexCoordId TexCoord;
         public TexMapId TexMap;
-        public J3DColorChannelId ChannelId;
+        public GXColorChannelId ChannelId;
 
-        public TevOrder(TexCoordId texCoord, TexMapId texMap, J3DColorChannelId chanID)
+        public TevOrder(TexCoordId texCoord, TexMapId texMap, GXColorChannelId chanID)
         {
             TexCoord = texCoord;
             TexMap = texMap;
@@ -25,7 +25,7 @@ namespace SuperBMD.Materials
         {
             TexCoord = (TexCoordId)reader.ReadByte();
             TexMap = (TexMapId)reader.ReadByte();
-            ChannelId = (J3DColorChannelId)reader.ReadByte();
+            ChannelId = (GXColorChannelId)reader.ReadByte();
             reader.SkipByte();
         }
 
