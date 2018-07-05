@@ -181,7 +181,7 @@ namespace SuperBMD
             }
 
             AssimpContext cont = new AssimpContext();
-            cont.ExportFile(outScene, fileName, "collada", PostProcessSteps.ValidateDataStructure | PostProcessSteps.JoinIdenticalVertices);
+            cont.ExportFile(outScene, fileName, "collada", PostProcessSteps.ValidateDataStructure);
 
             if (SkinningEnvelopes.Weights.Count == 0)
                 return; // There's no skinning information, so we can stop here
