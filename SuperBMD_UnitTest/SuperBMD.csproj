@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{7349EE4E-A17C-4715-A5B4-07533D1DC701}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>SuperBMD_UnitTest</RootNamespace>
-    <AssemblyName>SuperBMD_UnitTest</AssemblyName>
+    <RootNamespace>SuperBMD</RootNamespace>
+    <AssemblyName>SuperBMD</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -55,9 +55,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SuperBMD\SuperBMD.csproj">
+    <ProjectReference Include="..\SuperBMD\SuperBMDLib.csproj">
       <Project>{828be5e5-9e98-46c9-b63e-d2d03322a825}</Project>
-      <Name>SuperBMD</Name>
+      <Name>SuperBMDLib</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

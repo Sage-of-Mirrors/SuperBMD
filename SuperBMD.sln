@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuperBMD", "SuperBMD\SuperBMD.csproj", "{828BE5E5-9E98-46C9-B63E-D2D03322A825}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuperBMDLib", "SuperBMD\SuperBMDLib.csproj", "{828BE5E5-9E98-46C9-B63E-D2D03322A825}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuperBMD_UnitTest", "SuperBMD_UnitTest\SuperBMD_UnitTest.csproj", "{7349EE4E-A17C-4715-A5B4-07533D1DC701}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuperBMD", "SuperBMD_UnitTest\SuperBMD.csproj", "{7349EE4E-A17C-4715-A5B4-07533D1DC701}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
