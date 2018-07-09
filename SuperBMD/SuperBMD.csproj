@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Arguments.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -55,7 +56,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SuperBMD\SuperBMDLib.csproj">
+    <ProjectReference Include="..\SuperBMDLib\SuperBMDLib.csproj">
       <Project>{828be5e5-9e98-46c9-b63e-d2d03322a825}</Project>
       <Name>SuperBMDLib</Name>
     </ProjectReference>
