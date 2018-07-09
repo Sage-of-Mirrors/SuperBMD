@@ -1,8 +1,6 @@
 ﻿using System;
-using System.IO;
-using SuperBMD;
 
-namespace SuperBMD_UnitTest
+namespace SuperBMD
 {
     class Program
     {
