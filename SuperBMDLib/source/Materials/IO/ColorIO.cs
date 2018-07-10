@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SuperBMD.Materials.Enums;
+using SuperBMDLib.Materials.Enums;
 using GameFormatReader.Common;
-using SuperBMD.Util;
+using SuperBMDLib.Util;
 
-namespace SuperBMD.Materials.IO
+namespace SuperBMDLib.Materials.IO
 {
     public static class ColorIO
     {

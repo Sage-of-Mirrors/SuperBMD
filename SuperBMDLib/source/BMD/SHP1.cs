@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SuperBMD.Geometry;
+using SuperBMDLib.Geometry;
 using GameFormatReader.Common;
 using Assimp;
-using SuperBMD.Geometry.Enums;
-using SuperBMD.Util;
-using SuperBMD.Rigging;
+using SuperBMDLib.Geometry.Enums;
+using SuperBMDLib.Util;
+using SuperBMDLib.Rigging;
 using OpenTK;
 
-namespace SuperBMD.BMD
+namespace SuperBMDLib.BMD
 {
     public class SHP1
     {

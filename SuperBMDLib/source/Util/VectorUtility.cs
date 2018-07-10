@@ -7,7 +7,7 @@ using OpenTK;
 using Assimp;
 using GameFormatReader.Common;
 
-namespace SuperBMD.Util
+namespace SuperBMDLib.Util
 {
     public static class VectorUtility
     {

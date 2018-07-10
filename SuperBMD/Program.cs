@@ -1,6 +1,7 @@
 ﻿using System;
+using SuperBMDLib;
 
-namespace SuperBMD
+namespace SuperBMDLib
 {
     class Program
     {
@@ -14,25 +15,12 @@ namespace SuperBMD
 
             Arguments cmd_args = new Arguments(args);
 
-            /*
-            if (args.Length > 0)
-            {
-                if (args[0] == "help")
-                {
-                    DisplayHelp();
-                    return;
-                }
+            Model mod = Model.Load(cmd_args);
 
-                Model mod = Model.Load(args[0]);
-
-                if (args[0].EndsWith(".bmd") || args[0].EndsWith(".bdl"))
-                    mod.ExportAssImp(args[0], "dae", new ExportSettings());
-                else
-                    mod.ExportBMD(args[0] + ".bmd");
-            }
+            if (cmd_args.input_path.EndsWith(".bmd") || cmd_args.input_path.EndsWith(".bdl"))
+                mod.ExportAssImp(cmd_args.output_path, "dae", new ExportSettings());
             else
-                DisplayHelp();
-            */
+                mod.ExportBMD(cmd_args.output_path);
         }
 
         /// <summary>

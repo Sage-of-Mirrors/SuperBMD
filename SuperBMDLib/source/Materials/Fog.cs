@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SuperBMD.Util;
+using SuperBMDLib.Util;
 using GameFormatReader.Common;
 
-namespace SuperBMD.Materials
+namespace SuperBMDLib.Materials
 {
     public struct Fog : IEquatable<Fog>
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SuperBMD.Materials.Enums
+namespace SuperBMDLib.Materials.Enums
 {
     public enum TexMapId
     {

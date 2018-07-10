@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SuperBMD.Util;
+using SuperBMDLib.Util;
 using GameFormatReader.Common;
 using OpenTK;
 using Assimp;
-using SuperBMD.BMD;
-using SuperBMD.Rigging;
+using SuperBMDLib.BMD;
+using SuperBMDLib.Rigging;
 
-namespace SuperBMD.Geometry
+namespace SuperBMDLib.Geometry
 {
     public class Shape
     {

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Assimp;
-using SuperBMD.Materials;
+using SuperBMDLib.Materials;
 
-namespace SuperBMD.Util
+namespace SuperBMDLib.Util
 {
     public static class WrapModeUtility
     {

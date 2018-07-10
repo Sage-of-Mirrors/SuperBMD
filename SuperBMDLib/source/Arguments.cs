@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace SuperBMD
+namespace SuperBMDLib
 {
     /// <summary>
     /// Container for arguments taken from the user's input.
@@ -91,7 +91,7 @@ namespace SuperBMD
             // Output
             if (output_path == "")
             {
-                string input_without_ext = Path.GetFileNameWithoutExtension(input_path);
+                string input_without_ext = Path.Combine(Path.GetDirectoryName(input_path), Path.GetFileNameWithoutExtension(input_path));
 
                 if (input_path.EndsWith(".bmd") || input_path.EndsWith(".bdl"))
                     output_path = input_without_ext + ".dae";

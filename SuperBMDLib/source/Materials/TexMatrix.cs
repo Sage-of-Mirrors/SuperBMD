@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using OpenTK;
 using GameFormatReader.Common;
-using SuperBMD.Materials.Enums;
-using SuperBMD.Util;
+using SuperBMDLib.Materials.Enums;
+using SuperBMDLib.Util;
 
-namespace SuperBMD.Materials
+namespace SuperBMDLib.Materials
 {
     public struct TexMatrix : IEquatable<TexMatrix>
     {

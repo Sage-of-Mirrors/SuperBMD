@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using OpenTK;
 using GameFormatReader.Common;
 
-namespace SuperBMD.Materials
+namespace SuperBMDLib.Materials
 {
     public struct IndirectTexMatrix : IEquatable<IndirectTexMatrix>
     {

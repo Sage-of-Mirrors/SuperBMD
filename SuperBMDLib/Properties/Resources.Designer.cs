@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SuperBMD.Properties {
+namespace SuperBMDLib.Properties {
     using System;
     
     

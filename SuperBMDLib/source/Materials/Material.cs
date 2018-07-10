@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SuperBMD.Materials.Enums;
-using SuperBMD.Util;
+using SuperBMDLib.Materials.Enums;
+using SuperBMDLib.Util;
 using OpenTK;
 
-namespace SuperBMD.Materials
+namespace SuperBMDLib.Materials
 {
     public class Material
     {

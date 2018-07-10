@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SuperBMD.Scenegraph.Enums
+namespace SuperBMDLib.Scenegraph.Enums
 {
     public enum NodeType
     {

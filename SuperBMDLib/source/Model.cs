@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using GameFormatReader.Common;
 using Assimp;
 using System.IO;
-using SuperBMD.BMD;
+using SuperBMDLib.BMD;
 
-namespace SuperBMD
+namespace SuperBMDLib
 {
     public class Model
     {
@@ -24,14 +24,14 @@ namespace SuperBMD
         private int packetCount;
         private int vertexCount;
 
-        public static Model Load(string filePath)
+        public static Model Load(Arguments args)
         {
-            string extension = Path.GetExtension(filePath);
+            string extension = Path.GetExtension(args.input_path);
             Model output = null;
 
             if (extension == ".bmd" || extension == ".bdl")
             {
-                using (FileStream str = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                using (FileStream str = new FileStream(args.input_path, FileMode.Open, FileAccess.Read))
                 {
                     EndianBinaryReader reader = new EndianBinaryReader(str, Endian.Big);
                     output = new Model(reader);
@@ -43,9 +43,9 @@ namespace SuperBMD
 
                 // AssImp adds dummy nodes for pivots from FBX, so we'll force them off
                 cont.SetConfig(new Assimp.Configs.FBXPreservePivotsConfig(false));
-                Assimp.Scene aiScene = cont.ImportFile(filePath, Assimp.PostProcessSteps.Triangulate);
+                Assimp.Scene aiScene = cont.ImportFile(args.input_path, Assimp.PostProcessSteps.Triangulate);
 
-                output = new Model(aiScene, filePath);
+                output = new Model(aiScene, args);
             }
 
             return output;
@@ -72,7 +72,6 @@ namespace SuperBMD
             SkinningEnvelopes = new EVP1(reader, (int)reader.BaseStream.Position);
             PartialWeightData = new DRW1(reader, (int)reader.BaseStream.Position);
             Joints            = new JNT1(reader, (int)reader.BaseStream.Position);
-            //Joints.SetInverseBindMatrices(SkinningEnvelopes.InverseBindMatrices);
             SkinningEnvelopes.SetInverseBindMatrices(Joints.FlatSkeleton);
             Shapes            = SHP1.Create(reader, (int)reader.BaseStream.Position);
             Shapes.SetVertexWeights(SkinningEnvelopes, PartialWeightData);
@@ -95,12 +94,12 @@ namespace SuperBMD
             }
         }
 
-        public Model(Scene scene, string modelDirectory)
+        public Model(Scene scene, Arguments args)
         {
             VertexData = new VTX1(scene);
             Joints = new JNT1(scene, VertexData);
             Scenegraph = new INF1(scene, Joints);
-            Textures = new TEX1(scene, Path.GetDirectoryName(modelDirectory));
+            Textures = new TEX1(scene, args);
 
             SkinningEnvelopes = new EVP1();
             SkinningEnvelopes.SetInverseBindMatrices(scene, Joints.FlatSkeleton);

@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using GameFormatReader.Common;
-using SuperBMD.Util;
+using SuperBMDLib.Util;
 using Chadsoft.CTools.Image;
+using TgaLib;
+using Newtonsoft.Json;
 
-namespace SuperBMD.Materials
+namespace SuperBMDLib.Materials
 {
     /// <summary>
     /// The BinaryTextureImage (or BTI) format is used by Wind Waker (and several other Nintendo
@@ -116,25 +116,47 @@ namespace SuperBMD.Materials
         }
         #endregion
 
-        public string Name { get; private set; }
-        public TextureFormats Format { get; private set; }
-        public byte AlphaSetting { get; private set; } // 0 for no alpha, 0x02 and other values seem to indicate yes alpha.
-        public ushort Width { get; private set; }
-        public ushort Height { get; private set; }
-        public WrapModes WrapS { get; private set; }
-        public WrapModes WrapT { get; private set; }
-        public PaletteFormats PaletteFormat { get; private set; }
-        public ushort PaletteCount { get; private set; }
-        public int EmbeddedPaletteOffset { get; private set; } // This is a guess. It seems to be 0 in most things, but it fits with min/mag filters.
-        public FilterMode MinFilter { get; private set; }
-        public FilterMode MagFilter { get; private set; }
-        public sbyte MinLOD { get; private set; } // Fixed point number, 1/8 = conversion (ToDo: is this multiply by 8 or divide...)
-        public sbyte MagLOD { get; private set; } // Fixed point number, 1/8 = conversion (ToDo: is this multiply by 8 or divide...)
-        public byte MipMapCount { get; private set; }
-        public short LodBias { get; private set; } // Fixed point number, 1/100 = conversion
+        public string Name { get; set; }
+        public TextureFormats Format { get; set; }
+        public byte AlphaSetting { get; set; } // 0 for no alpha, 0x02 and other values seem to indicate yes alpha.
 
+        [JsonIgnore]
+        public ushort Width { get; private set; }
+
+        [JsonIgnore]
+        public ushort Height { get; private set; }
+
+        public WrapModes WrapS { get; set; }
+        public WrapModes WrapT { get; set; }
+
+        [JsonIgnore]
+        public PaletteFormats PaletteFormat { get; private set; }
+
+        [JsonIgnore]
+        public ushort PaletteCount { get; private set; }
+
+        [JsonIgnore]
+        public int EmbeddedPaletteOffset { get; private set; } // This is a guess. It seems to be 0 in most things, but it fits with min/mag filters.
+
+        public FilterMode MinFilter { get; set; }
+        public FilterMode MagFilter { get; set; }
+        public sbyte MinLOD { get; set; } // Fixed point number, 1/8 = conversion (ToDo: is this multiply by 8 or divide...)
+        public sbyte MagLOD { get; set; } // Fixed point number, 1/8 = conversion (ToDo: is this multiply by 8 or divide...)
+
+        [JsonIgnore]
+        public byte MipMapCount { get; private set; }
+        public short LodBias { get; set; } // Fixed point number, 1/100 = conversion
+
+        [JsonIgnore]
         private Palette m_imagePalette;
+        [JsonIgnore]
         private byte[] m_rgbaImageData;
+        [JsonIgnore]
+        public byte[] RGBAImageData
+        {
+            get { return m_rgbaImageData; }
+            set { m_rgbaImageData = value; }
+        }
 
         public BinaryTextureImage()
         {
@@ -215,7 +237,7 @@ namespace SuperBMD.Materials
                 if (!File.Exists(texPath))
                 {
                     Console.WriteLine($"Cannot find texture { fileName }. Using a checkboard texture instead...");
-                    texData = new Bitmap(SuperBMD.Properties.Resources.default_checker);
+                    texData = new Bitmap(SuperBMDLib.Properties.Resources.default_checker);
                     Name = Path.GetFileNameWithoutExtension(texPath);
                 }
                 else
@@ -238,13 +260,13 @@ namespace SuperBMD.Materials
 
         public string SaveImageToDisk(string outputFile)
         {
-            string fileName = Path.Combine(outputFile, $"{ Name }.bmp");
+            string fileName = Path.Combine(outputFile, $"{ Name }.png");
 
             using (Bitmap bmp = CreateBitmap())
             {
                 // Bitmaps will throw an exception if the output folder doesn't exist so...
                 Directory.CreateDirectory(Path.GetDirectoryName(fileName));
-                bmp.Save(fileName);
+                bmp.Save(fileName, ImageFormat.Png);
             }
 
             return fileName;
@@ -265,39 +287,38 @@ namespace SuperBMD.Materials
             return bmp;
         }
 
-        public byte[] GetData()
-        {
-            return m_rgbaImageData;
-        }
-
         /// <summary>
-        /// This function is for debugging purposes and does not encompass encoding data.
+        /// Loads image data from disk into a byte array.
         /// </summary>
         public void LoadImageFromDisk(string filePath)
         {
-            using (Bitmap bitmap = new Bitmap(filePath))
+            // TGA is a special format, so we need to handle is separately from bmp/jpg/png/etc.
+            if (filePath.EndsWith(".tga"))
             {
-                Format = TextureFormats.RGBA32;
-                AlphaSetting = 0;
-                Width = (ushort)bitmap.Width;
-                Height = (ushort)bitmap.Height;
-                WrapS = WrapModes.ClampToEdge;
-                WrapT = WrapModes.ClampToEdge;
-                PaletteFormat = PaletteFormats.IA8;
-                PaletteCount = 0;
-                EmbeddedPaletteOffset = 0;
-                MinFilter = FilterMode.Linear;
-                MagFilter = FilterMode.Linear;
-                MipMapCount = 0;
-                LodBias = 0;
+                using (FileStream strm = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    BinaryReader reader = new BinaryReader(strm);
+                    TgaImage tga = new TgaImage(reader);
+                    m_rgbaImageData = tga.ImageBytes;
+                    Width = tga.Header.Width;
+                    Height = tga.Header.Height;
+                }
 
-                byte[] data = new byte[Width * Height * 4];
-
-                BitmapData bmpData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-                Marshal.Copy(bmpData.Scan0, data, 0, data.Length);
-                bitmap.UnlockBits(bmpData);
-                m_rgbaImageData = data;
+                return;
             }
+
+            Bitmap bmp = new Bitmap(filePath);
+            byte[] data = new byte[bmp.Width * bmp.Height * 4];
+
+            BitmapData bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
+                ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            Marshal.Copy(bmpData.Scan0, data, 0, data.Length);
+            bmp.UnlockBits(bmpData);
+
+            m_rgbaImageData = data;
+
+            Width = (ushort)bmp.Width;
+            Height = (ushort)bmp.Height;
         }
 
         public void WriteHeader(EndianBinaryWriter writer)
@@ -1071,7 +1092,8 @@ namespace SuperBMD.Materials
                     byte i = (byte)((col.R * 0.2126) + (col.G * 0.7152) + (col.B * 0.0722));
 
                     ushort fullIA8 = (ushort)((i << 8) | (col.A));
-                    rawColorData.Add((ushort)(fullIA8), col);
+                    if (!rawColorData.ContainsKey(fullIA8))
+                        rawColorData.Add((ushort)(fullIA8), col);
                     break;
                 case PaletteFormats.RGB565:
                     ushort r_565 = (ushort)(col.R >> 3);

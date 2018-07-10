@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GameFormatReader.Common;
-using SuperBMD.Geometry.Enums;
+using SuperBMDLib.Geometry.Enums;
 
-namespace SuperBMD.Geometry
+namespace SuperBMDLib.Geometry
 {
     public class ShapeVertexDescriptor
     {

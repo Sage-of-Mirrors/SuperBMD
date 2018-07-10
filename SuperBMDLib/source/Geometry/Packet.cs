@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GameFormatReader.Common;
 
-namespace SuperBMD.Geometry
+namespace SuperBMDLib.Geometry
 {
     public class Packet
     {

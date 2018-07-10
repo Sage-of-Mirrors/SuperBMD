@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GameFormatReader.Common;
-using SuperBMD.Geometry;
-using SuperBMD.Geometry.Enums;
+using SuperBMDLib.Geometry;
+using SuperBMDLib.Geometry.Enums;
 using OpenTK;
-using SuperBMD.Util;
+using SuperBMDLib.Util;
 
-namespace SuperBMD.BMD
+namespace SuperBMDLib.BMD
 {
     public class VTX1
     {

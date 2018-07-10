@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SuperBMD.Rigging;
+using SuperBMDLib.Rigging;
 using Assimp;
 using GameFormatReader.Common;
 using OpenTK;
-using SuperBMD.Util;
+using SuperBMDLib.Util;
 
-namespace SuperBMD.BMD
+namespace SuperBMDLib.BMD
 {
     public class EVP1
     {

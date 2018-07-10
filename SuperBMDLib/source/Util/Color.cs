@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Globalization;
 
-namespace SuperBMD.Util
+namespace SuperBMDLib.Util
 {
     public struct Color
     {

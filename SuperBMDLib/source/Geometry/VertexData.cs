@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SuperBMD.Geometry.Enums;
-using SuperBMD.Util;
+using SuperBMDLib.Geometry.Enums;
+using SuperBMDLib.Util;
 using OpenTK;
 
-namespace SuperBMD.Geometry
+namespace SuperBMDLib.Geometry
 {
     public class VertexData
     {

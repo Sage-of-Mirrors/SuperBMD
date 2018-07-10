@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SuperBMD.Scenegraph;
-using SuperBMD.Scenegraph.Enums;
+using SuperBMDLib.Scenegraph;
+using SuperBMDLib.Scenegraph.Enums;
 using GameFormatReader.Common;
 using Assimp;
-using SuperBMD.Util;
+using SuperBMDLib.Util;
 
-namespace SuperBMD.BMD
+namespace SuperBMDLib.BMD
 {
     public class INF1
     {

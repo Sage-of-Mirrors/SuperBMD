@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GameFormatReader.Common;
 
-namespace SuperBMD.Materials
+namespace SuperBMDLib.Materials
 {
     public struct TevSwapMode : IEquatable<TevSwapMode>
     {

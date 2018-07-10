@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SuperBMD.Rigging;
+using SuperBMDLib.Rigging;
 using OpenTK;
 using GameFormatReader.Common;
-using SuperBMD.Util;
+using SuperBMDLib.Util;
 using Assimp;
 
-namespace SuperBMD.BMD
+namespace SuperBMDLib.BMD
 {
     public class JNT1
     {

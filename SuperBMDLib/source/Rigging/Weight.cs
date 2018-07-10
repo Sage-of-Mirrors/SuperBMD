@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OpenTK;
-using SuperBMD.BMD;
+using SuperBMDLib.BMD;
 
-namespace SuperBMD.Rigging
+namespace SuperBMDLib.Rigging
 {
     public class Weight
     {

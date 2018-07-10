@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SuperBMD.Materials.Enums;
+using SuperBMDLib.Materials.Enums;
 using GameFormatReader.Common;
 using OpenTK;
-using SuperBMD.Geometry;
+using SuperBMDLib.Geometry;
 
-namespace SuperBMD.Util
+namespace SuperBMDLib.Util
 {
     public static class J3DUtility
     {

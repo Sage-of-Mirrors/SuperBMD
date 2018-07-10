@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using OpenTK;
 using GameFormatReader.Common;
-using SuperBMD.Util;
+using SuperBMDLib.Util;
 
-namespace SuperBMD.Rigging
+namespace SuperBMDLib.Rigging
 {
     public class Bone
     {

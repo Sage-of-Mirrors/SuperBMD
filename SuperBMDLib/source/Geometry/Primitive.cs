@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SuperBMD.Geometry.Enums;
+using SuperBMDLib.Geometry.Enums;
 using GameFormatReader.Common;
 
-namespace SuperBMD.Geometry
+namespace SuperBMDLib.Geometry
 {
     public class Primitive
     {

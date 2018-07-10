@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SuperBMD.Scenegraph.Enums;
+using SuperBMDLib.Scenegraph.Enums;
 using GameFormatReader.Common;
 
-namespace SuperBMD.Scenegraph
+namespace SuperBMDLib.Scenegraph
 {
     public class SceneNode
     {

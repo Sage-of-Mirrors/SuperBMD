@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using GameFormatReader.Common;
 using Assimp;
-using SuperBMD.Util;
-using SuperBMD.Rigging;
+using SuperBMDLib.Util;
+using SuperBMDLib.Rigging;
 
-namespace SuperBMD.BMD
+namespace SuperBMDLib.BMD
 {
     public class DRW1
     {

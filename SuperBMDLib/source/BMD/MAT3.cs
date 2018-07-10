@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SuperBMD.Materials;
-using SuperBMD.Util;
-using SuperBMD.Materials.Enums;
-using SuperBMD.Materials.IO;
+using SuperBMDLib.Materials;
+using SuperBMDLib.Util;
+using SuperBMDLib.Materials.Enums;
+using SuperBMDLib.Materials.IO;
 using GameFormatReader.Common;
-using SuperBMD.Geometry.Enums;
+using SuperBMDLib.Geometry.Enums;
 using System.IO;
 
-namespace SuperBMD.BMD
+namespace SuperBMDLib.BMD
 {
     public class MAT3
     {
@@ -666,6 +666,8 @@ namespace SuperBMD.BMD
 
         public void FillScene(Assimp.Scene scene, TEX1 textures, string fileDir)
         {
+            textures.DumpTextures(fileDir);
+
             foreach (Material mat in m_Materials)
             {
                 Assimp.Material assMat = new Assimp.Material();
@@ -674,7 +676,7 @@ namespace SuperBMD.BMD
                 {
                     int texIndex = mat.TextureIndices[0];
                     //texIndex = m_TexRemapBlock[texIndex];
-                    string texPath = textures[texIndex].SaveImageToDisk(fileDir);
+                    string texPath = Path.Combine(fileDir, textures[texIndex].Name + ".png");
 
                     Assimp.TextureSlot tex = new Assimp.TextureSlot(texPath, Assimp.TextureType.Diffuse, 0,
                         Assimp.TextureMapping.FromUV, 0, 1.0f, Assimp.TextureOperation.Add,

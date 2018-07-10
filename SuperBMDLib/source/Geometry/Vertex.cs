@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SuperBMD.Geometry.Enums;
-using SuperBMD.Rigging;
+using SuperBMDLib.Geometry.Enums;
+using SuperBMDLib.Rigging;
 using GameFormatReader.Common;
 
-namespace SuperBMD.Geometry
+namespace SuperBMDLib.Geometry
 {
     public class Vertex
     {

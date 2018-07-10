@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GameFormatReader.Common;
-using SuperBMD.Materials.Enums;
+using SuperBMDLib.Materials.Enums;
 
-namespace SuperBMD.Materials
+namespace SuperBMDLib.Materials
 {
     public class IndirectTexScale : IEquatable<IndirectTexScale>
     {
