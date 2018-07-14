@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using OpenTK;
 using GameFormatReader.Common;
+using SuperBMDLib.Util;
+using Newtonsoft.Json;
 
 namespace SuperBMDLib.Materials
 {
@@ -13,6 +15,7 @@ namespace SuperBMDLib.Materials
         /// <summary>
         /// The floats that make up the matrix
         /// </summary>
+        [JsonConverter(typeof(Matrix2x3Converter))]
         public Matrix2x3 Matrix;
         /// <summary>
         /// The exponent (of 2) to multiply the matrix by

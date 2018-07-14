@@ -49,7 +49,6 @@ namespace SuperBMDLib.Materials
             writer.Write(Reference1);
             writer.Write((sbyte)-1);
             writer.Write((short)-1);
-            writer.Write((short)-1);
         }
 
         public static bool operator==(AlphaCompare left, AlphaCompare right)

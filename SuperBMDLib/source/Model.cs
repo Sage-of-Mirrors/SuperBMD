@@ -34,7 +34,7 @@ namespace SuperBMDLib
                 using (FileStream str = new FileStream(args.input_path, FileMode.Open, FileAccess.Read))
                 {
                     EndianBinaryReader reader = new EndianBinaryReader(str, Endian.Big);
-                    output = new Model(reader);
+                    output = new Model(reader, args);
                 }
             }
             else
@@ -51,7 +51,7 @@ namespace SuperBMDLib
             return output;
         }
 
-        public Model(EndianBinaryReader reader)
+        public Model(EndianBinaryReader reader, Arguments args)
         {
             int j3d2Magic = reader.ReadInt32();
             int modelMagic = reader.ReadInt32();
@@ -78,6 +78,8 @@ namespace SuperBMDLib
             Materials         = new MAT3(reader, (int)reader.BaseStream.Position);
             SkipMDL3(reader);
             Textures          = new TEX1(reader, (int)reader.BaseStream.Position);
+            Materials.SetTextureNames(Textures);
+            Materials.DumpMaterials(Path.GetDirectoryName(args.input_path));
 
             foreach (Geometry.Shape shape in Shapes.Shapes)
                 packetCount += shape.Packets.Count;
@@ -98,7 +100,6 @@ namespace SuperBMDLib
         {
             VertexData = new VTX1(scene);
             Joints = new JNT1(scene, VertexData);
-            Scenegraph = new INF1(scene, Joints);
             Textures = new TEX1(scene, args);
 
             SkinningEnvelopes = new EVP1();
@@ -108,7 +109,8 @@ namespace SuperBMDLib
 
             Shapes = SHP1.Create(scene, Joints.BoneNameIndices, VertexData.Attributes, SkinningEnvelopes, PartialWeightData);
 
-            Materials = new MAT3(scene, Textures, Shapes);
+            Materials = new MAT3(scene, Textures, Shapes, args);
+            Scenegraph = new INF1(scene, Joints);
 
             foreach (Geometry.Shape shape in Shapes.Shapes)
                 packetCount += shape.Packets.Count;
@@ -162,9 +164,9 @@ namespace SuperBMDLib
 
             outScene.RootNode = new Node("RootNode");
 
-            Scenegraph.FillScene(outScene, Joints.FlatSkeleton, settings.UseSkeletonRoot);
             Materials.FillScene(outScene, Textures, outDir);
             Shapes.FillScene(outScene, VertexData.Attributes, Joints.FlatSkeleton, SkinningEnvelopes.InverseBindMatrices);
+            Scenegraph.FillScene(outScene, Joints.FlatSkeleton, settings.UseSkeletonRoot);
             Scenegraph.CorrectMaterialIndices(outScene, Materials);
 
             if (SkinningEnvelopes.Weights.Count == 0)
@@ -227,7 +229,7 @@ namespace SuperBMDLib
                         test.WriteLine("        <skeleton>#skeleton_root</skeleton>");
                         test.WriteLine("        <bind_material>");
                         test.WriteLine("         <technique_common>");
-                        test.WriteLine($"          <instance_material symbol=\"theresonlyone\" target=\"#m{ mesh.MaterialIndex }mat\" />");
+                        test.WriteLine($"          <instance_material symbol=\"m{mesh.MaterialIndex}{ Materials.m_Materials[mesh.MaterialIndex].Name }\" target=\"#m{mesh.MaterialIndex}{ Materials.m_Materials[mesh.MaterialIndex].Name.Replace("(","_").Replace(")","_") }\" />");
                         test.WriteLine("         </technique_common>");
                         test.WriteLine("        </bind_material>");
                         test.WriteLine("       </instance_controller>");

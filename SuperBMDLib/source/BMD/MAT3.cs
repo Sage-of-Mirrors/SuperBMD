@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SuperBMDLib.Materials;
 using SuperBMDLib.Util;
 using SuperBMDLib.Materials.Enums;
@@ -10,12 +7,14 @@ using SuperBMDLib.Materials.IO;
 using GameFormatReader.Common;
 using SuperBMDLib.Geometry.Enums;
 using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace SuperBMDLib.BMD
 {
     public class MAT3
     {
-        private List<Material> m_Materials;
+        public List<Material> m_Materials;
         public List<int> m_RemapIndices;
         private List<string> m_MaterialNames;
 
@@ -268,6 +267,17 @@ namespace SuperBMDLib.BMD
             }
 
             reader.BaseStream.Seek(offset + mat3Size, System.IO.SeekOrigin.Begin);
+
+            List<Material> matCopies = new List<Material>();
+            for (int i = 0; i < m_RemapIndices.Count; i++)
+            {
+                Material originalMat = m_Materials[m_RemapIndices[i]];
+                Material copyMat = new Material(originalMat);
+                copyMat.Name = m_MaterialNames[i];
+                matCopies.Add(copyMat);
+            }
+
+            m_Materials = matCopies;
         }
 
         private void LoadInitData(EndianBinaryReader reader)
@@ -296,7 +306,7 @@ namespace SuperBMDLib.BMD
             if (matColorIndex != -1)
                 mat.MaterialColors[1] = m_MaterialColorBlock[matColorIndex];
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < mat.ColorChannelControlsCount; i++)
             {
                 int chanIndex = reader.ReadInt16();
                 if (chanIndex == -1)
@@ -304,6 +314,8 @@ namespace SuperBMDLib.BMD
                 else
                     mat.ChannelControls[i] = m_ChannelControlBlock[chanIndex];
             }
+
+            reader.Skip((4 - mat.ColorChannelControlsCount) * 2);
 
             int ambColorIndex = reader.ReadInt16();
             if (ambColorIndex != -1)
@@ -326,8 +338,8 @@ namespace SuperBMDLib.BMD
                 int texGenIndex = reader.ReadInt16();
                 if (texGenIndex == -1)
                     continue;
-                //else
-                    //mat.TexCoord1Gens[i] = m_TexCoord1GenBlock[texGenIndex];
+                else
+                    mat.TexCoord1Gens[i] = m_TexCoord1GenBlock[texGenIndex];
             }
 
             for (int i = 0; i < 8; i++)
@@ -438,10 +450,85 @@ namespace SuperBMDLib.BMD
             m_Materials.Add(mat);
         }
 
-        public MAT3(Assimp.Scene scene, TEX1 textures, SHP1 shapes)
+        public MAT3(Assimp.Scene scene, TEX1 textures, SHP1 shapes, Arguments args)
         {
             InitLists();
 
+            if (args.materials_path != "")
+                LoadFromJson(scene, textures, shapes, args.materials_path);
+            else
+                LoadFromScene(scene, textures, shapes);
+
+            FillMaterialDataBlocks();
+        }
+
+        private void LoadFromJson(Assimp.Scene scene, TEX1 textures, SHP1 shapes, string json_path)
+        {
+            JsonSerializer serial = new JsonSerializer();
+            serial.Formatting = Formatting.Indented;
+            serial.Converters.Add(new StringEnumConverter());
+
+            using (StreamReader strm_reader = new StreamReader(json_path))
+            {
+                strm_reader.BaseStream.Seek(0, SeekOrigin.Begin);
+                JsonTextReader reader = new JsonTextReader(strm_reader);
+                m_Materials = serial.Deserialize<List<Material>>(reader);
+            }
+
+            for (int i = 0; i < m_Materials.Count; i++)
+            {
+                m_RemapIndices.Add(i);
+            }
+
+            foreach (Material mat in m_Materials)
+            {
+                m_MaterialNames.Add(mat.Name);
+                for (int i = 0; i < 8; i++)
+                {
+                    if (mat.TextureNames[i] == "")
+                        continue;
+
+                    foreach (BinaryTextureImage tex in textures.Textures)
+                    {
+                        if (tex.Name == mat.TextureNames[i])
+                            mat.TextureIndices[i] = textures.Textures.IndexOf(tex);
+                    }
+                }
+
+                mat.Readjust();
+            }
+
+            for (int i = 0; i < scene.MeshCount; i++)
+            {
+                Assimp.Material meshMat = scene.Materials[scene.Meshes[i].MaterialIndex];
+                string test = meshMat.Name.Replace("-material", "");
+
+                if (test.Contains("_"))
+                {
+                    string[] without_underscores = test.Split('_');
+                    test = $"{ without_underscores[0] }({ without_underscores[1] })";
+                }
+
+                while (!m_MaterialNames.Contains(test))
+                {
+                    test = test.Substring(1);
+                }
+
+                for (int j = 0; j < m_Materials.Count; j++)
+                {
+                    if (test == m_MaterialNames[j])
+                    {
+                        scene.Meshes[i].MaterialIndex = j;
+                        break;
+                    }
+                }
+
+                //m_RemapIndices[i] = scene.Meshes[i].MaterialIndex;
+            }
+        }
+
+        private void LoadFromScene(Assimp.Scene scene, TEX1 textures, SHP1 shapes)
+        {
             for (int i = 0; i < scene.MeshCount; i++)
             {
                 Assimp.Material meshMat = scene.Materials[scene.Meshes[i].MaterialIndex];
@@ -461,8 +548,6 @@ namespace SuperBMDLib.BMD
                 m_RemapIndices.Add(i);
                 m_MaterialNames.Add(meshMat.Name);
             }
-
-            FillMaterialDataBlocks();
         }
 
         private void InitLists()
@@ -671,7 +756,7 @@ namespace SuperBMDLib.BMD
             foreach (Material mat in m_Materials)
             {
                 Assimp.Material assMat = new Assimp.Material();
-
+                assMat.Name = mat.Name;
                 if (mat.TextureIndices[0] != -1)
                 {
                     int texIndex = mat.TextureIndices[0];
@@ -1191,6 +1276,34 @@ namespace SuperBMDLib.BMD
             writer.Write((short)m_AlphaCompBlock.IndexOf(mat.AlphCompare));
             writer.Write((short)m_blendModeBlock.IndexOf(mat.BMode));
             writer.Write((short)m_NBTScaleBlock.IndexOf(mat.NBTScale));
+        }
+
+        public void DumpMaterials(string model_directory)
+        {
+            JsonSerializer serial = new JsonSerializer();
+            serial.Formatting = Formatting.Indented;
+            serial.Converters.Add(new StringEnumConverter());
+
+            using (FileStream strm = new FileStream(Path.Combine(model_directory, "materials.json"), FileMode.Create, FileAccess.Write))
+            {
+                StreamWriter writer = new StreamWriter(strm);
+                writer.AutoFlush = true;
+                serial.Serialize(writer, m_Materials);
+            }
+        }
+
+        public void SetTextureNames(TEX1 textures)
+        {
+            foreach (Material mat in m_Materials)
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    if (mat.TextureIndices[i] == -1)
+                        continue;
+
+                    mat.TextureNames[i] = textures[mat.TextureIndices[i]].Name;
+                }
+            }
         }
     }
 }

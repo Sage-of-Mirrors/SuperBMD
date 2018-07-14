@@ -129,10 +129,8 @@ namespace SuperBMDLib.Materials
         public WrapModes WrapS { get; set; }
         public WrapModes WrapT { get; set; }
 
-        [JsonIgnore]
         public PaletteFormats PaletteFormat { get; private set; }
 
-        [JsonIgnore]
         public ushort PaletteCount { get; private set; }
 
         [JsonIgnore]
@@ -143,7 +141,6 @@ namespace SuperBMDLib.Materials
         public sbyte MinLOD { get; set; } // Fixed point number, 1/8 = conversion (ToDo: is this multiply by 8 or divide...)
         public sbyte MagLOD { get; set; } // Fixed point number, 1/8 = conversion (ToDo: is this multiply by 8 or divide...)
 
-        [JsonIgnore]
         public byte MipMapCount { get; private set; }
         public short LodBias { get; set; } // Fixed point number, 1/100 = conversion
 

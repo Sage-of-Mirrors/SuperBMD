@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using SuperBMDLib.Materials.Enums;
 using SuperBMDLib.Util;
 using OpenTK;
+using Newtonsoft.Json;
 
 namespace SuperBMDLib.Materials
 {
@@ -13,12 +14,22 @@ namespace SuperBMDLib.Materials
     {
         public string Name;
         public byte Flag;
+        [JsonIgnore]
         public byte ColorChannelControlsCount;
+        [JsonIgnore]
         public byte NumTexGensCount;
+        [JsonIgnore]
         public byte NumTevStagesCount;
-        public IndirectTexturing IndTexEntry;
-        public CullMode CullMode;
 
+        public CullMode CullMode;
+        public bool ZCompLoc;
+        public bool Dither;
+
+        [JsonIgnore]
+        public int[] TextureIndices;
+        public string[] TextureNames;
+
+        public IndirectTexturing IndTexEntry;
         public Color?[] MaterialColors;
         public ChannelControl?[] ChannelControls;
         public Color?[] AmbientColors;
@@ -27,7 +38,6 @@ namespace SuperBMDLib.Materials
         public TexCoordGen?[] PostTexCoordGens;
         public TexMatrix?[] TexMatrix1;
         public TexMatrix?[] PostTexMatrix;
-        public int[] TextureIndices;
         public TevOrder?[] TevOrders;
         public KonstColorSel[] ColorSels;
         public KonstAlphaSel[] AlphaSels;
@@ -41,9 +51,6 @@ namespace SuperBMDLib.Materials
         public AlphaCompare AlphCompare;
         public BlendMode BMode;
         public ZMode ZMode;
-
-        public bool ZCompLoc;
-        public bool Dither;
         public NBTScale NBTScale;
 
         public Material()
@@ -64,6 +71,7 @@ namespace SuperBMDLib.Materials
             PostTexMatrix = new TexMatrix?[20];
 
             TextureIndices = new int[8] { -1, -1, -1, -1, -1, -1, -1, -1 };
+            TextureNames = new string[8] { "", "", "", "", "", "", "", "" };
 
             KonstColors = new Color?[4];
             KonstColors[0] = new Color(1, 1, 1, 1);
@@ -300,6 +308,42 @@ namespace SuperBMDLib.Materials
             return parameters;
         }
 
+        public Material(Material src)
+        {
+            Flag = src.Flag;
+            ColorChannelControlsCount = src.ColorChannelControlsCount;
+            NumTevStagesCount = src.NumTevStagesCount;
+            NumTexGensCount = src.NumTexGensCount;
+            CullMode = src.CullMode;
+            ZCompLoc = src.ZCompLoc;
+            Dither = src.Dither;
+            TextureIndices = src.TextureIndices;
+            TextureNames = src.TextureNames;
+            IndTexEntry = src.IndTexEntry;
+            MaterialColors = src.MaterialColors;
+            ChannelControls = src.ChannelControls;
+            AmbientColors = src.AmbientColors;
+            LightingColors = src.LightingColors;
+            TexCoord1Gens = src.TexCoord1Gens;
+            PostTexCoordGens = src.PostTexCoordGens;
+            TexMatrix1 = src.TexMatrix1;
+            PostTexMatrix = src.PostTexMatrix;
+            TevOrders = src.TevOrders;
+            ColorSels = src.ColorSels;
+            AlphaSels = src.AlphaSels;
+            TevColors = src.TevColors;
+            KonstColors = src.KonstColors;
+            TevStages = src.TevStages;
+            SwapModes = src.SwapModes;
+            SwapTables = src.SwapTables;
+
+            FogInfo = src.FogInfo;
+            AlphCompare = src.AlphCompare;
+            BMode = src.BMode;
+            ZMode = src.ZMode;
+            NBTScale = src.NBTScale;
+        }
+
         public void Debug_Print()
         {
             Console.WriteLine($"TEV stage count: { NumTevStagesCount }\n\n");
@@ -311,6 +355,27 @@ namespace SuperBMDLib.Materials
 
                 Console.WriteLine($"Stage { i }:");
                 Console.WriteLine(TevStages[i].ToString());
+            }
+        }
+
+        public void Readjust()
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                if (TevStages[i] != null)
+                    NumTevStagesCount++;
+            }
+
+            for (int i = 0; i < 8; i++)
+            {
+                if (TexCoord1Gens[i] != null)
+                    NumTexGensCount++;
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                if (ChannelControls[i] != null)
+                    ColorChannelControlsCount++;
             }
         }
     }

@@ -7,6 +7,7 @@ using OpenTK;
 using GameFormatReader.Common;
 using SuperBMDLib.Materials.Enums;
 using SuperBMDLib.Util;
+using Newtonsoft.Json;
 
 namespace SuperBMDLib.Materials
 {
@@ -14,12 +15,18 @@ namespace SuperBMDLib.Materials
     {
         public TexGenType Projection;
         public byte Type;
+
+        [JsonConverter(typeof(Vector3Converter))]
         public Vector3 EffectTranslation;
 
+        [JsonConverter(typeof(Vector2Converter))]
         public Vector2 Scale;
         public float Rotation;
+
+        [JsonConverter(typeof(Vector2Converter))]
         public Vector2 Translation;
 
+        [JsonConverter(typeof(Matrix4Converter))]
         public Matrix4 ProjectionMatrix;
 
         public TexMatrix(TexGenType projection, byte type, Vector3 effectTranslation, Vector2 scale, float rotation, Vector2 translation, Matrix4 matrix)

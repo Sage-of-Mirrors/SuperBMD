@@ -62,10 +62,15 @@ namespace SuperBMDLib.BMD
             Root = new SceneNode(NodeType.Joint, 0, null);
             FlatNodes.Add(Root);
 
+            int downNodeCount = 0;
+
             for (int i = 0; i < scene.MeshCount; i++)
             {
+                if (scene.Meshes[i].BoneCount == 1)
+                    continue;
+
                 SceneNode downNode1 = new SceneNode(NodeType.OpenChild, 0, Root);
-                SceneNode matNode = new SceneNode(NodeType.Material, i, Root);
+                SceneNode matNode = new SceneNode(NodeType.Material, scene.Meshes[i].MaterialIndex, Root);
                 SceneNode downNode2 = new SceneNode(NodeType.OpenChild, 0, Root);
                 SceneNode shapeNode = new SceneNode(NodeType.Shape, i, Root);
 
@@ -73,6 +78,8 @@ namespace SuperBMDLib.BMD
                 FlatNodes.Add(matNode);
                 FlatNodes.Add(downNode2);
                 FlatNodes.Add(shapeNode);
+
+                downNodeCount += 2;
             }
 
             if (skeleton.FlatSkeleton.Count > 1)
@@ -82,34 +89,57 @@ namespace SuperBMDLib.BMD
                     SceneNode rootChildDown = new SceneNode(NodeType.OpenChild, 0, Root);
                     FlatNodes.Add(rootChildDown);
 
-                    GetNodesRecursive(bone, skeleton.FlatSkeleton, Root);
+                    GetNodesRecursive(bone, skeleton.FlatSkeleton, Root, scene.Meshes);
 
                     SceneNode rootChildUp = new SceneNode(NodeType.CloseChild, 0, Root);
                     FlatNodes.Add(rootChildUp);
                 }
             }
 
-            for (int i = 0; i < scene.MeshCount * 2; i++)
+            for (int i = 0; i < downNodeCount; i++)
                 FlatNodes.Add(new SceneNode(NodeType.CloseChild, 0, Root));
 
             FlatNodes.Add(new SceneNode(NodeType.Terminator, 0, Root));
         }
 
-        private void GetNodesRecursive(Rigging.Bone bone, List<Rigging.Bone> skeleton, SceneNode parent)
+        private void GetNodesRecursive(Rigging.Bone bone, List<Rigging.Bone> skeleton, SceneNode parent, List<Mesh> meshes)
         {
             SceneNode node = new SceneNode(NodeType.Joint, skeleton.IndexOf(bone), parent);
             FlatNodes.Add(node);
+
+            int downNodeCount = 0;
+
+            foreach (Mesh mesh in meshes)
+            {
+                if (mesh.BoneCount != 1 || mesh.Bones[0].Name != bone.Name)
+                    continue;
+
+                SceneNode downNode1 = new SceneNode(NodeType.OpenChild, 0, Root);
+                SceneNode matNode = new SceneNode(NodeType.Material, mesh.MaterialIndex, Root);
+                SceneNode downNode2 = new SceneNode(NodeType.OpenChild, 0, Root);
+                SceneNode shapeNode = new SceneNode(NodeType.Shape, meshes.IndexOf(mesh), Root);
+
+                FlatNodes.Add(downNode1);
+                FlatNodes.Add(matNode);
+                FlatNodes.Add(downNode2);
+                FlatNodes.Add(shapeNode);
+
+                downNodeCount += 2;
+            }
 
             foreach (Rigging.Bone child in bone.Children)
             {
                 SceneNode downNode = new SceneNode(NodeType.OpenChild, 0, parent);
                 FlatNodes.Add(downNode);
 
-                GetNodesRecursive(child, skeleton, node);
+                GetNodesRecursive(child, skeleton, node, meshes);
 
                 SceneNode upNode = new SceneNode(NodeType.CloseChild, 0, parent);
                 FlatNodes.Add(upNode);
             }
+
+            for (int i = 0; i < downNodeCount; i++)
+                FlatNodes.Add(new SceneNode(NodeType.CloseChild, 0, Root));
         }
 
         public void FillScene(Scene scene, List<Rigging.Bone> flatSkeleton, bool useSkeletonRoot)
@@ -201,7 +231,7 @@ namespace SuperBMDLib.BMD
                     if (node.Index < scene.Meshes.Count)
                     {
                         int matIndex = node.Parent.Index;
-                        scene.Meshes[node.Index].MaterialIndex = materials.m_RemapIndices[matIndex];
+                        scene.Meshes[node.Index].MaterialIndex = matIndex;
                     }
                 }
             }
