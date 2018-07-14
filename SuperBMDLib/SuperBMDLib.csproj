@@ -90,7 +90,11 @@
     <Compile Include="source\BMD\INF1.cs" />
     <Compile Include="source\BMD\JNT1.cs" />
     <Compile Include="source\BMD\MAT3.cs" />
+    <Compile Include="source\BMD\MDL3.cs" />
     <Compile Include="source\ExportSettings.cs" />
+    <Compile Include="source\Materials\Mdl\BPCommand.cs" />
+    <Compile Include="source\Materials\Mdl\MdlEntry.cs" />
+    <Compile Include="source\Materials\Mdl\XFCommand.cs" />
     <Compile Include="source\Model.cs" />
     <Compile Include="source\BMD\SHP1.cs" />
     <Compile Include="source\BMD\TEX1.cs" />
