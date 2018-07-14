@@ -93,6 +93,7 @@
     <Compile Include="source\BMD\MDL3.cs" />
     <Compile Include="source\ExportSettings.cs" />
     <Compile Include="source\Materials\Mdl\BPCommand.cs" />
+    <Compile Include="source\Materials\Mdl\BPRegisters.cs" />
     <Compile Include="source\Materials\Mdl\MdlEntry.cs" />
     <Compile Include="source\Materials\Mdl\XFCommand.cs" />
     <Compile Include="source\Model.cs" />

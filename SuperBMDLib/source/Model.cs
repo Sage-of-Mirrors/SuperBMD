@@ -19,6 +19,7 @@ namespace SuperBMDLib
         public JNT1 Joints            { get; private set; }
         public SHP1 Shapes            { get; private set; }
         public MAT3 Materials         { get; private set; }
+        public MDL3 MatDisplayList    { get; private set; }
         public TEX1 Textures          { get; private set; }
 
         private int packetCount;
@@ -110,6 +111,10 @@ namespace SuperBMDLib
             Shapes = SHP1.Create(scene, Joints.BoneNameIndices, VertexData.Attributes, SkinningEnvelopes, PartialWeightData);
 
             Materials = new MAT3(scene, Textures, Shapes, args);
+
+            if (args.output_bdl)
+                MatDisplayList = new MDL3(Materials.m_Materials, Textures.Textures);
+
             Scenegraph = new INF1(scene, Joints);
 
             foreach (Geometry.Shape shape in Shapes.Shapes)
@@ -118,7 +123,7 @@ namespace SuperBMDLib
             vertexCount = VertexData.Attributes.Positions.Count;
         }
 
-        public void ExportBMD(string fileName)
+        public void ExportBMD(string fileName, bool isBDL)
         {
             string outDir = Path.GetDirectoryName(fileName);
             string fileNameNoExt = Path.GetFileNameWithoutExtension(fileName);
@@ -134,9 +139,17 @@ namespace SuperBMDLib
             {
                 EndianBinaryWriter writer = new EndianBinaryWriter(stream, Endian.Big);
 
-                writer.Write("J3D2bmd3".ToCharArray());
+                if (isBDL)
+                    writer.Write("J3D2bdl4".ToCharArray());
+                else
+                    writer.Write("J3D2bmd3".ToCharArray());
+
                 writer.Write(0); // Placeholder for file size
-                writer.Write(8); // Number of sections; bmd has 8, bdl has 9
+
+                if (isBDL)
+                    writer.Write(9); // Number of sections; bmd has 8, bdl has 9
+                else
+                    writer.Write(8);
 
                 writer.Write("SuperBMD - Gamma".ToCharArray());
 
@@ -147,6 +160,10 @@ namespace SuperBMDLib
                 Joints.Write(writer);
                 Shapes.Write(writer);
                 Materials.Write(writer);
+
+                if (isBDL)
+                    MatDisplayList.Write(writer);
+
                 Textures.Write(writer);
 
                 writer.Seek(8, SeekOrigin.Begin);

@@ -19,12 +19,12 @@ namespace SuperBMDLib.BMD
             Entries = new List<MdlEntry>();
         }
 
-        public MDL3(List<Material> materials)
+        public MDL3(List<Material> materials, List<BinaryTextureImage> textures)
         {
             Entries = new List<MdlEntry>();
 
             foreach (Material mat in materials)
-                Entries.Add(new MdlEntry(mat));
+                Entries.Add(new MdlEntry(mat, textures));
         }
 
         public void Write(EndianBinaryWriter writer)

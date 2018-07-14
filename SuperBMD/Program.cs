@@ -20,7 +20,7 @@ namespace SuperBMDLib
             if (cmd_args.input_path.EndsWith(".bmd") || cmd_args.input_path.EndsWith(".bdl"))
                 mod.ExportAssImp(cmd_args.output_path, "dae", new ExportSettings());
             else
-                mod.ExportBMD(cmd_args.output_path);
+                mod.ExportBMD(cmd_args.output_path, cmd_args.output_bdl);
         }
 
         /// <summary>
