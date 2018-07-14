@@ -14,7 +14,7 @@ namespace SuperBMDLib
         public string texheaders_path;
         public string tristrip_mode;
         public bool rotate_model;
-        public bool fix_normals;
+        public bool output_bdl;
 
         /// <summary>
         /// Initializes a new Arguments instance from the arguments passed in to SuperBMD.
@@ -28,7 +28,7 @@ namespace SuperBMDLib
             texheaders_path = "";
             tristrip_mode = "static";
             rotate_model = false;
-            fix_normals = true;
+            output_bdl = false;
 
             for (int i = 0; i < args.Length; i++)
             {
@@ -61,9 +61,9 @@ namespace SuperBMDLib
                     case "--rotate":
                         rotate_model = true;
                         break;
-                    case "-f":
-                    case "--fixNormals":
-                        fix_normals = false;
+                    case "-b":
+                    case "--bdl":
+                        output_bdl = true;
                         break;
                     default:
                         throw new Exception($"Unknown parameter \"{ args[i] }\"");
