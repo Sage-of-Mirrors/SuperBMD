@@ -130,7 +130,7 @@ namespace SuperBMDLib.BMD
             reader.BaseStream.Seek(offset + shp1Size, System.IO.SeekOrigin.Begin);
         }
 
-        private SHP1(Assimp.Scene scene, VertexData vertData, Dictionary<string, int> boneNames, EVP1 envelopes, DRW1 partialWeight)
+        private SHP1(Assimp.Scene scene, VertexData vertData, Dictionary<string, int> boneNames, EVP1 envelopes, DRW1 partialWeight, List<Rigging.Bone> skeleton)
         {
             Shapes = new List<Shape>();
             RemapTable = new List<int>();
@@ -141,7 +141,7 @@ namespace SuperBMDLib.BMD
                 meshShape.SetDescriptorAttributes(mesh, boneNames.Count);
 
                 if (boneNames.Count > 1)
-                    meshShape.ProcessVerticesWithWeights(mesh, vertData, boneNames, envelopes, partialWeight);
+                    meshShape.ProcessVerticesWithWeights(mesh, vertData, boneNames, envelopes, partialWeight, skeleton);
                 else
                 {
                     meshShape.ProcessVerticesWithoutWeights(mesh, vertData);
@@ -158,9 +158,9 @@ namespace SuperBMDLib.BMD
             return new SHP1(reader, offset);
         }
 
-        public static SHP1 Create(Scene scene, Dictionary<string, int> boneNames, VertexData vertData, EVP1 evp1, DRW1 drw1)
+        public static SHP1 Create(Scene scene, Dictionary<string, int> boneNames, VertexData vertData, EVP1 evp1, DRW1 drw1, JNT1 jnt1)
         {
-            SHP1 shp1 = new SHP1(scene, vertData, boneNames, evp1, drw1);
+            SHP1 shp1 = new SHP1(scene, vertData, boneNames, evp1, drw1, jnt1.FlatSkeleton);
 
             return shp1;
         }

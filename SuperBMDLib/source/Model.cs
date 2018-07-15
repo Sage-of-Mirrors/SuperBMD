@@ -107,7 +107,7 @@ namespace SuperBMDLib
 
             PartialWeightData = new DRW1(scene, Joints.BoneNameIndices);
 
-            Shapes = SHP1.Create(scene, Joints.BoneNameIndices, VertexData.Attributes, SkinningEnvelopes, PartialWeightData);
+            Shapes = SHP1.Create(scene, Joints.BoneNameIndices, VertexData.Attributes, SkinningEnvelopes, PartialWeightData, Joints);
 
             Materials = new MAT3(scene, Textures, Shapes, args);
             Scenegraph = new INF1(scene, Joints);

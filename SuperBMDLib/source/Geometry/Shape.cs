@@ -177,7 +177,7 @@ namespace SuperBMDLib.Geometry
             Bounds.GetBoundsValues(AttributeData.Positions);
         }
 
-        public void ProcessVerticesWithWeights(Mesh mesh, VertexData vertData, Dictionary<string, int> boneNames, EVP1 envelopes, DRW1 partialWeight)
+        public void ProcessVerticesWithWeights(Mesh mesh, VertexData vertData, Dictionary<string, int> boneNames, EVP1 envelopes, DRW1 partialWeight, List<SuperBMDLib.Rigging.Bone> skeleton)
         {
             Packet pack = new Packet();
 
@@ -322,11 +322,15 @@ namespace SuperBMDLib.Geometry
                                 }
                                 else
                                 {
-                                    for(int v = 0; v < curWeight.WeightCount; v++)
+                                    /*Matrix4 mat = Matrix4.Identity;
+
+                                    for (int v = 0; v < curWeight.WeightCount; v++)
                                     {
-                                        Matrix4 ibm = envelopes.InverseBindMatrices[curWeight.BoneIndices[v]];
-                                        vertNrm = Vector3.TransformNormal(vertNrm, ibm * curWeight.Weights[v]);
+                                        int boneIndex = curWeight.BoneIndices[v];
+                                        mat += Matrix4.Mult(envelopes.InverseBindMatrices[boneIndex], curWeight.Weights[v]);
                                     }
+
+                                    vertNrm = Vector3.TransformNormal(vertNrm, mat);*/
                                 }
 
                                 AttributeData.Normals.Add(vertNrm);
