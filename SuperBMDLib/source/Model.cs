@@ -184,8 +184,8 @@ namespace SuperBMDLib
             AssimpContext cont = new AssimpContext();
             cont.ExportFile(outScene, fileName, "collada", PostProcessSteps.ValidateDataStructure);
 
-            if (SkinningEnvelopes.Weights.Count == 0)
-                return; // There's no skinning information, so we can stop here
+            //if (SkinningEnvelopes.Weights.Count == 0)
+                //return; // There's no skinning information, so we can stop here
 
             // Now we need to add some skinning info, since AssImp doesn't do it for some bizarre reason
 

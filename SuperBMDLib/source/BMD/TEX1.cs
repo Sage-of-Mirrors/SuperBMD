@@ -44,10 +44,12 @@ namespace SuperBMDLib.BMD
         public TEX1(Assimp.Scene scene, Arguments args)
         {
             Textures = new List<BinaryTextureImage>();
-            string dir_path = Path.GetDirectoryName(args.texheaders_path);
 
             if (args.texheaders_path != "")
+            {
+                string dir_path = Path.GetDirectoryName(args.texheaders_path);
                 LoadTexturesFromJson(args.texheaders_path, dir_path);
+            }
             else
                 LoadTexturesFromScene(scene, Path.GetDirectoryName(args.input_path));
         }

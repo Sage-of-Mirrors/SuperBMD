@@ -79,7 +79,7 @@ namespace SuperBMDLib.Geometry
 
             foreach (Face face in mesh.Faces)
             {
-                for (int i = 3; i > 0; i--)
+                for (int i = 2; i > 0; i--)
                 {
                     Vertex vert = new Vertex();
 
@@ -268,7 +268,7 @@ namespace SuperBMDLib.Geometry
                         switch (attrib)
                         {
                             case Enums.GXVertexAttribute.PositionMatrixIdx:
-                                int newMatrixIndex = -1;
+                                int newMatrixIndex = 0;
 
                                 if (curWeight.WeightCount == 1)
                                 {
@@ -281,6 +281,8 @@ namespace SuperBMDLib.Geometry
 
                                     int envIndex = envelopes.Weights.IndexOf(curWeight);
                                     int drwIndex = partialWeight.MeshWeights.IndexOf(curWeight);
+                                    if (drwIndex == -1)
+                                        drwIndex = 0;
 
                                     newMatrixIndex = drwIndex;
                                     partialWeight.Indices[drwIndex] = envIndex;

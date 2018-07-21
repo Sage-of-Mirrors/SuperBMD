@@ -439,7 +439,12 @@ namespace SuperBMDLib.BMD
                 if ((tevSwapModeTableIndex < 0) || (tevSwapModeTableIndex > m_SwapTableBlock.Count))
                     continue;
                 else
+                {
+                    if (tevSwapModeTableIndex >= m_SwapTableBlock.Count)
+                        continue;
+
                     mat.SwapTables[i] = m_SwapTableBlock[tevSwapModeTableIndex];
+                }
             }
 
             mat.FogInfo = m_FogBlock[reader.ReadInt16()];
