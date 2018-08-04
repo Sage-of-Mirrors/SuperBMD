@@ -79,7 +79,7 @@ namespace SuperBMDLib.Geometry
 
             foreach (Face face in mesh.Faces)
             {
-                for (int i = 2; i > 0; i--)
+                for (int i = 2; i >= 0; i--)
                 {
                     Vertex vert = new Vertex();
 
