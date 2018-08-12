@@ -131,7 +131,7 @@ namespace SuperBMDLib.Materials
 
         public PaletteFormats PaletteFormat { get; set; }
 
-        public ushort PaletteCount { get; private set; }
+        public ushort PaletteCount { get; set; }
 
         [JsonIgnore]
         public int EmbeddedPaletteOffset { get; private set; } // This is a guess. It seems to be 0 in most things, but it fits with min/mag filters.
