@@ -1041,6 +1041,9 @@ namespace SuperBMDLib.Materials
                 }
             }
 
+            PaletteCount = (ushort)rawColorData.Count;
+            PalettesEnabled = true;
+
             return new Tuple<byte[], ushort[]>(pixIndices, rawColorData.Keys.ToArray());
         }
 
