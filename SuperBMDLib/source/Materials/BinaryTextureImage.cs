@@ -129,7 +129,7 @@ namespace SuperBMDLib.Materials
         public WrapModes WrapS { get; set; }
         public WrapModes WrapT { get; set; }
 
-        public PaletteFormats PaletteFormat { get; private set; }
+        public PaletteFormats PaletteFormat { get; set; }
 
         public ushort PaletteCount { get; private set; }
 
