@@ -160,6 +160,7 @@ namespace SuperBMDLib.BMD
                 if (image_palette_Data.ContainsKey(img.Name))
                 {
                     img.PaletteCount = (ushort)image_palette_Data[img.Name].Item2.Length;
+                    img.PalettesEnabled = (image_palette_Data[img.Name].Item2.Length > 0);
                 }
                 else
                 {

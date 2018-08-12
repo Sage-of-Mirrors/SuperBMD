@@ -129,6 +129,8 @@ namespace SuperBMDLib.Materials
         public WrapModes WrapS { get; set; }
         public WrapModes WrapT { get; set; }
 
+        public bool PalettesEnabled { get; set; }
+
         public PaletteFormats PaletteFormat { get; set; }
 
         public ushort PaletteCount { get; set; }
@@ -180,7 +182,7 @@ namespace SuperBMDLib.Materials
             Height = stream.ReadUInt16();
             WrapS = (WrapModes)stream.ReadByte();
             WrapT = (WrapModes)stream.ReadByte();
-            byte unknown1 = stream.ReadByte();
+            PalettesEnabled = Convert.ToBoolean(stream.ReadByte());
             PaletteFormat = (PaletteFormats)stream.ReadByte();
             PaletteCount = stream.ReadUInt16();
             int paletteDataOffset = stream.ReadInt32();
@@ -327,8 +329,7 @@ namespace SuperBMDLib.Materials
             writer.Write((byte)WrapS);
             writer.Write((byte)WrapT);
 
-            // This is an unknown
-            writer.Write((byte)0);
+            writer.Write(Convert.ToByte(PalettesEnabled));
 
             writer.Write((byte)PaletteFormat);
             writer.Write((short)PaletteCount);
@@ -1077,6 +1078,7 @@ namespace SuperBMDLib.Materials
             }
 
             PaletteCount = (ushort)rawColorData.Count;
+            PalettesEnabled = true;
 
             return new Tuple<byte[], ushort[]>(pixIndices, rawColorData.Keys.ToArray());
         }
