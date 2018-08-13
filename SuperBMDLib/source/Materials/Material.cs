@@ -95,18 +95,23 @@ namespace SuperBMDLib.Materials
 
             AlphCompare = new AlphaCompare(CompareType.Greater, 127, AlphaOp.And, CompareType.Always, 0);
             ZMode = new ZMode(true, CompareType.LEqual, true);
-            BMode = new BlendMode(Enums.BlendMode.None, BlendModeControl.SrcAlpha, BlendModeControl.InverseSrcAlpha, LogicOp.NoOp);
+            BMode = new BlendMode(Enums.BlendMode.Blend, BlendModeControl.SrcAlpha, BlendModeControl.InverseSrcAlpha, LogicOp.NoOp);
             NBTScale = new NBTScale(0, Vector3.Zero);
             FogInfo = new Fog(0, false, 0, 0, 0, 0, 0, new Color(0, 0, 0, 0), new float[10]);
         }
 
-        public void SetUpTev(bool hasTexture, bool hasVtxColor, int texIndex)
+        public void SetUpTev(bool hasTexture, bool hasVtxColor, int texIndex, string texName)
         {
+            Flag = 1;
             // Set up channel control 0 to use vertex colors, if they're present
             if (hasVtxColor)
             {
                 AddChannelControl(J3DColorChannelId.Color0, false, ColorSrc.Vertex, LightId.None, DiffuseFn.None, J3DAttenuationFn.None_0, ColorSrc.Register);
                 AddChannelControl(J3DColorChannelId.Alpha0, false, ColorSrc.Vertex, LightId.None, DiffuseFn.None, J3DAttenuationFn.None_0, ColorSrc.Register);
+            }
+            else {
+                AddChannelControl(J3DColorChannelId.Color0, false, ColorSrc.Register, LightId.None, DiffuseFn.Clamp, J3DAttenuationFn.Spec, ColorSrc.Register);
+                AddChannelControl(J3DColorChannelId.Alpha0, false, ColorSrc.Register, LightId.None, DiffuseFn.Clamp, J3DAttenuationFn.Spec, ColorSrc.Register);
             }
 
             // These settings are common to all the configurations we can use

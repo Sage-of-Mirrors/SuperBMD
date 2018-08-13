@@ -140,6 +140,7 @@ namespace SuperBMDLib.BMD
                         m_AmbientColorBlock = ColorIO.Load(reader, sectionOffset, sectionSize);
                         break;
                     case Mat3OffsetIndex.LightData:
+                        m_LightingColorBlock = ColorIO.Load(reader, sectionOffset, sectionSize);
                         break;
                     case Mat3OffsetIndex.TexGenCount:
                         NumTexGensBlock = new List<byte>();
@@ -263,7 +264,7 @@ namespace SuperBMDLib.BMD
             m_Materials = new List<Material>();
             for (int i = 0; i <= highestMatIndex; i++)
             {
-                LoadInitData(reader);
+                LoadInitData(reader, m_RemapIndices[i]);
             }
 
             reader.BaseStream.Seek(offset + mat3Size, System.IO.SeekOrigin.Begin);
@@ -280,10 +281,11 @@ namespace SuperBMDLib.BMD
             m_Materials = matCopies;
         }
 
-        private void LoadInitData(EndianBinaryReader reader)
+        private void LoadInitData(EndianBinaryReader reader, int matindex)
         {
             Material mat = new Material();
-
+            mat.Name = m_MaterialNames[matindex];
+            mat.IndTexEntry = m_IndirectTexBlock[matindex];
             mat.Flag = reader.ReadByte();
             mat.CullMode = m_CullModeBlock[reader.ReadByte()];
 
@@ -338,8 +340,11 @@ namespace SuperBMDLib.BMD
                 int texGenIndex = reader.ReadInt16();
                 if (texGenIndex == -1)
                     continue;
-                else
+                else if (texGenIndex < m_TexCoord1GenBlock.Count)
                     mat.TexCoord1Gens[i] = m_TexCoord1GenBlock[texGenIndex];
+                else
+                    Console.WriteLine(String.Format("Warning for material {0} i={2}, TexCoord1GenBlock index out of range: {1}",
+                                                    mat.Name, texGenIndex, i));
             }
 
             for (int i = 0; i < 8; i++)
@@ -365,8 +370,11 @@ namespace SuperBMDLib.BMD
                 int texMatIndex = reader.ReadInt16();
                 if (texMatIndex == -1)
                     continue;
-                //else
-                    //mat.PostTexMatrix[i] = m_TexMatrix2Block[texMatIndex];
+                else if (texMatIndex < m_TexMatrix2Block.Count)
+                    mat.PostTexMatrix[i] = m_TexMatrix2Block[texMatIndex];
+                else
+                    Console.WriteLine(String.Format("Warning for material {0}, TexMatrix2Block index out of range: {1}",
+                                                    mat.Name, texMatIndex));
             }
 
             for (int i = 0; i < 8; i++)
@@ -436,7 +444,7 @@ namespace SuperBMDLib.BMD
             for (int i = 0; i < 16; i++)
             {
                 int tevSwapModeTableIndex = reader.ReadInt16();
-                if ((tevSwapModeTableIndex < 0) || (tevSwapModeTableIndex > m_SwapTableBlock.Count))
+                if ((tevSwapModeTableIndex < 0) || (tevSwapModeTableIndex >= m_SwapTableBlock.Count))
                     continue;
                 else
                 {
@@ -541,13 +549,14 @@ namespace SuperBMDLib.BMD
 
                 bool hasVtxColor0 = shapes.Shapes[i].AttributeData.CheckAttribute(GXVertexAttribute.Color0);
                 int texIndex = -1;
+                string texName = null;
                 if (meshMat.HasTextureDiffuse)
                 {
-                    string texName = Path.GetFileNameWithoutExtension(meshMat.TextureDiffuse.FilePath);
+                    texName = Path.GetFileNameWithoutExtension(meshMat.TextureDiffuse.FilePath);
                     texIndex = textures.Textures.IndexOf(textures[texName]);
                 }
 
-                bmdMaterial.SetUpTev(meshMat.HasTextureDiffuse, hasVtxColor0, texIndex);
+                bmdMaterial.SetUpTev(meshMat.HasTextureDiffuse, hasVtxColor0, texIndex, texName);
 
                 m_Materials.Add(bmdMaterial);
                 m_RemapIndices.Add(i);
@@ -754,7 +763,7 @@ namespace SuperBMDLib.BMD
             }
         }
 
-        public void FillScene(Assimp.Scene scene, TEX1 textures, string fileDir)
+        public void FillScene(Assimp.Scene scene, TEX1 textures, string fileDir, bool keepmatnames = false)
         {
             textures.DumpTextures(fileDir);
 
@@ -783,6 +792,9 @@ namespace SuperBMDLib.BMD
                 if (mat.AmbientColors[0] != null)
                 {
                     assMat.ColorAmbient = mat.AmbientColors[0].Value.ToColor4D();
+                }
+                if (mat.Name != null && keepmatnames == true) {
+                    assMat.Name = mat.Name;
                 }
 
                 scene.Materials.Add(assMat);
@@ -1173,7 +1185,8 @@ namespace SuperBMDLib.BMD
 
             for (int i = 0; i < 8; i++)
             {
-                if (m_LightingColorBlock.Count != 0)
+                //if (m_LightingColorBlock.Count != 0)
+                if (mat.LightingColors[i] != null)
                     writer.Write((short)m_LightingColorBlock.IndexOf(mat.LightingColors[i].Value));
                 else
                     writer.Write((short)-1);

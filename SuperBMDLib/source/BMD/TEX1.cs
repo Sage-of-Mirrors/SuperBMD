@@ -94,6 +94,20 @@ namespace SuperBMDLib.BMD
 
                 if (mat.HasTextureDiffuse)
                 {
+                    string texname = System.IO.Path.GetFileNameWithoutExtension(mat.TextureDiffuse.FilePath);
+                    bool already_exists = false;
+
+                    foreach (BinaryTextureImage image in Textures) {
+                        if (image.Name == texname) {
+                            already_exists = true;
+                            break;
+                        }
+                    }
+
+                    if (already_exists) {
+                        continue;
+                    }
+
                     BinaryTextureImage img = new BinaryTextureImage();
                     img.Load(mat.TextureDiffuse, model_directory);
                     Textures.Add(img);
@@ -115,9 +129,21 @@ namespace SuperBMDLib.BMD
             return "";
         }
 
+        public void AddTextureFromPath(string path) {
+            string modelDirectory = System.IO.Path.GetDirectoryName(path);
+            BinaryTextureImage img = new BinaryTextureImage();
+
+            // Only the path and the wrap mode are relevant, the rest doesn't matter for img.Load
+            TextureSlot tex = new TextureSlot(path, 0, 0, 0, 0, (float)0.0, 0, TextureWrapMode.Clamp, TextureWrapMode.Clamp, 0);
+
+            img.Load(tex, modelDirectory);
+            
+            Textures.Add(img);
+        }
+
         public void DumpTextures(string directory)
         {
-            if (!System.IO.Directory.Exists(directory))
+            if (!System.IO.Directory.Exists(directory) && directory != "")
                 System.IO.Directory.CreateDirectory(directory);
 
             foreach (BinaryTextureImage tex in Textures)
@@ -134,6 +160,19 @@ namespace SuperBMDLib.BMD
                 StreamWriter writer = new StreamWriter(strm);
                 writer.AutoFlush = true;
                 serial.Serialize(writer, Textures);
+            }
+        }
+
+        public void DumpTextureHeaders(TextWriter file) {
+            JsonSerializer serializer = new JsonSerializer();
+            serializer.Formatting = Formatting.Indented;
+
+            serializer.Converters.Add(
+                (new Newtonsoft.Json.Converters.StringEnumConverter())
+                );
+
+            using (JsonWriter writer = new JsonTextWriter(file)) {
+                serializer.Serialize(writer, Textures);
             }
         }
 
@@ -283,7 +322,7 @@ namespace SuperBMDLib.BMD
                         return tex;
                 }
 
-                Console.WriteLine($"No texture with the name { s } was found.");
+                //Console.WriteLine($"Texture { s } not loaded (yet).");
                 return null;
             }
 

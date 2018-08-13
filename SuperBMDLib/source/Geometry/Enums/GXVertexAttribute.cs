@@ -9,6 +9,14 @@ namespace SuperBMDLib.Geometry.Enums
     public enum GXVertexAttribute
     {
         PositionMatrixIdx = 0,
+        Tex0Mtx = 1,
+        Tex1Mtx = 2,
+        Tex2Mtx = 3,
+        Tex3Mtx = 4,
+        Tex4Mtx = 5,
+        Tex5Mtx = 6,
+        Tex6Mtx = 7,
+        Tex7Mtx = 8,
         Position = 9,
         Normal = 10,
         Color0 = 11,

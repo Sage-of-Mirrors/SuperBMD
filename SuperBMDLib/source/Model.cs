@@ -43,7 +43,15 @@ namespace SuperBMDLib
 
                 // AssImp adds dummy nodes for pivots from FBX, so we'll force them off
                 cont.SetConfig(new Assimp.Configs.FBXPreservePivotsConfig(false));
-                Assimp.Scene aiScene = cont.ImportFile(args.input_path, Assimp.PostProcessSteps.Triangulate);
+
+                Assimp.PostProcessSteps postprocess = Assimp.PostProcessSteps.Triangulate | Assimp.PostProcessSteps.JoinIdenticalVertices;
+                
+                if (args.tristrip_mode == "none") {
+                    // By not joining identical vertices, the Tri Strip algorithm we use cannot make tristrips, 
+                    // effectively disabling tri stripping
+                    postprocess = Assimp.PostProcessSteps.Triangulate; 
+                }
+                Assimp.Scene aiScene = cont.ImportFile(args.input_path, postprocess);
 
                 output = new Model(aiScene, args);
             }
@@ -107,7 +115,7 @@ namespace SuperBMDLib
 
             PartialWeightData = new DRW1(scene, Joints.BoneNameIndices);
 
-            Shapes = SHP1.Create(scene, Joints.BoneNameIndices, VertexData.Attributes, SkinningEnvelopes, PartialWeightData, Joints);
+            Shapes = SHP1.Create(scene, Joints.BoneNameIndices, VertexData.Attributes, SkinningEnvelopes, PartialWeightData, args.tristrip_mode);
 
             Materials = new MAT3(scene, Textures, Shapes, args);
             Scenegraph = new INF1(scene, Joints);
@@ -118,14 +126,14 @@ namespace SuperBMDLib
             vertexCount = VertexData.Attributes.Positions.Count;
         }
 
-        public void ExportBMD(string fileName)
+        public void ExportBMD(string fileName, bool overwrite = false)
         {
             string outDir = Path.GetDirectoryName(fileName);
             string fileNameNoExt = Path.GetFileNameWithoutExtension(fileName);
             fileNameNoExt = fileNameNoExt.Split('.')[0];
             fileName = Path.Combine(outDir, fileNameNoExt + ".bmd");
 
-            if (File.Exists(fileName))
+            if (File.Exists(fileName) && overwrite == false)
             {
                 fileName = Path.Combine(outDir, fileNameNoExt + "_2.bmd");
             }
@@ -168,8 +176,9 @@ namespace SuperBMDLib
             Shapes.FillScene(outScene, VertexData.Attributes, Joints.FlatSkeleton, SkinningEnvelopes.InverseBindMatrices);
             Scenegraph.FillScene(outScene, Joints.FlatSkeleton, settings.UseSkeletonRoot);
             Scenegraph.CorrectMaterialIndices(outScene, Materials);
+            Textures.DumpTextures(outDir);
 
-            if (SkinningEnvelopes.Weights.Count == 0)
+            if (true)//(SkinningEnvelopes.Weights.Count == 0)
             {
                 Assimp.Node geomNode = new Node(Path.GetFileNameWithoutExtension(fileName), outScene.RootNode);
 
@@ -182,7 +191,10 @@ namespace SuperBMDLib
             }
 
             AssimpContext cont = new AssimpContext();
-            cont.ExportFile(outScene, fileName, "collada", PostProcessSteps.ValidateDataStructure);
+
+            cont.ExportFile(outScene, fileName, "collada", PostProcessSteps.ValidateDataStructure | PostProcessSteps.JoinIdenticalVertices);
+            //cont.ExportFile(outScene, fileName, "collada");
+
 
             //if (SkinningEnvelopes.Weights.Count == 0)
                 //return; // There's no skinning information, so we can stop here

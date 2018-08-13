@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 using GameFormatReader.Common;
 using SuperBMDLib.Util;
 using Chadsoft.CTools.Image;
-using TgaLib;
 using Newtonsoft.Json;
 
 namespace SuperBMDLib.Materials
@@ -133,6 +132,7 @@ namespace SuperBMDLib.Materials
 
         public PaletteFormats PaletteFormat { get; set; }
 
+        [JsonIgnore]
         public ushort PaletteCount { get; set; }
 
         [JsonIgnore]
@@ -142,7 +142,7 @@ namespace SuperBMDLib.Materials
         public FilterMode MagFilter { get; set; }
         public sbyte MinLOD { get; set; } // Fixed point number, 1/8 = conversion (ToDo: is this multiply by 8 or divide...)
         public sbyte MagLOD { get; set; } // Fixed point number, 1/8 = conversion (ToDo: is this multiply by 8 or divide...)
-
+        [JsonIgnore]
         public byte MipMapCount { get; private set; }
         public short LodBias { get; set; } // Fixed point number, 1/100 = conversion
 
@@ -156,6 +156,10 @@ namespace SuperBMDLib.Materials
             get { return m_rgbaImageData; }
             set { m_rgbaImageData = value; }
         }
+
+        public byte unknown1 = 0;
+        public short unknown2 = 0;
+        public byte unknown3 = 0;
 
         public BinaryTextureImage()
         {
@@ -189,9 +193,9 @@ namespace SuperBMDLib.Materials
             EmbeddedPaletteOffset = stream.ReadInt32();
             MinFilter = (FilterMode)stream.ReadByte();
             MagFilter = (FilterMode)stream.ReadByte();
-            short unknown2 = stream.ReadInt16();
+            unknown2 = stream.ReadInt16();
             MipMapCount = stream.ReadByte();
-            byte unknown3 = stream.ReadByte();
+            unknown3 = stream.ReadByte();
             LodBias = stream.ReadInt16();
 
             int imageDataOffset = stream.ReadInt32();
@@ -206,32 +210,54 @@ namespace SuperBMDLib.Materials
             m_rgbaImageData = DecodeData(stream, Width, Height, Format, m_imagePalette, PaletteFormat);
         }
 
+        public void ReplaceHeaderInfo(BinaryTextureImage other) {
+            Format = other.Format;
+            AlphaSetting = other.AlphaSetting;
+            WrapS = other.WrapS;
+            WrapT = other.WrapT;
+            MinFilter = other.MinFilter;
+            MagFilter = other.MagFilter;
+            MinLOD = other.MinLOD;
+            MagLOD = other.MagLOD;
+            LodBias = other.LodBias;
+            unknown1 = other.unknown1;
+            unknown2 = other.unknown2;
+            unknown3 = other.unknown3;
+        }
+
         public void Load(Assimp.TextureSlot texture, string modelDirectory)
         {
             Format = TextureFormats.CMPR;
             AlphaSetting = 0;
             WrapS = texture.WrapModeU.ToGXWrapMode();
             WrapT = texture.WrapModeV.ToGXWrapMode();
+            //WrapS = WrapModes.ClampToEdge;
+            //WrapT = WrapModes.ClampToEdge;
             PaletteFormat = PaletteFormats.IA8;
             PaletteCount = 0;
             EmbeddedPaletteOffset = 0;
             MinFilter = FilterMode.Linear;
             MagFilter = FilterMode.Linear;
-            MipMapCount = 0;
+            MipMapCount = 1;
             LodBias = 0;
 
             Bitmap texData = null;
 
-            if (File.Exists(texture.FilePath))
+            string texPath = texture.FilePath;
+            if (!Path.IsPathRooted(texPath)) {
+                texPath = Path.Combine(modelDirectory, texPath);
+            }
+
+            if (File.Exists(texPath))
             {
                 texData = new Bitmap(texture.FilePath);
                 Name = Path.GetFileNameWithoutExtension(texture.FilePath);
             }
             else
             {
-                Console.WriteLine($"Texture was not found at path \"{ texture.FilePath }\". Searching the model's directory...");
+                Console.WriteLine($"Texture was not found at path \"{ texPath }\". Searching the model's directory...");
                 string fileName = Path.GetFileName(texture.FilePath);
-                string texPath = Path.Combine(modelDirectory, fileName);
+                texPath = Path.Combine(modelDirectory, fileName);
 
                 if (!File.Exists(texPath))
                 {
@@ -252,9 +278,57 @@ namespace SuperBMDLib.Materials
             m_rgbaImageData = new byte[Width * Height * 4];
             BitmapData dat = texData.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             Marshal.Copy(dat.Scan0, m_rgbaImageData, 0, m_rgbaImageData.Length);
+
+
             texData.UnlockBits(dat);
 
             texData.Dispose();
+            DetectAndSetFittingFormat();
+
+            Console.WriteLine(String.Format("Format of Texture {0} set to {1}", Name, Format));
+        }
+
+        // We analyze the image data and check 
+        public void DetectAndSetFittingFormat()
+        {
+            bool is_gray = true;
+            bool complex_alpha = false;
+            bool has_alpha = false;
+
+            List<byte> alphavals = new List<byte>();
+
+            for (int i = 0; i < m_rgbaImageData.Length / 4; i++)
+            {
+                byte r = m_rgbaImageData[i * 4 + 0];
+                byte g = m_rgbaImageData[i * 4 + 1];
+                byte b = m_rgbaImageData[i * 4 + 2];
+                byte a = m_rgbaImageData[i * 4 + 3];
+
+                if (is_gray && (r != g || g != b || b != r)) {
+                    is_gray = false;
+                }
+
+                if (a != 255) {
+                    has_alpha = true;
+                    if (a != 0) {
+                        complex_alpha = true;
+                    }
+                }
+
+            }
+            
+            if (is_gray) {
+                Format = TextureFormats.IA8;
+            }
+            else if (complex_alpha) {
+                Format = TextureFormats.RGB5A3;
+            }
+            else {
+                Format = TextureFormats.CMPR;
+            }
+            if (has_alpha) {
+                AlphaSetting = 0x1;
+            }
         }
 
         public string SaveImageToDisk(string outputFile)
@@ -264,7 +338,9 @@ namespace SuperBMDLib.Materials
             using (Bitmap bmp = CreateBitmap())
             {
                 // Bitmaps will throw an exception if the output folder doesn't exist so...
-                Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+                string dir = Path.GetDirectoryName(fileName);
+                if (dir != "") 
+                    Directory.CreateDirectory(dir);
                 bmp.Save(fileName, ImageFormat.Png);
             }
 
@@ -291,21 +367,6 @@ namespace SuperBMDLib.Materials
         /// </summary>
         public void LoadImageFromDisk(string filePath)
         {
-            // TGA is a special format, so we need to handle is separately from bmp/jpg/png/etc.
-            if (filePath.EndsWith(".tga"))
-            {
-                using (FileStream strm = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-                {
-                    BinaryReader reader = new BinaryReader(strm);
-                    TgaImage tga = new TgaImage(reader);
-                    m_rgbaImageData = tga.ImageBytes;
-                    Width = tga.Header.Width;
-                    Height = tga.Header.Height;
-                }
-
-                return;
-            }
-
             Bitmap bmp = new Bitmap(filePath);
             byte[] data = new byte[bmp.Width * bmp.Height * 4];
 
@@ -343,12 +404,12 @@ namespace SuperBMDLib.Materials
             writer.Write((byte)MagFilter);
 
             // This is an unknown
-            writer.Write((short)0);
+            writer.Write((short)unknown2);
 
             writer.Write((byte)MipMapCount);
 
             // This is an unknown
-            writer.Write((byte)0);
+            writer.Write((byte)unknown3);
 
             writer.Write((short)LodBias);
 

@@ -91,6 +91,7 @@ namespace SuperBMDLib.BMD
             {
                 SkeletonRoot = new Rigging.Bone("root");
                 SkeletonRoot.Bounds.GetBoundsValues(vertexData.Attributes.Positions);
+
                 FlatSkeleton.Add(SkeletonRoot);
                 BoneNameIndices.Add("root", 0);
             }
