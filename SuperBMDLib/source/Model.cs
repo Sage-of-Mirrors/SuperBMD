@@ -178,18 +178,6 @@ namespace SuperBMDLib
             Scenegraph.CorrectMaterialIndices(outScene, Materials);
             Textures.DumpTextures(outDir);
 
-            if (true)//(SkinningEnvelopes.Weights.Count == 0)
-            {
-                Assimp.Node geomNode = new Node(Path.GetFileNameWithoutExtension(fileName), outScene.RootNode);
-
-                for (int i = 0; i < Shapes.Shapes.Count; i++)
-                {
-                    geomNode.MeshIndices.Add(i);
-                }
-
-                outScene.RootNode.Children.Add(geomNode);
-            }
-
             AssimpContext cont = new AssimpContext();
 
             cont.ExportFile(outScene, fileName, "collada", PostProcessSteps.ValidateDataStructure | PostProcessSteps.JoinIdenticalVertices);
