@@ -388,6 +388,11 @@ namespace SuperBMDLib.Geometry
                                         int envIndex = envelopes.Weights.IndexOf(curWeight);
                                         int drwIndex = partialWeight.MeshWeights.IndexOf(curWeight);
 
+                                        if (drwIndex == -1)
+                                        {
+                                            throw new System.Exception($"Model has unweighted vertices in mesh \"{mesh.Name}\". Please weight all vertices to at least one bone.");
+                                        }
+
                                         newMatrixIndex = drwIndex;
                                         partialWeight.Indices[drwIndex] = envIndex;
                                     }
@@ -566,6 +571,11 @@ namespace SuperBMDLib.Geometry
 
                                             int envIndex = envelopes.Weights.IndexOf(curWeight);
                                             int drwIndex = partialWeight.MeshWeights.IndexOf(curWeight);
+
+                                            if (drwIndex == -1)
+                                            {
+                                                throw new System.Exception($"Model has unweighted vertices in mesh \"{mesh.Name}\". Please weight all vertices to at least one bone.");
+                                            }
 
                                             newMatrixIndex = drwIndex;
                                             partialWeight.Indices[drwIndex] = envIndex;
