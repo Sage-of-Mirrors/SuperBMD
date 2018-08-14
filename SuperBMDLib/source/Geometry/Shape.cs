@@ -418,8 +418,15 @@ namespace SuperBMDLib.Geometry
                                 case Enums.GXVertexAttribute.Normal:
                                     List<Vector3> normData = (List<Vector3>)vertData.GetAttributeData(Enums.GXVertexAttribute.Normal);
                                     Vector3 vertNrm = mesh.Normals[vertIndex].ToOpenTKVector3();
-                                    AttributeData.Normals.Add(vertNrm);
 
+                                    if (curWeight.WeightCount == 1)
+                                    {
+                                        Matrix4 ibm = envelopes.InverseBindMatrices[curWeight.BoneIndices[0]];
+                                        vertNrm = Vector3.TransformNormal(vertNrm, ibm);
+                                        normData.Add(vertNrm);
+                                    }
+
+                                    AttributeData.Normals.Add(vertNrm);
                                     vert.SetAttributeIndex(Enums.GXVertexAttribute.Normal, (uint)normData.IndexOf(vertNrm));
                                     break;
                                 case Enums.GXVertexAttribute.Color0:
@@ -590,8 +597,15 @@ namespace SuperBMDLib.Geometry
                                     case Enums.GXVertexAttribute.Normal:
                                         List<Vector3> normData = (List<Vector3>)vertData.GetAttributeData(Enums.GXVertexAttribute.Normal);
                                         Vector3 vertNrm = mesh.Normals[vertIndex].ToOpenTKVector3();
-                                        AttributeData.Normals.Add(vertNrm);
 
+                                        if (curWeight.WeightCount == 1)
+                                        {
+                                            Matrix4 ibm = envelopes.InverseBindMatrices[curWeight.BoneIndices[0]];
+                                            vertNrm = Vector3.TransformNormal(vertNrm, ibm);
+                                            normData.Add(vertNrm);
+                                        }
+
+                                        AttributeData.Normals.Add(vertNrm);
                                         vert.SetAttributeIndex(Enums.GXVertexAttribute.Normal, (uint)normData.IndexOf(vertNrm));
                                         break;
                                     case Enums.GXVertexAttribute.Color0:
