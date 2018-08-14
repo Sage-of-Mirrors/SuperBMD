@@ -529,9 +529,7 @@ namespace SuperBMDLib.BMD
             List<Vector3> tempList = new List<Vector3>();
 
             for (int vec = 0; vec < mesh.VertexCount; vec++) { 
-                Vector3 tmpvec = mesh.Vertices[vec].ToOpenTKVector3();
-
-                tempList.Add(tmpvec);
+                tempList.Add(mesh.Vertices[vec].ToOpenTKVector3());
             }
 
             if (!Attributes.CheckAttribute(GXVertexAttribute.Position))
@@ -554,9 +552,8 @@ namespace SuperBMDLib.BMD
         {
             List<Vector3> tempList = new List<Vector3>();
 
-            for (int vec = 0; vec < mesh.Normals.Count; vec++) {
-                Vector3 tmpvec = mesh.Normals[vec].ToOpenTKVector3();
-
+            for (int vec = 0; vec < mesh.Normals.Count; vec++)
+            {
                 tempList.Add(mesh.Normals[vec].ToOpenTKVector3());
             }
 
