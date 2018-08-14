@@ -129,6 +129,7 @@ namespace SuperBMDLib.Materials
         public WrapModes WrapS { get; set; }
         public WrapModes WrapT { get; set; }
 
+        [JsonIgnore]
         public bool PalettesEnabled { get; set; }
 
         public PaletteFormats PaletteFormat { get; set; }
@@ -1018,11 +1019,12 @@ namespace SuperBMDLib.Materials
 
             for (int i = 0; i < (Width * Height) * 4; i += 4)
                 palColors.Add(new Util.Color32(m_rgbaImageData[i + 2], m_rgbaImageData[i + 1], m_rgbaImageData[i + 0], m_rgbaImageData[i + 3]));
-
-            SortedList<ushort, Util.Color32> rawColorData = new SortedList<ushort, Util.Color32>();
+            
+            List<ushort> rawColorData = new List<ushort>();
+            Dictionary<Util.Color32, byte> pixelColorIndexes = new Dictionary<Util.Color32, byte>();
             foreach (Util.Color32 col in palColors)
             {
-                EncodeColor(col, rawColorData);
+                EncodeColor(col, rawColorData, pixelColorIndexes);
             }
 
             int pixIndex = 0;
@@ -1034,8 +1036,10 @@ namespace SuperBMDLib.Materials
                     {
                         for (int pX = 0; pX < 8; pX += 2)
                         {
-                            pixIndices[pixIndex] = (byte)(rawColorData.IndexOfValue(palColors[Width * ((yBlock * 8) + pY) + (xBlock * 8) + pX]) << 4);
-                            pixIndices[pixIndex++] |= (byte)(rawColorData.IndexOfValue(palColors[Width * ((yBlock * 8) + pY) + (xBlock * 8) + pX + 1]));
+                            byte color1 = (byte)(pixelColorIndexes[palColors[Width * ((yBlock * 8) + pY) + (xBlock * 8) + pX]] & 0xF);
+                            byte color2 = (byte)(pixelColorIndexes[palColors[Width * ((yBlock * 8) + pY) + (xBlock * 8) + pX + 1]] & 0xF);
+                            pixIndices[pixIndex] = (byte)(color1 << 4);
+                            pixIndices[pixIndex++] |= color2;
                         }
                     }
                 }
@@ -1044,7 +1048,7 @@ namespace SuperBMDLib.Materials
             PaletteCount = (ushort)rawColorData.Count;
             PalettesEnabled = true;
 
-            return new Tuple<byte[], ushort[]>(pixIndices, rawColorData.Keys.ToArray());
+            return new Tuple<byte[], ushort[]>(pixIndices, rawColorData.ToArray());
         }
 
         private Tuple<byte[], ushort[]> EncodeC8()
@@ -1059,10 +1063,11 @@ namespace SuperBMDLib.Materials
             for (int i = 0; i < (Width * Height) * 4; i += 4)
                 palColors.Add(new Util.Color32(m_rgbaImageData[i + 2], m_rgbaImageData[i + 1], m_rgbaImageData[i + 0], m_rgbaImageData[i + 3]));
 
-            SortedList<ushort, Util.Color32> rawColorData = new SortedList<ushort, Util.Color32>();
+            List<ushort> rawColorData = new List<ushort>();
+            Dictionary<Util.Color32, byte> pixelColorIndexes = new Dictionary<Util.Color32, byte>();
             foreach (Util.Color32 col in palColors)
             {
-                EncodeColor(col, rawColorData);
+                EncodeColor(col, rawColorData, pixelColorIndexes);
             }
 
             int pixIndex = 0;
@@ -1074,7 +1079,7 @@ namespace SuperBMDLib.Materials
                     {
                         for (int pX = 0; pX < 8; pX++)
                         {
-                            pixIndices[pixIndex++] = (byte)rawColorData.IndexOfValue(palColors[Width * ((yBlock * 4) + pY) + (xBlock * 8) + pX]);
+                            pixIndices[pixIndex++] = pixelColorIndexes[palColors[Width * ((yBlock * 4) + pY) + (xBlock * 8) + pX]];
                         }
                     }
                 }
@@ -1083,10 +1088,10 @@ namespace SuperBMDLib.Materials
             PaletteCount = (ushort)rawColorData.Count;
             PalettesEnabled = true;
 
-            return new Tuple<byte[], ushort[]>(pixIndices, rawColorData.Keys.ToArray());
+            return new Tuple<byte[], ushort[]>(pixIndices, rawColorData.ToArray());
         }
 
-        private void EncodeColor(Util.Color32 col, SortedList<ushort, Util.Color32> rawColorData)
+        private void EncodeColor(Util.Color32 col, List<ushort> rawColorData, Dictionary<Util.Color32, byte> pixelColorIndexes)
         {
             switch (PaletteFormat)
             {
@@ -1094,8 +1099,10 @@ namespace SuperBMDLib.Materials
                     byte i = (byte)((col.R * 0.2126) + (col.G * 0.7152) + (col.B * 0.0722));
 
                     ushort fullIA8 = (ushort)((i << 8) | (col.A));
-                    if (!rawColorData.ContainsKey(fullIA8))
-                        rawColorData.Add((ushort)(fullIA8), col);
+                    if (!rawColorData.Contains(fullIA8))
+                        rawColorData.Add(fullIA8);
+                    if (!pixelColorIndexes.ContainsKey(col))
+                        pixelColorIndexes.Add(col, (byte)rawColorData.IndexOf(fullIA8));
                     break;
                 case PaletteFormats.RGB565:
                     ushort r_565 = (ushort)(col.R >> 3);
@@ -1107,8 +1114,10 @@ namespace SuperBMDLib.Materials
                     fullColor565 |= (ushort)(g_565 << 5);
                     fullColor565 |= (ushort)(r_565 << 11);
 
-                    if (!rawColorData.ContainsKey(fullColor565))
-                        rawColorData.Add(fullColor565, col);
+                    if (!rawColorData.Contains(fullColor565))
+                        rawColorData.Add(fullColor565);
+                    if (!pixelColorIndexes.ContainsKey(col))
+                        pixelColorIndexes.Add(col, (byte)rawColorData.IndexOf(fullColor565));
                     break;
                 case PaletteFormats.RGB5A3:
                     ushort r_53 = (ushort)(col.R >> 4);
@@ -1122,8 +1131,10 @@ namespace SuperBMDLib.Materials
                     fullColor53 |= (ushort)(r_53 << 8);
                     fullColor53 |= (ushort)(a_53 << 12);
 
-                    if (!rawColorData.ContainsKey(fullColor53))
-                        rawColorData.Add(fullColor53, col);
+                    if (!rawColorData.Contains(fullColor53))
+                        rawColorData.Add(fullColor53);
+                    if (!pixelColorIndexes.ContainsKey(col))
+                        pixelColorIndexes.Add(col, (byte)rawColorData.IndexOf(fullColor53));
                     break;
             }
         }
