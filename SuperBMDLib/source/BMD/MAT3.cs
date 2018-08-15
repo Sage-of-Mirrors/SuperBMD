@@ -284,8 +284,7 @@ namespace SuperBMDLib.BMD
         private void LoadInitData(EndianBinaryReader reader, int matindex)
         {
             Material mat = new Material();
-            mat.Name = m_MaterialNames[matindex];
-            mat.IndTexEntry = m_IndirectTexBlock[matindex];
+
             mat.Flag = reader.ReadByte();
             mat.CullMode = m_CullModeBlock[reader.ReadByte()];
 
@@ -763,7 +762,7 @@ namespace SuperBMDLib.BMD
             }
         }
 
-        public void FillScene(Assimp.Scene scene, TEX1 textures, string fileDir, bool keepmatnames = false)
+        public void FillScene(Assimp.Scene scene, TEX1 textures, string fileDir)
         {
             textures.DumpTextures(fileDir);
 
@@ -792,9 +791,6 @@ namespace SuperBMDLib.BMD
                 if (mat.AmbientColors[0] != null)
                 {
                     assMat.ColorAmbient = mat.AmbientColors[0].Value.ToColor4D();
-                }
-                if (mat.Name != null && keepmatnames == true) {
-                    assMat.Name = mat.Name;
                 }
 
                 scene.Materials.Add(assMat);
