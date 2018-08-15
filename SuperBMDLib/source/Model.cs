@@ -178,14 +178,20 @@ namespace SuperBMDLib
             Scenegraph.CorrectMaterialIndices(outScene, Materials);
             Textures.DumpTextures(outDir);
 
-            AssimpContext cont = new AssimpContext();
 
-            cont.ExportFile(outScene, fileName, "collada", PostProcessSteps.ValidateDataStructure | PostProcessSteps.JoinIdenticalVertices);
-            //cont.ExportFile(outScene, fileName, "collada");
+            foreach (Mesh mesh in outScene.Meshes)
+            {
+                // Assimp has a JoinIdenticalVertices post process step, but we can't use that or the skinning info we manually add won't take it into account.
+                RemoveDuplicateVertices(mesh);
+            }
+
+
+            AssimpContext cont = new AssimpContext();
+            cont.ExportFile(outScene, fileName, "collada", PostProcessSteps.ValidateDataStructure);
 
 
             //if (SkinningEnvelopes.Weights.Count == 0)
-                //return; // There's no skinning information, so we can stop here
+            //    return; // There's no skinning information, so we can stop here
 
             // Now we need to add some skinning info, since AssImp doesn't do it for some bizarre reason
 
@@ -455,6 +461,81 @@ namespace SuperBMDLib
             writer.WriteLine("\n       </v>");
 
             writer.WriteLine($"      </vertex_weights>");
+        }
+
+        private void RemoveDuplicateVertices(Mesh mesh)
+        {
+            if (mesh.TextureCoordinateChannelCount != 1)
+            {
+                throw new Exception("Removing duplicate vertices from meshes with any number of texture coordinate channels besides 1 is not supported");
+            }
+
+            // Calculate which vertices are duplicates (based on their position and texture coordinates).
+            List<Tuple<Vector3D, Vector3D>> uniqueVertsAndCoords = new List<Tuple<Vector3D, Vector3D>>();
+            int[] replaceVertexIDs = new int[mesh.Vertices.Count];
+            bool[] vertexIsUnique = new bool[mesh.Vertices.Count];
+            for (var origVertexID = 0; origVertexID < mesh.Vertices.Count; origVertexID++)
+            {
+                var vertAndCoord = new Tuple<Vector3D, Vector3D>(mesh.Vertices[origVertexID], mesh.TextureCoordinateChannels[0][origVertexID]);
+                if (!uniqueVertsAndCoords.Contains(vertAndCoord))
+                {
+                    uniqueVertsAndCoords.Add(vertAndCoord);
+                    vertexIsUnique[origVertexID] = true;
+                }
+                else
+                {
+                    vertexIsUnique[origVertexID] = false;
+                }
+                replaceVertexIDs[origVertexID] = uniqueVertsAndCoords.IndexOf(vertAndCoord);
+            }
+
+            // Remove duplicate vertices and texture coordinates.
+            mesh.Vertices.Clear();
+            mesh.TextureCoordinateChannels[0].Clear();
+            foreach (Tuple<Vector3D, Vector3D> vertAndCoord in uniqueVertsAndCoords)
+            {
+                mesh.Vertices.Add(vertAndCoord.Item1);
+                mesh.TextureCoordinateChannels[0].Add(vertAndCoord.Item2);
+            }
+
+            // Update vertex indices for the faces.
+            foreach (Face face in mesh.Faces)
+            {
+                for (var i = 0; i < face.IndexCount; i++)
+                {
+                    face.Indices[i] = replaceVertexIDs[face.Indices[i]];
+                }
+            }
+
+            // Update vertex indices for the normals.
+            List<Vector3D> origNormals = new List<Vector3D>(mesh.Normals);
+            mesh.Normals.Clear();
+            for (var origVertexID = 0; origVertexID < origNormals.Count; origVertexID++)
+            {
+                if (!vertexIsUnique[origVertexID])
+                    continue;
+
+                Vector3D normal = origNormals[origVertexID];
+                mesh.Normals.Add(normal);
+            }
+
+            // Update vertex indices for the bone vertex weights.
+            foreach (Bone bone in mesh.Bones)
+            {
+                List<VertexWeight> origVertexWeights = new List<VertexWeight>(bone.VertexWeights);
+                bone.VertexWeights.Clear();
+                for (var i = 0; i < origVertexWeights.Count; i++)
+                {
+                    VertexWeight origWeight = origVertexWeights[i];
+                    int origVertexID = origWeight.VertexID;
+                    if (!vertexIsUnique[origVertexID])
+                        continue;
+
+                    int newVertexID = replaceVertexIDs[origVertexID];
+                    VertexWeight newWeight = new VertexWeight(newVertexID, origWeight.Weight);
+                    bone.VertexWeights.Add(newWeight);
+                }
+            }
         }
     }
 }
