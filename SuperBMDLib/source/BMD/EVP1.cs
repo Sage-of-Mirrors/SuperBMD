@@ -88,10 +88,7 @@ namespace SuperBMDLib.BMD
                                                   reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(),
                                                   reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
 
-                Matrix4 invBind4 = new Matrix4(invBind.Row0, invBind.Row1, invBind.Row2, Vector4.UnitW);
-                invBind4.Transpose();
-
-                InverseBindMatrices.Add(invBind4);
+                InverseBindMatrices.Add(new Matrix4(invBind.Row0, invBind.Row1, invBind.Row2, Vector4.UnitW));
             }
 
             reader.BaseStream.Seek(offset + evp1Size, System.IO.SeekOrigin.Begin);
