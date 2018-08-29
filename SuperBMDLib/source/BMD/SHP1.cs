@@ -274,30 +274,30 @@ namespace SuperBMDLib.BMD
                                         vertVec = new Vector3D(trans.X, trans.Y, trans.Z);
                                     }
                                 }
-                                /*else
-                                {
-                                    Matrix4 finalMatrix = Matrix4.Zero;
-
-                                    for (int m = 0; m < vert.VertexWeight.WeightCount; m++)
-                                    {
-                                        Matrix4 sm1 = inverseBindMatrices[vert.VertexWeight.BoneIndices[m]];
-                                        //sm1.Transpose();
-                                        Matrix4 sm2 = flatSkeleton[vert.VertexWeight.BoneIndices[m]].TransformationMatrix;
-                                        //sm2.Transpose();
-
-                                        finalMatrix += Matrix4.Mult(sm1, vert.VertexWeight.Weights[m]);
-                                    }
-
-                                    Vector4 final = Vector4.Transform(openTKVec, finalMatrix);
-
-                                    vertVec = new Vector3D(final.X, final.Y, final.Z);
-                                }*/
 
                                 mesh.Vertices.Add(vertVec);
 
                                 if (curShape.Descriptor.CheckAttribute(GXVertexAttribute.Normal))
                                 {
-                                    mesh.Normals.Add(vertData.Normals[(int)vert.NormalIndex].ToVector3D());
+                                    OpenTK.Vector3 nrmVec = vertData.Normals[(int)vert.NormalIndex];
+                                    OpenTK.Vector4 openTKNrm = new Vector4(nrmVec.X, nrmVec.Y, nrmVec.Z, 1);
+                                    Vector3D vertNrm = new Vector3D(nrmVec.X, nrmVec.Y, nrmVec.Z);
+
+                                    if (vert.VertexWeight.WeightCount == 1)
+                                    {
+                                        if (inverseBindMatrices.Count > vert.VertexWeight.BoneIndices[0])
+                                        {
+                                            Matrix4 test = inverseBindMatrices[vert.VertexWeight.BoneIndices[0]].Inverted();
+                                            vertNrm = Vector3.TransformNormalInverse(nrmVec, test).ToVector3D();
+                                        }
+                                        else
+                                        {
+                                            Vector4 trans = OpenTK.Vector4.Transform(openTKNrm, flatSkeleton[vert.VertexWeight.BoneIndices[0]].TransformationMatrix);
+                                            vertNrm = new Vector3D(trans.X, trans.Y, trans.Z);
+                                        }
+                                    }
+
+                                    mesh.Normals.Add(vertNrm);
                                 }
 
                                 if (curShape.Descriptor.CheckAttribute(GXVertexAttribute.Color0))
