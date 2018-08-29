@@ -465,37 +465,60 @@ namespace SuperBMDLib
 
         private void RemoveDuplicateVertices(Mesh mesh)
         {
-            if (mesh.TextureCoordinateChannelCount != 1)
-            {
-                throw new Exception("Removing duplicate vertices from meshes with any number of texture coordinate channels besides 1 is not supported");
-            }
-
             // Calculate which vertices are duplicates (based on their position and texture coordinates).
-            List<Tuple<Vector3D, Vector3D>> uniqueVertsAndCoords = new List<Tuple<Vector3D, Vector3D>>();
+            List<Tuple<Vector3D, List<Vector3D>>> uniqueVertsAndCoords = new List<Tuple<Vector3D, List<Vector3D>>>();
             int[] replaceVertexIDs = new int[mesh.Vertices.Count];
             bool[] vertexIsUnique = new bool[mesh.Vertices.Count];
             for (var origVertexID = 0; origVertexID < mesh.Vertices.Count; origVertexID++)
             {
-                var vertAndCoord = new Tuple<Vector3D, Vector3D>(mesh.Vertices[origVertexID], mesh.TextureCoordinateChannels[0][origVertexID]);
-                if (!uniqueVertsAndCoords.Contains(vertAndCoord))
+                var coordsForVert = new List<Vector3D>();
+                for (var i = 0; i < mesh.TextureCoordinateChannelCount; i++)
                 {
-                    uniqueVertsAndCoords.Add(vertAndCoord);
+                    coordsForVert.Add(mesh.TextureCoordinateChannels[i][origVertexID]);
+                }
+                var vertAndCoord = new Tuple<Vector3D, List<Vector3D>>(mesh.Vertices[origVertexID], coordsForVert);
+
+                // Determine if this vertex is a duplicate of a previously encountered vertex or not and if it is keep track of the new index
+                var duplicateVertexIndex = -1;
+                for (var i = 0; i < uniqueVertsAndCoords.Count; i++)
+                {
+                    Tuple<Vector3D, List<Vector3D>> otherVertAndCoord = uniqueVertsAndCoords[i];
+                    if (checkVertAndCoordsAreDuplicates(vertAndCoord.Item1, vertAndCoord.Item2, otherVertAndCoord.Item1, otherVertAndCoord.Item2))
+                    {
+                        duplicateVertexIndex = i;
+                        break;
+                    }
+                }
+
+                if (duplicateVertexIndex == -1)
+                {
                     vertexIsUnique[origVertexID] = true;
+                    uniqueVertsAndCoords.Add(vertAndCoord);
+                    replaceVertexIDs[origVertexID] = uniqueVertsAndCoords.Count - 1;
                 }
                 else
                 {
                     vertexIsUnique[origVertexID] = false;
+                    replaceVertexIDs[origVertexID] = duplicateVertexIndex;
                 }
-                replaceVertexIDs[origVertexID] = uniqueVertsAndCoords.IndexOf(vertAndCoord);
             }
 
             // Remove duplicate vertices and texture coordinates.
             mesh.Vertices.Clear();
-            mesh.TextureCoordinateChannels[0].Clear();
-            foreach (Tuple<Vector3D, Vector3D> vertAndCoord in uniqueVertsAndCoords)
+            // Need to preserve the channel count since it gets set to 0 when clearing all the channels
+            int origTexCoordChannelCount = mesh.TextureCoordinateChannelCount;
+            for (var i = 0; i < mesh.TextureCoordinateChannelCount; i++)
+            {
+                mesh.TextureCoordinateChannels[i].Clear();
+            }
+            foreach (Tuple<Vector3D, List<Vector3D>> vertAndCoord in uniqueVertsAndCoords)
             {
                 mesh.Vertices.Add(vertAndCoord.Item1);
-                mesh.TextureCoordinateChannels[0].Add(vertAndCoord.Item2);
+                for (var i = 0; i < origTexCoordChannelCount; i++)
+                {
+                    var coord = vertAndCoord.Item2[i];
+                    mesh.TextureCoordinateChannels[i].Add(coord);
+                }
             }
 
             // Update vertex indices for the faces.
@@ -536,6 +559,26 @@ namespace SuperBMDLib
                     bone.VertexWeights.Add(newWeight);
                 }
             }
+        }
+
+        private bool checkVertAndCoordsAreDuplicates(Vector3D vert1, List<Vector3D> vert1TexCoords, Vector3D vert2, List<Vector3D> vert2TexCoords)
+        {
+            if (vert1 != vert2)
+            {
+                // Position is different
+                return false;
+            }
+
+            for (var i = 0; i < vert1TexCoords.Count; i++)
+            {
+                if (vert1TexCoords[i] != vert2TexCoords[i])
+                {
+                    // Texture coordinate is different
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }
