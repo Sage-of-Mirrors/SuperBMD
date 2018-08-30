@@ -507,7 +507,7 @@ namespace SuperBMDLib
             mesh.Vertices.Clear();
             // Need to preserve the channel count since it gets set to 0 when clearing all the channels
             int origTexCoordChannelCount = mesh.TextureCoordinateChannelCount;
-            for (var i = 0; i < mesh.TextureCoordinateChannelCount; i++)
+            for (var i = 0; i < origTexCoordChannelCount; i++)
             {
                 mesh.TextureCoordinateChannels[i].Clear();
             }
