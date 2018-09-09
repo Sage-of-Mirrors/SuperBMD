@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using SuperBMDLib;
 
 namespace SuperBMDLib
@@ -7,6 +8,9 @@ namespace SuperBMDLib
     {
         static void Main(string[] args)
         {
+            // Prevents floats being written to the .dae with commas instead of periods on European systems.
+            CultureInfo.CurrentCulture = new CultureInfo("", false);
+
             if (args.Length == 0 || args[0] == "-h" || args[0] == "--help")
             {
                 DisplayHelp();
