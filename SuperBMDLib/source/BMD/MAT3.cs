@@ -523,6 +523,10 @@ namespace SuperBMDLib.BMD
 
                 while (!materialNamesWithoutParentheses.Contains(test))
                 {
+                    if (test.Length <= 1)
+                    {
+                        throw new Exception($"Mesh \"{scene.Meshes[i].Name}\" has a material named \"{meshMat.Name.Replace("-material", "")}\" which was not found in materials.json.");
+                    }
                     test = test.Substring(1);
                 }
 
