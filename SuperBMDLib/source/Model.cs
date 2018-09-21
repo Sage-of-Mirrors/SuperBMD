@@ -357,10 +357,10 @@ namespace SuperBMDLib
                 Matrix4x4 ibm = bone.OffsetMatrix;
                 ibm.Transpose();
 
-                writer.WriteLine($"       {ibm.A1.ToString("F")} {ibm.A2.ToString("F")} {ibm.A3.ToString("F")} {ibm.A4.ToString("F")}");
-                writer.WriteLine($"       {ibm.B1.ToString("F")} {ibm.B2.ToString("F")} {ibm.B3.ToString("F")} {ibm.B4.ToString("F")}");
-                writer.WriteLine($"       {ibm.C1.ToString("F")} {ibm.C2.ToString("F")} {ibm.C3.ToString("F")} {ibm.C4.ToString("F")}");
-                writer.WriteLine($"       {ibm.D1.ToString("F")} {ibm.D2.ToString("F")} {ibm.D3.ToString("F")} {ibm.D4.ToString("F")}");
+                writer.WriteLine($"       {ibm.A1.ToString("G9")} {ibm.A2.ToString("G9")} {ibm.A3.ToString("G9")} {ibm.A4.ToString("G9")}");
+                writer.WriteLine($"       {ibm.B1.ToString("G9")} {ibm.B2.ToString("G9")} {ibm.B3.ToString("G9")} {ibm.B4.ToString("G9")}");
+                writer.WriteLine($"       {ibm.C1.ToString("G9")} {ibm.C2.ToString("G9")} {ibm.C3.ToString("G9")} {ibm.C4.ToString("G9")}");
+                writer.WriteLine($"       {ibm.D1.ToString("G9")} {ibm.D2.ToString("G9")} {ibm.D3.ToString("G9")} {ibm.D4.ToString("G9")}");
 
                 if (bone != mesh.Bones.Last())
                     writer.WriteLine("");
