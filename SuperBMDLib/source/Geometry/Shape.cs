@@ -233,9 +233,7 @@ namespace SuperBMDLib.Geometry
                             vertWeight.AddWeight(weight.Weight, boneNames[bone.Name]);
                     }
                 }
-                vertWeight.reduceWeights();
                 weights[vertexid] = vertWeight;
-                Debug.Assert(vertWeight.WeightCount <= 3);
             }
 
             //Primitive prim = new Primitive(Enums.GXPrimitiveType.Triangles);
@@ -504,9 +502,6 @@ namespace SuperBMDLib.Geometry
                         Weight vert1Weight = weights[vert1Index];//new Weight();
                         Weight vert2Weight = weights[vert2Index];//new Weight();
                         Weight vert3Weight = weights[vert3Index];//new Weight();
-                        Debug.Assert(vert1Weight.WeightCount <= 3);
-                        Debug.Assert(vert2Weight.WeightCount <= 3);
-                        Debug.Assert(vert3Weight.WeightCount <= 3);
                         int oldcount = numMatrices;
                         if (!packetWeights.Contains(vert1Weight))
                             numMatrices += vert1Weight.WeightCount;
