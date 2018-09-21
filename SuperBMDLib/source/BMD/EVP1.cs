@@ -206,7 +206,7 @@ namespace SuperBMDLib.BMD
                     writer.Write((short)inte);
             }
 
-            StreamUtility.PadStreamWithString(writer, 8);
+            StreamUtility.PadStreamWithString(writer, 4);
 
             long curOffset = writer.BaseStream.Position;
 
