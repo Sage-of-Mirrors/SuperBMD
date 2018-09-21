@@ -44,6 +44,21 @@ namespace SuperBMDLib.Rigging
             return comp.GetHashCode(this);
         }
 
+        // Reorder the weights by their bone indices.
+        // This is so that two weights that are identical except for having the bones in a different order are properly considered duplicates.
+        public void reorderBones()
+        {
+            if (WeightCount < 2) return;
+
+            // Use Array.Sort to simultaneously sort the bone indices and the weights by the same order as the bone indices.
+            var weightsArray = Weights.ToArray();
+            var boneIndicesArray = BoneIndices.ToArray();
+            Array.Sort(boneIndicesArray, weightsArray);
+
+            Weights = weightsArray.ToList();
+            BoneIndices = boneIndicesArray.ToList();
+        }
+
         public void reduceWeights() {
             float totalweight = 0;
 

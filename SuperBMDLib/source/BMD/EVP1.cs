@@ -130,6 +130,7 @@ namespace SuperBMDLib.BMD
 
                 Weights.AddRange(weights.Values);
                 foreach (Weight weight in Weights) {
+                    weight.reorderBones();
                 }
             }
         }

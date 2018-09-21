@@ -233,6 +233,7 @@ namespace SuperBMDLib.Geometry
                             vertWeight.AddWeight(weight.Weight, boneNames[bone.Name]);
                     }
                 }
+                vertWeight.reorderBones();
                 weights[vertexid] = vertWeight;
             }
 
