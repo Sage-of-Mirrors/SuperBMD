@@ -7,6 +7,7 @@ using GameFormatReader.Common;
 using Assimp;
 using System.IO;
 using SuperBMDLib.BMD;
+using System.Text.RegularExpressions;
 
 namespace SuperBMDLib
 {
@@ -106,6 +107,8 @@ namespace SuperBMDLib
 
         public Model(Scene scene, Arguments args)
         {
+            sortMeshesByObjectNames(scene);
+
             VertexData = new VTX1(scene);
             Joints = new JNT1(scene, VertexData);
             Textures = new TEX1(scene, args);
@@ -579,6 +582,49 @@ namespace SuperBMDLib
             }
 
             return true;
+        }
+
+        private void sortMeshesByObjectNames(Scene scene)
+        {
+            // Sort meshes by their name instead of keeping the order they're in inside the file.
+            // Specifically, natural sorting is used so that mesh-9 comes before mesh-10.
+
+            List<string> meshNames = new List<string>();
+            int maxNumberLength = 0;
+            foreach (Node node in scene.RootNode.Children)
+            {
+                if (node.HasMeshes)
+                {
+                    int currMaxNumberLength = node.Name.SelectMany(i => Regex.Matches(node.Name, @"\d+").Cast<Match>().Select(m => m.Value.Length)).Max();
+                    if (currMaxNumberLength > maxNumberLength)
+                    {
+                        maxNumberLength = currMaxNumberLength;
+                    }
+                    meshNames.Add(node.Name);
+                }
+            }
+
+            if (meshNames.Count != scene.Meshes.Count)
+            {
+                throw new Exception("Number of meshes is not the same as the number of mesh objects; cannot sort.");
+            }
+
+            // Pad the numbers in mesh names with 0s.
+            List<string> meshNamesPadded = new List<string>();
+            foreach (string meshName in meshNames)
+            {
+                meshNamesPadded.Add(Regex.Replace(meshName, @"\d+", m => m.Value.PadLeft(maxNumberLength, '0')));
+            }
+
+            // Use Array.Sort to simultaneously sort the bone indices and the weights by the same order as the bone indices.
+            var meshNamesArray = meshNamesPadded.ToArray();
+            var meshesArray = scene.Meshes.ToArray();
+            Array.Sort(meshNamesArray, meshesArray);
+
+            for (int i = 0; i < scene.Meshes.Count; i++)
+            {
+                scene.Meshes[i] = meshesArray[i];
+            }
         }
     }
 }
