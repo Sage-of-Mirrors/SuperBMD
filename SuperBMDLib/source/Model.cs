@@ -595,7 +595,7 @@ namespace SuperBMDLib
             {
                 if (node.HasMeshes)
                 {
-                    int currMaxNumberLength = node.Name.SelectMany(i => Regex.Matches(node.Name, @"\d+").Cast<Match>().Select(m => m.Value.Length)).Max();
+                    int currMaxNumberLength = node.Name.SelectMany(i => Regex.Matches(node.Name, @"\d+").Cast<Match>().Select(m => m.Value.Length)).DefaultIfEmpty(0).Max();
                     if (currMaxNumberLength > maxNumberLength)
                     {
                         maxNumberLength = currMaxNumberLength;
