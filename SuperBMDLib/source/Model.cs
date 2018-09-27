@@ -107,6 +107,7 @@ namespace SuperBMDLib
 
         public Model(Scene scene, Arguments args)
         {
+            ensureOneMaterialPerMesh(scene);
             sortMeshesByObjectNames(scene);
 
             VertexData = new VTX1(scene);
@@ -624,6 +625,20 @@ namespace SuperBMDLib
             for (int i = 0; i < scene.Meshes.Count; i++)
             {
                 scene.Meshes[i] = meshesArray[i];
+            }
+        }
+
+        private void ensureOneMaterialPerMesh(Scene scene)
+        {
+            foreach (Mesh mesh1 in scene.Meshes)
+            {
+                foreach (Mesh mesh2 in scene.Meshes)
+                {
+                    if (mesh1.Name == mesh2.Name && mesh1.MaterialIndex != mesh2.MaterialIndex)
+                    {
+                        throw new Exception($"Mesh \"{mesh1.Name}\" has more than one material assigned to it. Currently only one material per mesh is supported.");
+                    }
+                }
             }
         }
     }
