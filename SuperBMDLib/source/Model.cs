@@ -606,7 +606,7 @@ namespace SuperBMDLib
 
             if (meshNames.Count != scene.Meshes.Count)
             {
-                throw new Exception("Number of meshes is not the same as the number of mesh objects; cannot sort.");
+                throw new Exception($"Number of meshes ({scene.Meshes.Count}) is not the same as the number of mesh objects ({meshNames.Count}); cannot sort.\nMesh objects: {String.Join(", ", meshNames)}\nMeshes: {String.Join(", ", scene.Meshes.Select(mesh => mesh.Name))}");
             }
 
             // Pad the numbers in mesh names with 0s.
