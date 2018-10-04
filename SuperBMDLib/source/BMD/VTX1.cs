@@ -728,24 +728,24 @@ namespace SuperBMDLib.BMD
                             switch (StorageFormats[attrib].Item1)
                             {
                                 case GXDataType.Unsigned8:
-                                    writer.Write((byte)(posVec.X * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((byte)(posVec.Y * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((byte)(posVec.Z * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((byte)Math.Round(posVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((byte)Math.Round(posVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((byte)Math.Round(posVec.Z * (1 << StorageFormats[attrib].Item2)));
                                     break;
                                 case GXDataType.Signed8:
-                                    writer.Write((sbyte)(posVec.X * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((sbyte)(posVec.Y * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((sbyte)(posVec.Z * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((sbyte)Math.Round(posVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((sbyte)Math.Round(posVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((sbyte)Math.Round(posVec.Z * (1 << StorageFormats[attrib].Item2)));
                                     break;
                                 case GXDataType.Unsigned16:
-                                    writer.Write((ushort)(posVec.X * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((ushort)(posVec.Y * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((ushort)(posVec.Z * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((ushort)Math.Round(posVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((ushort)Math.Round(posVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((ushort)Math.Round(posVec.Z * (1 << StorageFormats[attrib].Item2)));
                                     break;
                                 case GXDataType.Signed16:
-                                    writer.Write((short)(posVec.X * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((short)(posVec.Y * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((short)(posVec.Z * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((short)Math.Round(posVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((short)Math.Round(posVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((short)Math.Round(posVec.Z * (1 << StorageFormats[attrib].Item2)));
                                     break;
                                 case GXDataType.Float32:
                                     writer.Write(posVec);
@@ -763,24 +763,24 @@ namespace SuperBMDLib.BMD
                             switch (StorageFormats[attrib].Item1)
                             {
                                 case GXDataType.Unsigned8:
-                                    writer.Write((byte)(normVec.X * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((byte)(normVec.Y * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((byte)(normVec.Z * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((byte)Math.Round(normVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((byte)Math.Round(normVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((byte)Math.Round(normVec.Z * (1 << StorageFormats[attrib].Item2)));
                                     break;
                                 case GXDataType.Signed8:
-                                    writer.Write((sbyte)(normVec.X * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((sbyte)(normVec.Y * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((sbyte)(normVec.Z * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((sbyte)Math.Round(normVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((sbyte)Math.Round(normVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((sbyte)Math.Round(normVec.Z * (1 << StorageFormats[attrib].Item2)));
                                     break;
                                 case GXDataType.Unsigned16:
-                                    writer.Write((ushort)(normVec.X * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((ushort)(normVec.Y * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((ushort)(normVec.Z * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((ushort)Math.Round(normVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((ushort)Math.Round(normVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((ushort)Math.Round(normVec.Z * (1 << StorageFormats[attrib].Item2)));
                                     break;
                                 case GXDataType.Signed16:
-                                    writer.Write((short)(normVec.X * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((short)(normVec.Y * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((short)(normVec.Z * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((short)Math.Round(normVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((short)Math.Round(normVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((short)Math.Round(normVec.Z * (1 << StorageFormats[attrib].Item2)));
                                     break;
                                 case GXDataType.Float32:
                                     writer.Write(normVec);
@@ -814,20 +814,20 @@ namespace SuperBMDLib.BMD
                             switch (StorageFormats[attrib].Item1)
                             {
                                 case GXDataType.Unsigned8:
-                                    writer.Write((byte)(texVec.X * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((byte)(texVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((byte)Math.Round(texVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((byte)Math.Round(texVec.Y * (1 << StorageFormats[attrib].Item2)));
                                     break;
                                 case GXDataType.Signed8:
-                                    writer.Write((sbyte)(texVec.X * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((sbyte)(texVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((sbyte)Math.Round(texVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((sbyte)Math.Round(texVec.Y * (1 << StorageFormats[attrib].Item2)));
                                     break;
                                 case GXDataType.Unsigned16:
-                                    writer.Write((ushort)(texVec.X * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((ushort)(texVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((ushort)Math.Round(texVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((ushort)Math.Round(texVec.Y * (1 << StorageFormats[attrib].Item2)));
                                     break;
                                 case GXDataType.Signed16:
-                                    writer.Write((short)(texVec.X * (1 << StorageFormats[attrib].Item2)));
-                                    writer.Write((short)(texVec.Y * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((short)Math.Round(texVec.X * (1 << StorageFormats[attrib].Item2)));
+                                    writer.Write((short)Math.Round(texVec.Y * (1 << StorageFormats[attrib].Item2)));
                                     break;
                                 case GXDataType.Float32:
                                     writer.Write(texVec);
