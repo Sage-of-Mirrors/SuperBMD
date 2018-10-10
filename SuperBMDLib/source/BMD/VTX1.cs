@@ -88,7 +88,7 @@ namespace SuperBMDLib.BMD
 
                 if (mesh.HasVertexColors(0))
                 {
-                    Console.WriteLine($"Mesh \"{ mesh.Name }\" ({i}) has vertex colors on channel 0.");
+                    //Console.WriteLine($"Mesh \"{ mesh.Name }\" ({i}) has vertex colors on channel 0.");
                     SetAssimpColorAttribute(0, GXVertexAttribute.Color0, mesh);
                     if (!StorageFormats.ContainsKey(GXVertexAttribute.Color0))
                         StorageFormats.Add(GXVertexAttribute.Color0, new Tuple<GXDataType, byte>(GXDataType.RGBA8, 0));
@@ -98,7 +98,7 @@ namespace SuperBMDLib.BMD
 
                 if (mesh.HasVertexColors(1))
                 {
-                    Console.WriteLine($"Mesh \"{ mesh.Name }\" ({i}) has vertex colors on channel 1.");
+                    //Console.WriteLine($"Mesh \"{ mesh.Name }\" ({i}) has vertex colors on channel 1.");
                     SetAssimpColorAttribute(1, GXVertexAttribute.Color1, mesh);
                     if (!StorageFormats.ContainsKey(GXVertexAttribute.Color1))
                         StorageFormats.Add(GXVertexAttribute.Color1, new Tuple<GXDataType, byte>(GXDataType.RGBA8, 0));
@@ -110,7 +110,7 @@ namespace SuperBMDLib.BMD
                 {
                     if (mesh.HasTextureCoords(texCoords))
                     {
-                        Console.WriteLine($"Mesh \"{ mesh.Name }\" ({i}) has texture coordinates on channel { texCoords }.");
+                        //Console.WriteLine($"Mesh \"{ mesh.Name }\" ({i}) has texture coordinates on channel { texCoords }.");
                         SetAssimpTexCoordAttribute(texCoords, GXVertexAttribute.Tex0 + texCoords, mesh);
                         if (!StorageFormats.ContainsKey(GXVertexAttribute.Tex0 + texCoords))
                             StorageFormats.Add(GXVertexAttribute.Tex0 + texCoords, new Tuple<GXDataType, byte>(GXDataType.Signed16, 8));

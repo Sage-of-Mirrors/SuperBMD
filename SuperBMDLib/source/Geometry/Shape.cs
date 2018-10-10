@@ -100,13 +100,13 @@ namespace SuperBMDLib.Geometry
             List<Enums.GXVertexAttribute> activeAttribs = Descriptor.GetActiveAttributes();
             AttributeData.SetAttributesFromList(activeAttribs);
 
-            Console.WriteLine("Calculating triangle strips");
+            //Console.WriteLine("Calculating triangle strips");
 
             uint[] triindices = MakeTriIndexList(mesh);
             TriStripper stripper = new TriStripper(triindices);
             List<PrimitiveBrawl> primlist = stripper.Strip();
 
-            Console.WriteLine(String.Format("Done, {0} primitives", primlist.Count));
+            //Console.WriteLine(String.Format("Done, {0} primitives", primlist.Count));
 
             foreach (PrimitiveBrawl primbrawl in primlist)
             {
@@ -247,12 +247,12 @@ namespace SuperBMDLib.Geometry
             List<PrimitiveBrawl> primlist;
 
             if (doStrip) {
-                Console.WriteLine("Calculating triangle strips for Weighted");
+                //Console.WriteLine("Calculating triangle strips for Weighted");
                 TriStripper stripper = new TriStripper(triindices, weights);
                 primlist = stripper.Strip();
             }
             else {
-                Console.WriteLine("Calculating triangle list for Weighted");
+                //Console.WriteLine("Calculating triangle list for Weighted");
                 primlist = new List<PrimitiveBrawl>();
                 PrimitiveBrawl prim = new PrimitiveBrawl(PrimType.TriangleList); // Trilist
                 foreach (uint index in triindices) {
@@ -261,7 +261,7 @@ namespace SuperBMDLib.Geometry
                 primlist.Add(prim);
             }
 
-            Console.WriteLine(String.Format("Done, {0} primitives", primlist.Count));
+            //Console.WriteLine(String.Format("Done, {0} primitives", primlist.Count));
 
             
 
