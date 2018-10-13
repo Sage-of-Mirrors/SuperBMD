@@ -140,7 +140,13 @@ namespace SuperBMDLib
             string outDir = Path.GetDirectoryName(fileName);
             string fileNameNoExt = Path.GetFileNameWithoutExtension(fileName);
             fileNameNoExt = fileNameNoExt.Split('.')[0];
-            fileName = Path.Combine(outDir, fileNameNoExt + ".bmd");
+            if (isBDL)
+            {
+                fileName = Path.Combine(outDir, fileNameNoExt + ".bdl");
+            } else
+            {
+                fileName = Path.Combine(outDir, fileNameNoExt + ".bmd");
+            }
 
             using (FileStream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
             {
