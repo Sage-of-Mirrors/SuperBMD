@@ -32,29 +32,41 @@ namespace SuperBMDLib
 
             for (int i = 0; i < args.Length; i++)
             {
-                if (i + 1 >= args.Length)
-                    throw new Exception("The parameters were malformed.");
-
                 switch (args[i])
                 {
                     case "-i":
                     case "--input":
+                        if (i + 1 >= args.Length)
+                            throw new Exception("The parameters were malformed.");
+
                         input_path = args[i + 1];
                         break;
                     case "-o":
                     case "--output":
+                        if (i + 1 >= args.Length)
+                            throw new Exception("The parameters were malformed.");
+
                         output_path = args[i + 1];
                         break;
                     case "-m":
                     case "--materialPresets":
+                        if (i + 1 >= args.Length)
+                            throw new Exception("The parameters were malformed.");
+
                         materials_path = args[i + 1];
                         break;
                     case "-x":
                     case "--texHeaders":
+                        if (i + 1 >= args.Length)
+                            throw new Exception("The parameters were malformed.");
+
                         texheaders_path = args[i + 1];
                         break;
                     case "-t":
                     case "--tristrip":
+                        if (i + 1 >= args.Length)
+                            throw new Exception("The parameters were malformed.");
+
                         tristrip_mode = args[i + 1].ToLower();
                         break;
                     case "-r":
