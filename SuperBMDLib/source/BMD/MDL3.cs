@@ -69,6 +69,15 @@ namespace SuperBMDLib.BMD
 
                 writer.Seek(0, System.IO.SeekOrigin.End);
             }
+
+            StreamUtility.PadStreamWithString(writer, 32);
+
+            long end = writer.BaseStream.Position;
+            long length = (end - start);
+
+            writer.Seek((int)start + 4, System.IO.SeekOrigin.Begin);
+            writer.Write((int)length);
+            writer.Seek((int)end, System.IO.SeekOrigin.Begin);
         }
     }
 }
