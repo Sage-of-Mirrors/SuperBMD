@@ -86,7 +86,6 @@ namespace SuperBMDLib.BMD
 
             long subsection3StartOffset = writer.BaseStream.Position;
             writer.Seek((int)start + 0x14, System.IO.SeekOrigin.Begin);
-            Console.WriteLine((int)start + 0x14);
             writer.Write((int)(subsection3StartOffset - start));
             writer.Seek((int)subsection3StartOffset, System.IO.SeekOrigin.Begin);
             for (int i = 0; i < Entries.Count; i++)
