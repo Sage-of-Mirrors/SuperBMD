@@ -57,14 +57,15 @@ namespace SuperBMDLib.BMD
 
             for (int i = 0; i < Entries.Count; i++)
             {
-                long startOffset = writer.BaseStream.Position - cmdBlockStart;
+                long absoluteStartOffset = writer.BaseStream.Position;
+                long relativeStartOffset = writer.BaseStream.Position - cmdBlockStart - i * 8;
 
                 Entries[i].Write(writer);
 
-                long size = writer.BaseStream.Position - startOffset;
+                long size = writer.BaseStream.Position - absoluteStartOffset;
                 writer.Seek((int)cmdBlockStart + (i * 8), System.IO.SeekOrigin.Begin);
 
-                writer.Write((int)startOffset);
+                writer.Write((int)relativeStartOffset);
                 writer.Write((int)size);
 
                 writer.Seek(0, System.IO.SeekOrigin.End);
