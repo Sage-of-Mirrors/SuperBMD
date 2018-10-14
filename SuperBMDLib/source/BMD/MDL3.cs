@@ -71,6 +71,56 @@ namespace SuperBMDLib.BMD
                 writer.Seek(0, System.IO.SeekOrigin.End);
             }
 
+            long subsection2StartOffset = writer.BaseStream.Position;
+            writer.Seek((int)start+0x10, System.IO.SeekOrigin.Begin);
+            var x = (int)subsection2StartOffset - start;
+            writer.Write((int)(subsection2StartOffset - start));
+            writer.Seek((int)subsection2StartOffset, System.IO.SeekOrigin.Begin);
+            for (int i = 0; i < Entries.Count; i++)
+            {
+                writer.Write(0);
+                writer.Write(0);
+                writer.Write(0);
+                writer.Write(0);
+            }
+
+            long subsection3StartOffset = writer.BaseStream.Position;
+            writer.Seek((int)start + 0x14, System.IO.SeekOrigin.Begin);
+            Console.WriteLine((int)start + 0x14);
+            writer.Write((int)(subsection3StartOffset - start));
+            writer.Seek((int)subsection3StartOffset, System.IO.SeekOrigin.Begin);
+            for (int i = 0; i < Entries.Count; i++)
+            {
+                writer.Write(0);
+                writer.Write(0);
+            }
+            
+            long subsection4StartOffset = writer.BaseStream.Position;
+            writer.Seek((int)start + 0x18, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(subsection4StartOffset - start));
+            writer.Seek((int)subsection4StartOffset, System.IO.SeekOrigin.Begin);
+            for (int i = 0; i < Entries.Count; i++)
+            {
+                writer.Write((byte)1);
+            }
+            StreamUtility.PadStreamWithString(writer, 4);
+            
+            long subsection5StartOffset = writer.BaseStream.Position;
+            writer.Seek((int)start + 0x1C, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(subsection5StartOffset - start));
+            writer.Seek((int)subsection5StartOffset, System.IO.SeekOrigin.Begin);
+            for (int i = 0; i < Entries.Count; i++)
+            {
+                writer.Write((short)i);
+            }
+            StreamUtility.PadStreamWithString(writer, 4);
+
+            long stringTableStartOffset = writer.BaseStream.Position;
+            writer.Seek((int)start + 0x20, System.IO.SeekOrigin.Begin);
+            writer.Write((int)(stringTableStartOffset - start));
+            writer.Seek((int)stringTableStartOffset, System.IO.SeekOrigin.Begin);
+            writer.Write((short)0);
+
             StreamUtility.PadStreamWithString(writer, 32);
 
             long end = writer.BaseStream.Position;
