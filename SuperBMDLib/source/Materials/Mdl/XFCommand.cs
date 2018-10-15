@@ -21,7 +21,7 @@ namespace SuperBMDLib.Materials.Mdl
         public void Write(EndianBinaryWriter writer)
         {
             writer.Write((byte)0x10);
-            writer.Write((short)Args.Count - 1);
+            writer.Write((short)(Args.Count - 1));
             writer.Write((short)Register);
 
             foreach (XFCommandArgument i in Args)
