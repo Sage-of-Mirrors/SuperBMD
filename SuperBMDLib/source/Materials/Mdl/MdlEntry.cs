@@ -27,7 +27,7 @@ namespace SuperBMDLib.Materials.Mdl
             XFCommands = new List<XFCommand>();
 
             GenerateTextureCommands(mat, textures);
-            GenerateTexGenCommands(mat, textures);
+            GenerateTexGenBPCommands(mat, textures);
             GenerateTevStageCommands(mat);
             GenerateTevColorCommands(mat);
             GenerateKonstColorCommands(mat);
@@ -39,6 +39,13 @@ namespace SuperBMDLib.Materials.Mdl
             GenerateZModeCommand(mat);
             GenerateZCompLocCommands(mat);
             GenerateCullModeCommands(mat);
+
+            GenerateScaleCommands(mat);
+            GenerateTexGenXFCommands(mat);
+            GenerateMaterialColorChannelCommands(mat);
+            GenerateAmbientColorChannelCommands(mat);
+            GenerateChannelControlCommands(mat);
+            GenerateNumTexGensCommands(mat);
         }
 
         private void GenerateTextureCommands(Material mat, List<BinaryTextureImage> textures)
@@ -97,7 +104,7 @@ namespace SuperBMDLib.Materials.Mdl
             }
         }
 
-        private void GenerateTexGenCommands(Material mat, List<BinaryTextureImage> textures)
+        private void GenerateTexGenBPCommands(Material mat, List<BinaryTextureImage> textures)
         {
             for (int i = 0; i < 8; i++)
             {
@@ -409,6 +416,217 @@ namespace SuperBMDLib.Materials.Mdl
 
             BPCommands.Add(gen_mode_mask);
             BPCommands.Add(gen_mode);
+        }
+
+        private void GenerateScaleCommands(Material mat)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                if (mat.TexMatrix1[i] == null)
+                    break;
+                TexMatrix matrix = mat.TexMatrix1[i].Value;
+
+                XFCommand scaleCommand = new XFCommand((XFRegister)(0x0078 + i * 12)); // TODO
+
+                int scaleX = BitConverter.ToInt32(BitConverter.GetBytes(matrix.Scale.X), 0);
+                int scaleY = BitConverter.ToInt32(BitConverter.GetBytes(matrix.Scale.Y), 0);
+
+                scaleCommand.Args.Add(new XFCommandArgument(scaleX));
+                scaleCommand.Args.Add(new XFCommandArgument());
+                scaleCommand.Args.Add(new XFCommandArgument());
+                scaleCommand.Args.Add(new XFCommandArgument());
+                scaleCommand.Args.Add(new XFCommandArgument());
+                scaleCommand.Args.Add(new XFCommandArgument(scaleY));
+                scaleCommand.Args.Add(new XFCommandArgument());
+                scaleCommand.Args.Add(new XFCommandArgument());
+
+                XFCommands.Add(scaleCommand);
+            }
+        }
+
+        private void GenerateTexGenXFCommands(Material mat)
+        {
+            XFCommand texGensCommand = new XFCommand(XFRegister.SETTEXMTXINFO);
+            XFCommand dtTexGensCommand = new XFCommand(XFRegister.SETPOSMTXINFO);
+            for (int i = 0; i < 8; i++)
+            {
+                if (mat.TexCoord1Gens[i] == null)
+                    continue;
+                TexCoordGen texgen = mat.TexCoord1Gens[i].Value;
+
+                XFCommandArgument texGenArg = new XFCommandArgument();
+                texGenArg.SetBits(0, 1, 1);
+                texGenArg.SetBits(0, 2, 1);
+                texGenArg.SetBits(0, 12, 3); // TODO 5
+                texGenArg.SetBits(0, 15, 3);
+
+                if (texgen.Type == TexGenType.Matrix3x4)
+                {
+                    texGenArg.SetFlag(true, 1);
+                }
+                switch (texgen.Source)
+                {
+                    case TexGenSrc.Position:
+                    case TexGenSrc.Normal:
+                    case TexGenSrc.Binormal:
+                    case TexGenSrc.Tangent:
+                        texGenArg.SetFlag(true, 2);
+                        break;
+                }
+                switch (texgen.Type)
+                {
+                    case TexGenType.Bump0:
+                    case TexGenType.Bump1:
+                    case TexGenType.Bump2:
+                    case TexGenType.Bump3:
+                    case TexGenType.Bump4:
+                    case TexGenType.Bump5:
+                    case TexGenType.Bump6:
+                    case TexGenType.Bump7:
+                        texGenArg.SetBits(1, 4, 2);
+                        texGenArg.SetBits(texgen.Source - TexGenSrc.Tex0, 12, 3);
+                        texGenArg.SetBits(texgen.Type - TexGenType.Bump0, 15, 3);
+                        texGenArg.SetBits(5, 7, 3);
+                        break;
+                    case TexGenType.SRTG:
+                        texGenArg.SetBits(2, 7, 3);
+                        if (texgen.Source == TexGenSrc.Color0)
+                        {
+                            texGenArg.SetBits(2, 4, 2);
+                        }
+                        else if (texgen.Source == TexGenSrc.Color1)
+                        {
+                            texGenArg.SetBits(3, 4, 2);
+                        }
+                        break;
+                    default:
+                        texGenArg.SetBits(0, 4, 2);
+                        if (texgen.Source == TexGenSrc.Position || texgen.Source == TexGenSrc.Normal)
+                        {
+                            texGenArg.SetBits((int)texgen.Source, 7, 3);
+                        }
+                        else
+                        {
+                            texGenArg.SetBits((int)texgen.Source + 1, 7, 3);
+                        }
+                        break;
+                }
+
+                XFCommandArgument dtTexGenArg = new XFCommandArgument();
+
+                dtTexGenArg.SetFlag(false, 8);
+                dtTexGenArg.SetBits(61, 0, 6);
+
+                texGensCommand.Args.Add(texGenArg);
+                dtTexGensCommand.Args.Add(dtTexGenArg);
+            }
+
+            XFCommands.Add(texGensCommand);
+            XFCommands.Add(dtTexGensCommand);
+        }
+
+        private void GenerateMaterialColorChannelCommands(Material mat)
+        {
+            XFCommand materialColorChannelCommand = new XFCommand(XFRegister.SETCHAN0_MATCOLOR);
+
+            for (int i = 0; i < 2; i++)
+            {
+                if (mat.MaterialColors[i] == null)
+                    continue;
+                Util.Color color = mat.MaterialColors[i].Value;
+
+                XFCommandArgument matColorChanArg = new XFCommandArgument();
+
+                matColorChanArg.SetBits((byte)(color.R * 255), 24, 8);
+                matColorChanArg.SetBits((byte)(color.G * 255), 16, 8);
+                matColorChanArg.SetBits((byte)(color.B * 255), 8, 8);
+                matColorChanArg.SetBits((byte)(color.A * 255), 0, 8);
+
+                materialColorChannelCommand.Args.Add(matColorChanArg);
+            }
+
+            XFCommands.Add(materialColorChannelCommand);
+        }
+
+        private void GenerateAmbientColorChannelCommands(Material mat)
+        {
+            XFCommand ambientColorChannelCommand = new XFCommand(XFRegister.SETCHAN0_AMBCOLOR);
+
+            for (int i = 0; i < 2; i++)
+            {
+                if (mat.AmbientColors[i] == null)
+                    continue;
+                Util.Color color = mat.AmbientColors[i].Value;
+
+                XFCommandArgument ambientColorChanArg = new XFCommandArgument();
+
+                ambientColorChanArg.SetBits((byte)(color.R * 255), 24, 8);
+                ambientColorChanArg.SetBits((byte)(color.G * 255), 16, 8);
+                ambientColorChanArg.SetBits((byte)(color.B * 255), 8, 8);
+                ambientColorChanArg.SetBits((byte)(color.A * 255), 0, 8);
+
+                ambientColorChannelCommand.Args.Add(ambientColorChanArg);
+            }
+
+            XFCommands.Add(ambientColorChannelCommand);
+        }
+
+        private void GenerateChannelControlCommands(Material mat)
+        {
+            XFCommand channelControlCommand = new XFCommand(XFRegister.SETCHAN0_COLOR);
+
+            int[] channelControlIndices = new int[4] { 0, 2, 1, 3 };
+            for (int i = 0; i < 4; i++)
+            {
+                int channelControlIndex = channelControlIndices[i];
+
+                if (mat.ChannelControls[channelControlIndex] == null)
+                {
+                    channelControlCommand.Args.Add(new XFCommandArgument());
+                    continue;
+                }
+                ChannelControl chanCtrl = mat.ChannelControls[channelControlIndex].Value;
+
+                XFCommandArgument chanControlArg = new XFCommandArgument();
+
+                chanControlArg.SetBits((int)chanCtrl.MaterialSrcColor, 0, 1);
+                chanControlArg.SetFlag(chanCtrl.Enable, 1);
+                chanControlArg.SetBits((int)chanCtrl.LitMask, 2, 4);
+                chanControlArg.SetFlag(chanCtrl.Enable, 6); // TODO chanCtrl.AmbientSrcColor
+
+                if (chanCtrl.AttenuationFunction == J3DAttenuationFn.None_0)
+                {
+                    chanControlArg.SetBits((int)DiffuseFn.None, 7, 2);
+                    chanControlArg.SetBits(0, 10, 1);
+                }
+                else
+                {
+                    chanControlArg.SetBits((int)chanCtrl.DiffuseFunction, 7, 2);
+                    chanControlArg.SetBits(1, 10, 1);
+                }
+
+                if (chanCtrl.AttenuationFunction != J3DAttenuationFn.None_2)
+                {
+                    chanControlArg.SetFlag(true, 9);
+                }
+
+                chanControlArg.SetBits((int)chanCtrl.LitMask >> 4, 11, 4);
+
+                channelControlCommand.Args.Add(chanControlArg);
+            }
+
+            XFCommands.Add(channelControlCommand);
+
+            XFCommand numChannelControlsCommand = new XFCommand(XFRegister.SETNUMCHAN);
+            numChannelControlsCommand.Args.Add(new XFCommandArgument(mat.ColorChannelControlsCount));
+            XFCommands.Add(numChannelControlsCommand);
+        }
+
+        private void GenerateNumTexGensCommands(Material mat)
+        {
+            XFCommand numTexGensCommand = new XFCommand(XFRegister.SETNUMTEXGENS);
+            numTexGensCommand.Args.Add(new XFCommandArgument(mat.NumTexGensCount));
+            XFCommands.Add(numTexGensCommand);
         }
 
         public void Write(EndianBinaryWriter writer)
