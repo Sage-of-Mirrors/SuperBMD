@@ -254,6 +254,6 @@ namespace SuperBMDLib.Materials.Mdl
         TEV_KSEL_6 = 0xFC,
         TEV_KSEL_7 = 0xFD,
 
-        SS_MASK = 0xFE
+        BP_MASK = 0xFE
     }
 }
