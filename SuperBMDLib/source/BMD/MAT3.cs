@@ -307,7 +307,7 @@ namespace SuperBMDLib.BMD
             if (matColorIndex != -1)
                 mat.MaterialColors[1] = m_MaterialColorBlock[matColorIndex];
 
-            for (int i = 0; i < mat.ColorChannelControlsCount; i++)
+            for (int i = 0; i < 4; i++)
             {
                 int chanIndex = reader.ReadInt16();
                 if (chanIndex == -1)
@@ -315,8 +315,6 @@ namespace SuperBMDLib.BMD
                 else
                     mat.ChannelControls[i] = m_ChannelControlBlock[chanIndex];
             }
-
-            reader.Skip((4 - mat.ColorChannelControlsCount) * 2);
 
             int ambColorIndex = reader.ReadInt16();
             if (ambColorIndex != -1)
