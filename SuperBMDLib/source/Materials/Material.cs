@@ -196,9 +196,6 @@ namespace SuperBMDLib.Materials
                 AmbientSrcColor = ambSrcColor
             };
 
-            if (ChannelControls[(int)id] == null)
-                ColorChannelControlsCount++;
-
             ChannelControls[(int)id] = control;
         }
 
@@ -377,11 +374,9 @@ namespace SuperBMDLib.Materials
                     NumTexGensCount++;
             }
 
-            for (int i = 0; i < 4; i++)
-            {
-                if (ChannelControls[i] != null)
-                    ColorChannelControlsCount++;
-            }
+            // Note: Despite the name, this doesn't seem to control the number of color channel controls.
+            // At least in Wind Waker, every single model has 1 for this value regardless of how many color channel controls it has.
+            ColorChannelControlsCount = 1;
         }
     }
 }
