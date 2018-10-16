@@ -87,11 +87,34 @@ namespace SuperBMDLib.Materials.Mdl
                 mode0.SetBits((int)curTex.WrapS, 0, 2);
                 mode0.SetBits((int)curTex.WrapT, 2, 2);
                 mode0.SetBits((int)curTex.MagFilter, 4, 1);
-                mode0.SetBits(4, 5, 3); // TODO curTex.MinFilter
-                mode0.SetFlag(true, 8); // Edge LOD
-                // LOADBias not supported in bmd2bdl
-                mode0.SetBits(0, 19, 2); // Max aniso
-                mode0.SetFlag(false, 21); // Bias Clamp TODO
+
+                switch(curTex.MinFilter)
+                {
+                    case BinaryTextureImage.FilterMode.Nearest:
+                        mode0.SetBits(0, 5, 3);
+                        break;
+                    case BinaryTextureImage.FilterMode.Linear:
+                        mode0.SetBits(4, 5, 3);
+                        break;
+                    case BinaryTextureImage.FilterMode.NearestMipmapNearest:
+                        mode0.SetBits(1, 5, 3);
+                        break;
+                    case BinaryTextureImage.FilterMode.NearestMipmapLinear:
+                        mode0.SetBits(2, 5, 3);
+                        break;
+                    case BinaryTextureImage.FilterMode.LinearMipmapNearest:
+                        mode0.SetBits(5, 5, 3);
+                        break;
+                    case BinaryTextureImage.FilterMode.LinearMipmapLinear:
+                        mode0.SetBits(6, 5, 3);
+                        break;
+                }
+
+                // Unimplemented:
+                mode0.SetFlag(true, 8); // Edge LOD (diag_lod)
+                mode0.SetBits(0, 9, 8); // LoDBias (lod_bias)
+                mode0.SetBits(0, 19, 2); // Max aniso (max_aniso)
+                mode0.SetFlag(false, 21); // Bias Clamp (lod_clamp)
                 // MinLOD
                 // MaxLOD
 
@@ -141,12 +164,16 @@ namespace SuperBMDLib.Materials.Mdl
                 for (int j = 0; j < 2; j++)
                 {
                     int tevOrderIndex = (i * 2) + j;
+                    int bitOffset = j * 12;
+
                     if (mat.TevOrders[tevOrderIndex] == null)
+                    {
+                        // When only one out of a pair of orders exists, the missing one has 7 for its TexMap.
+                        ras1_tref.SetBits(7, bitOffset + 0, 3);
                         continue;
+                    }
                     TevOrder order = mat.TevOrders[tevOrderIndex].Value;
                     eitherTevOrderExists = true;
-
-                    int bitOffset = j * 12;
 
                     if (order.TexCoord != TexCoordId.Null)
                     {
@@ -170,6 +197,9 @@ namespace SuperBMDLib.Materials.Mdl
                             break;
                         case GXColorChannelId.AlphaBumpN:
                             ras1_tref.SetBits(6, bitOffset + 7, 3);
+                            break;
+                        case GXColorChannelId.ColorNull:
+                            ras1_tref.SetBits(7, bitOffset + 7, 3);
                             break;
                         default:
                             ras1_tref.SetBits(0, bitOffset + 7, 3);
@@ -344,7 +374,7 @@ namespace SuperBMDLib.Materials.Mdl
             BPCommand pe_cmode0_mask = new BPCommand() { Register = BPRegister.BP_MASK };
             BPCommand pe_cmode0 = new BPCommand() { Register = BPRegister.PE_CMODE0 };
 
-            pe_cmode0_mask.SetBits(0x00FFE7, 0, 24);
+            pe_cmode0_mask.SetBits(0x001FE7, 0, 24);
 
             switch (mat.BMode.Type)
             {
@@ -364,7 +394,7 @@ namespace SuperBMDLib.Materials.Mdl
             pe_cmode0.SetBits((int)mat.BMode.DestinationFact, 5, 3);
             pe_cmode0.SetBits((int)mat.BMode.SourceFact, 8, 3);
 
-            pe_cmode0.SetFlag(false, 2); // TODO: mat.Dither
+            pe_cmode0.SetFlag(mat.Dither, 2);
 
             BPCommands.Add(pe_cmode0_mask);
             BPCommands.Add(pe_cmode0);
@@ -386,7 +416,7 @@ namespace SuperBMDLib.Materials.Mdl
             pe_control_mask.SetBits(0x000040, 0, 24);
 
             BPCommand pe_control = new BPCommand() { Register = BPRegister.PE_CONTROL };
-            pe_control.SetFlag(true, 6); // TODO mat.ZCompLoc
+            pe_control.SetFlag(mat.ZCompLoc, 6);
 
             BPCommands.Add(pe_control_mask);
             BPCommands.Add(pe_control);
@@ -425,22 +455,32 @@ namespace SuperBMDLib.Materials.Mdl
                 if (mat.TexMatrix1[i] == null)
                     break;
                 TexMatrix matrix = mat.TexMatrix1[i].Value;
+                if (matrix.Projection != TexGenType.Matrix2x4)
+                {
+                    // Unsupported
+                    continue;
+                }
+                if (matrix.Scale.X == 1.0 && matrix.Scale.Y == 1.0)
+                {
+                    // Scale commands are unnecessary when the scale is (1.0, 1.0).
+                    continue;
+                }
 
-                XFCommand scaleCommand = new XFCommand((XFRegister)(0x0078 + i * 12)); // TODO
+                XFCommand posMatricesCommand = new XFCommand((XFRegister)(0x0078 + i * 12));
 
                 int scaleX = BitConverter.ToInt32(BitConverter.GetBytes(matrix.Scale.X), 0);
                 int scaleY = BitConverter.ToInt32(BitConverter.GetBytes(matrix.Scale.Y), 0);
 
-                scaleCommand.Args.Add(new XFCommandArgument(scaleX));
-                scaleCommand.Args.Add(new XFCommandArgument());
-                scaleCommand.Args.Add(new XFCommandArgument());
-                scaleCommand.Args.Add(new XFCommandArgument());
-                scaleCommand.Args.Add(new XFCommandArgument());
-                scaleCommand.Args.Add(new XFCommandArgument(scaleY));
-                scaleCommand.Args.Add(new XFCommandArgument());
-                scaleCommand.Args.Add(new XFCommandArgument());
+                posMatricesCommand.Args.Add(new XFCommandArgument(scaleX));
+                posMatricesCommand.Args.Add(new XFCommandArgument());
+                posMatricesCommand.Args.Add(new XFCommandArgument());
+                posMatricesCommand.Args.Add(new XFCommandArgument());
+                posMatricesCommand.Args.Add(new XFCommandArgument());
+                posMatricesCommand.Args.Add(new XFCommandArgument(scaleY));
+                posMatricesCommand.Args.Add(new XFCommandArgument());
+                posMatricesCommand.Args.Add(new XFCommandArgument());
 
-                XFCommands.Add(scaleCommand);
+                XFCommands.Add(posMatricesCommand);
             }
         }
 
@@ -457,7 +497,7 @@ namespace SuperBMDLib.Materials.Mdl
                 XFCommandArgument texGenArg = new XFCommandArgument();
                 texGenArg.SetBits(0, 1, 1);
                 texGenArg.SetBits(0, 2, 1);
-                texGenArg.SetBits(0, 12, 3); // TODO 5
+                texGenArg.SetBits(5, 12, 3);
                 texGenArg.SetBits(0, 15, 3);
 
                 if (texgen.Type == TexGenType.Matrix3x4)
@@ -592,7 +632,7 @@ namespace SuperBMDLib.Materials.Mdl
                 chanControlArg.SetBits((int)chanCtrl.MaterialSrcColor, 0, 1);
                 chanControlArg.SetFlag(chanCtrl.Enable, 1);
                 chanControlArg.SetBits((int)chanCtrl.LitMask, 2, 4);
-                chanControlArg.SetFlag(chanCtrl.Enable, 6); // TODO chanCtrl.AmbientSrcColor
+                chanControlArg.SetBits((int)chanCtrl.AmbientSrcColor, 6, 1);
 
                 if (chanCtrl.AttenuationFunction == J3DAttenuationFn.None_0)
                 {
