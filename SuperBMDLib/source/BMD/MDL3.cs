@@ -62,6 +62,8 @@ namespace SuperBMDLib.BMD
 
                 Entries[i].Write(writer);
 
+                StreamUtility.PadStreamWithZero(writer, 32);
+
                 long size = writer.BaseStream.Position - absoluteStartOffset;
                 writer.Seek((int)cmdBlockStart + (i * 8), System.IO.SeekOrigin.Begin);
 
