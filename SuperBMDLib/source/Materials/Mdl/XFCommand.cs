@@ -20,6 +20,11 @@ namespace SuperBMDLib.Materials.Mdl
 
         public void Write(EndianBinaryWriter writer)
         {
+            if (Args.Count <= 0)
+            {
+                throw new Exception("Cannot save an XF command with no arguments.");
+            }
+
             writer.Write((byte)0x10);
             writer.Write((short)(Args.Count - 1));
             writer.Write((short)Register);

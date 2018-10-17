@@ -561,8 +561,11 @@ namespace SuperBMDLib.Materials.Mdl
                 dtTexGensCommand.Args.Add(dtTexGenArg);
             }
 
-            XFCommands.Add(texGensCommand);
-            XFCommands.Add(dtTexGensCommand);
+            if (texGensCommand.Args.Count > 0)
+            {
+                XFCommands.Add(texGensCommand);
+                XFCommands.Add(dtTexGensCommand);
+            }
         }
 
         private void GenerateMaterialColorChannelCommands(Material mat)
@@ -585,7 +588,10 @@ namespace SuperBMDLib.Materials.Mdl
                 materialColorChannelCommand.Args.Add(matColorChanArg);
             }
 
-            XFCommands.Add(materialColorChannelCommand);
+            if (materialColorChannelCommand.Args.Count > 0)
+            {
+                XFCommands.Add(materialColorChannelCommand);
+            }
         }
 
         private void GenerateAmbientColorChannelCommands(Material mat)
@@ -608,7 +614,10 @@ namespace SuperBMDLib.Materials.Mdl
                 ambientColorChannelCommand.Args.Add(ambientColorChanArg);
             }
 
-            XFCommands.Add(ambientColorChannelCommand);
+            if (ambientColorChannelCommand.Args.Count > 0)
+            {
+                XFCommands.Add(ambientColorChannelCommand);
+            }
         }
 
         private void GenerateChannelControlCommands(Material mat)
