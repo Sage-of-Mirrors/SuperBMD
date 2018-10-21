@@ -161,7 +161,17 @@ namespace SuperBMDLib.BMD
         public void SetInverseBindMatrices(List<Rigging.Bone> flatSkel)
         {
             if (InverseBindMatrices.Count == 0)
+            {
+                // If the original file didn't specify any inverse bind matrices, use default values instead of all zeroes.
+                // And these must be set both in the skeleton and the EVP1.
+                for (int i = 0; i < flatSkel.Count; i++)
+                {
+                    Matrix4 newMat = new Matrix4(Vector4.UnitX, Vector4.UnitY, Vector4.UnitZ, Vector4.UnitW);
+                    InverseBindMatrices.Add(newMat);
+                    flatSkel[i].SetInverseBindMatrix(newMat);
+                }
                 return;
+            }
 
             for (int i = 0; i < flatSkel.Count; i++)
             {
