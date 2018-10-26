@@ -450,8 +450,8 @@ namespace SuperBMDLib.Materials
 
         private static byte[] DecodeRgba32(EndianBinaryReader stream, uint width, uint height)
         {
-            uint numBlocksW = width / 4; //4 byte block width
-            uint numBlocksH = height / 4; //4 byte block height 
+            uint numBlocksW = (width + 3) / 4; //4 byte block width
+            uint numBlocksH = (height + 3) / 4; //4 byte block height 
 
             byte[] decodedData = new byte[width * height * 4];
 
@@ -466,7 +466,11 @@ namespace SuperBMDLib.Materials
                         {
                             //Ensure the pixel we're checking is within bounds of the image.
                             if ((xBlock * 4 + pX >= width) || (yBlock * 4 + pY >= height))
+                            {
+                                stream.SkipByte();
+                                stream.SkipByte();
                                 continue;
+                            }
 
                             //Now we're looping through each pixel in a block, but a pixel is four bytes long. 
                             uint destIndex = (uint)(4 * (width * ((yBlock * 4) + pY) + (xBlock * 4) + pX));
@@ -482,7 +486,11 @@ namespace SuperBMDLib.Materials
                         {
                             //Ensure the pixel we're checking is within bounds of the image.
                             if ((xBlock * 4 + pX >= width) || (yBlock * 4 + pY >= height))
+                            {
+                                stream.SkipByte();
+                                stream.SkipByte();
                                 continue;
+                            }
 
                             //Now we're looping through each pixel in a block, but a pixel is four bytes long. 
                             uint destIndex = (uint)(4 * (width * ((yBlock * 4) + pY) + (xBlock * 4) + pX));
@@ -500,8 +508,8 @@ namespace SuperBMDLib.Materials
         private static byte[] DecodeC4(EndianBinaryReader stream, uint width, uint height, Palette imagePalette, PaletteFormats paletteFormat)
         {
             //4 bpp, 8 block width/height, block size 32 bytes, possible palettes (IA8, RGB565, RGB5A3)
-            uint numBlocksW = width / 8;
-            uint numBlocksH = height / 8;
+            uint numBlocksW = (width + 7) / 8;
+            uint numBlocksH = (height + 7) / 8;
 
             byte[] decodedData = new byte[width * height * 8];
 
@@ -517,7 +525,10 @@ namespace SuperBMDLib.Materials
                         {
                             //Ensure we're not reading past the end of the image.
                             if ((xBlock * 8 + pX >= width) || (yBlock * 8 + pY >= height))
+                            {
+                                stream.SkipByte();
                                 continue;
+                            }
 
                             byte data = stream.ReadByte();
                             byte t = (byte)(data & 0xF0);
@@ -550,8 +561,8 @@ namespace SuperBMDLib.Materials
         private static byte[] DecodeC8(EndianBinaryReader stream, uint width, uint height, Palette imagePalette, PaletteFormats paletteFormat)
         {
             //4 bpp, 8 block width/4 block height, block size 32 bytes, possible palettes (IA8, RGB565, RGB5A3)
-            uint numBlocksW = width / 8;
-            uint numBlocksH = height / 4;
+            uint numBlocksW = (width + 7) / 8;
+            uint numBlocksH = (height + 3) / 4;
 
             byte[] decodedData = new byte[width * height * 8];
 
@@ -567,8 +578,10 @@ namespace SuperBMDLib.Materials
                         {
                             //Ensure we're not reading past the end of the image.
                             if ((xBlock * 8 + pX >= width) || (yBlock * 4 + pY >= height))
+                            {
+                                stream.SkipByte();
                                 continue;
-
+                            }
 
                             byte data = stream.ReadByte();
                             decodedData[width * ((yBlock * 4) + pY) + (xBlock * 8) + pX] = data;
@@ -597,8 +610,8 @@ namespace SuperBMDLib.Materials
         private static byte[] DecodeRgb565(EndianBinaryReader stream, uint width, uint height)
         {
             //16 bpp, 4 block width/height, block size 32 bytes, color.
-            uint numBlocksW = width / 4;
-            uint numBlocksH = height / 4;
+            uint numBlocksW = (width + 3) / 4;
+            uint numBlocksH = (height + 3) / 4;
 
             byte[] decodedData = new byte[width * height * 4];
 
@@ -614,7 +627,10 @@ namespace SuperBMDLib.Materials
                         {
                             //Ensure we're not reading past the end of the image.
                             if ((xBlock * 4 + pX >= width) || (yBlock * 4 + pY >= height))
+                            {
+                                stream.SkipUInt16();
                                 continue;
+                            }
 
                             ushort sourcePixel = stream.ReadUInt16();
                             RGB565ToRGBA8(sourcePixel, ref decodedData,
@@ -762,8 +778,8 @@ namespace SuperBMDLib.Materials
 
         private static byte[] DecodeIA8(EndianBinaryReader stream, uint width, uint height)
         {
-            uint numBlocksW = width / 4; //4 byte block width
-            uint numBlocksH = height / 4; //4 byte block height 
+            uint numBlocksW = (width + 3) / 4; //4 byte block width
+            uint numBlocksH = (height + 3) / 4; //4 byte block height 
 
             byte[] decodedData = new byte[width * height * 4];
 
@@ -778,7 +794,11 @@ namespace SuperBMDLib.Materials
                         {
                             //Ensure the pixel we're checking is within bounds of the image.
                             if ((xBlock * 4 + pX >= width) || (yBlock * 4 + pY >= height))
+                            {
+                                stream.SkipByte();
+                                stream.SkipByte();
                                 continue;
+                            }
 
                             //Now we're looping through each pixel in a block, but a pixel is four bytes long. 
                             uint destIndex = (uint)(4 * (width * ((yBlock * 4) + pY) + (xBlock * 4) + pX));
@@ -798,14 +818,14 @@ namespace SuperBMDLib.Materials
 
         private static byte[] DecodeIA4(EndianBinaryReader stream, uint width, uint height)
         {
-            uint numBlocksW = width / 8;
-            uint numBlocksH = height / 4;
+            uint numBlocksW = (width + 7) / 8;
+            uint numBlocksH = (height + 3) / 4;
 
             byte[] decodedData = new byte[width * height * 4];
 
-            for (int yBlock = 0; yBlock < height; yBlock++)
+            for (int yBlock = 0; yBlock < numBlocksH; yBlock++)
             {
-                for (int xBlock = 0; xBlock < width; xBlock++)
+                for (int xBlock = 0; xBlock < numBlocksW; xBlock++)
                 {
                     //For each block, we're going to examine block width / block height number of 'pixels'
                     for (int pY = 0; pY < 4; pY++)
@@ -814,8 +834,10 @@ namespace SuperBMDLib.Materials
                         {
                             //Ensure the pixel we're checking is within bounds of the image.
                             if ((xBlock * 8 + pX >= width) || (yBlock * 4 + pY >= height))
+                            {
+                                stream.SkipByte();
                                 continue;
-
+                            }
 
                             byte value = stream.ReadByte();
 
@@ -838,8 +860,8 @@ namespace SuperBMDLib.Materials
 
         private static byte[] DecodeI4(EndianBinaryReader stream, uint width, uint height)
         {
-            uint numBlocksW = width / 8; //8 byte block width
-            uint numBlocksH = height / 8; //8 byte block height 
+            uint numBlocksW = (width + 7) / 8; //8 byte block width
+            uint numBlocksH = (height + 7) / 8; //8 byte block height 
 
             byte[] decodedData = new byte[width * height * 4];
 
@@ -854,7 +876,10 @@ namespace SuperBMDLib.Materials
                         {
                             //Ensure the pixel we're checking is within bounds of the image.
                             if ((xBlock * 8 + pX >= width) || (yBlock * 8 + pY >= height))
+                            {
+                                stream.SkipByte();
                                 continue;
+                            }
 
                             byte data = stream.ReadByte();
                             byte t = (byte)((data & 0xF0) >> 4);
@@ -880,8 +905,8 @@ namespace SuperBMDLib.Materials
 
         private static byte[] DecodeI8(EndianBinaryReader stream, uint width, uint height)
         {
-            uint numBlocksW = width / 8; //8 pixel block width
-            uint numBlocksH = height / 4; //4 pixel block height 
+            uint numBlocksW = (width + 7) / 8; //8 pixel block width
+            uint numBlocksH = (height + 3) / 4; //4 pixel block height 
 
             byte[] decodedData = new byte[width * height * 4];
 
@@ -896,7 +921,10 @@ namespace SuperBMDLib.Materials
                         {
                             //Ensure the pixel we're checking is within bounds of the image.
                             if ((xBlock * 8 + pX >= width) || (yBlock * 4 + pY >= height))
+                            {
+                                stream.SkipByte();
                                 continue;
+                            }
 
                             byte data = stream.ReadByte();
                             uint destIndex = (uint)(4 * (width * ((yBlock * 4) + pY) + (xBlock * 8) + pX));
@@ -915,8 +943,8 @@ namespace SuperBMDLib.Materials
 
         private static byte[] DecodeRgb5A3(EndianBinaryReader stream, uint width, uint height)
         {
-            uint numBlocksW = width / 4; //4 byte block width
-            uint numBlocksH = height / 4; //4 byte block height 
+            uint numBlocksW = (width + 3) / 4; //4 byte block width
+            uint numBlocksH = (height + 3) / 4; //4 byte block height 
 
             byte[] decodedData = new byte[width * height * 4];
 
@@ -931,7 +959,10 @@ namespace SuperBMDLib.Materials
                         {
                             //Ensure the pixel we're checking is within bounds of the image.
                             if ((xBlock * 4 + pX >= width) || (yBlock * 4 + pY >= height))
+                            {
+                                stream.SkipUInt16();
                                 continue;
+                            }
 
                             ushort sourcePixel = stream.ReadUInt16();
                             RGB5A3ToRGBA8(sourcePixel, ref decodedData,
@@ -1071,8 +1102,8 @@ namespace SuperBMDLib.Materials
         {
             List<Util.Color32> palColors = new List<Util.Color32>();
 
-            uint numBlocksW = (uint)Width / 8;
-            uint numBlocksH = (uint)Height / 8;
+            uint numBlocksW = (uint)(Width + 7) / 8;
+            uint numBlocksH = (uint)(Height + 7) / 8;
 
             byte[] pixIndices = new byte[numBlocksH * numBlocksW * 8 * 8];
 
@@ -1114,8 +1145,8 @@ namespace SuperBMDLib.Materials
         {
             List<Util.Color32> palColors = new List<Util.Color32>();
 
-            uint numBlocksW = (uint)Width / 8;
-            uint numBlocksH = (uint)Height / 4;
+            uint numBlocksW = (uint)(Width + 7) / 8;
+            uint numBlocksH = (uint)(Height + 3) / 4;
 
             byte[] pixIndices = new byte[numBlocksH * numBlocksW * 8 * 4];
 
