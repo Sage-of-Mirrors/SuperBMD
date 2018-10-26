@@ -628,7 +628,10 @@ namespace SuperBMDLib
                     {
                         maxNumberLength = currMaxNumberLength;
                     }
-                    meshNames.Add(node.Name);
+                    for (int i = 0; i < node.MeshCount; i++)
+                    {
+                        meshNames.Add(node.Name);
+                    }
                 }
             }
 
@@ -644,7 +647,7 @@ namespace SuperBMDLib
                 meshNamesPadded.Add(Regex.Replace(meshName, @"\d+", m => m.Value.PadLeft(maxNumberLength, '0')));
             }
 
-            // Use Array.Sort to simultaneously sort the bone indices and the weights by the same order as the bone indices.
+            // Use Array.Sort to sort the meshes by the order of their object names.
             var meshNamesArray = meshNamesPadded.ToArray();
             var meshesArray = scene.Meshes.ToArray();
             Array.Sort(meshNamesArray, meshesArray);
