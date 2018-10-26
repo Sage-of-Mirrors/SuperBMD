@@ -40,6 +40,7 @@ namespace SuperBMDLib
                             throw new Exception("The parameters were malformed.");
 
                         input_path = args[i + 1];
+                        i++;
                         break;
                     case "-o":
                     case "--output":
@@ -47,6 +48,7 @@ namespace SuperBMDLib
                             throw new Exception("The parameters were malformed.");
 
                         output_path = args[i + 1];
+                        i++;
                         break;
                     case "-m":
                     case "--materialPresets":
@@ -54,6 +56,7 @@ namespace SuperBMDLib
                             throw new Exception("The parameters were malformed.");
 
                         materials_path = args[i + 1];
+                        i++;
                         break;
                     case "-x":
                     case "--texHeaders":
@@ -61,6 +64,7 @@ namespace SuperBMDLib
                             throw new Exception("The parameters were malformed.");
 
                         texheaders_path = args[i + 1];
+                        i++;
                         break;
                     case "-t":
                     case "--tristrip":
@@ -68,6 +72,7 @@ namespace SuperBMDLib
                             throw new Exception("The parameters were malformed.");
 
                         tristrip_mode = args[i + 1].ToLower();
+                        i++;
                         break;
                     case "-r":
                     case "--rotate":
@@ -80,9 +85,6 @@ namespace SuperBMDLib
                     default:
                         throw new Exception($"Unknown parameter \"{ args[i] }\"");
                 }
-
-                // Increment the counter to skip to the next parameter
-                i++;
             }
 
             ValidateArgs();
