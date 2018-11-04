@@ -1010,7 +1010,7 @@ namespace SuperBMDLib.Materials
         private static void RGB565ToRGBA8(ushort sourcePixel, ref byte[] dest, int destOffset)
         {
             byte r, g, b;
-            r = (byte)((sourcePixel & 0xF100) >> 11);
+            r = (byte)((sourcePixel & 0xF800) >> 11);
             g = (byte)((sourcePixel & 0x7E0) >> 5);
             b = (byte)((sourcePixel & 0x1F));
 
