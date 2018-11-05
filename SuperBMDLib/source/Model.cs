@@ -186,6 +186,7 @@ namespace SuperBMDLib
 
         public void ExportAssImp(string fileName, string modelType, ExportSettings settings)
         {
+            fileName = Path.GetFullPath(fileName); // Get absolute path instead of relative
             string outDir = Path.GetDirectoryName(fileName);
             string fileNameNoExt = Path.GetFileNameWithoutExtension(fileName);
             fileName = Path.Combine(outDir, fileNameNoExt + ".dae");
