@@ -66,22 +66,27 @@ namespace SuperBMDLib.BMD
 
             // First add objects that should be the direct children of the root bone.
             // This includes any objects that are weighted to multiple bones, as well as objects weighted to only the root bone itself.
-            for (int i = 0; i < scene.MeshCount; i++)
+            for (int mat_index = 0; mat_index < scene.MaterialCount; mat_index++)
             {
-                if (scene.Meshes[i].BoneCount == 1 && scene.Meshes[i].Bones[0].Name != skeleton.FlatSkeleton[0].Name)
-                    continue;
+                for (int i = 0; i < scene.MeshCount; i++)
+                {
+                    if (scene.Meshes[i].MaterialIndex != mat_index)
+                        continue;
+                    if (scene.Meshes[i].BoneCount == 1 && scene.Meshes[i].Bones[0].Name != skeleton.FlatSkeleton[0].Name)
+                        continue;
+                    
+                    SceneNode downNode1 = new SceneNode(NodeType.OpenChild, 0, Root);
+                    SceneNode matNode = new SceneNode(NodeType.Material, scene.Meshes[i].MaterialIndex, Root);
+                    SceneNode downNode2 = new SceneNode(NodeType.OpenChild, 0, Root);
+                    SceneNode shapeNode = new SceneNode(NodeType.Shape, i, Root);
 
-                SceneNode downNode1 = new SceneNode(NodeType.OpenChild, 0, Root);
-                SceneNode matNode = new SceneNode(NodeType.Material, scene.Meshes[i].MaterialIndex, Root);
-                SceneNode downNode2 = new SceneNode(NodeType.OpenChild, 0, Root);
-                SceneNode shapeNode = new SceneNode(NodeType.Shape, i, Root);
+                    FlatNodes.Add(downNode1);
+                    FlatNodes.Add(matNode);
+                    FlatNodes.Add(downNode2);
+                    FlatNodes.Add(shapeNode);
 
-                FlatNodes.Add(downNode1);
-                FlatNodes.Add(matNode);
-                FlatNodes.Add(downNode2);
-                FlatNodes.Add(shapeNode);
-
-                downNodeCount += 2;
+                    downNodeCount += 2;
+                }
             }
 
             // Next add objects as children of specific bones, if those objects are weighted to only a single bone.
@@ -92,7 +97,7 @@ namespace SuperBMDLib.BMD
 
                 foreach (Rigging.Bone bone in skeleton.SkeletonRoot.Children)
                 {
-                    GetNodesRecursive(bone, skeleton.FlatSkeleton, Root, scene.Meshes);
+                    GetNodesRecursive(bone, skeleton.FlatSkeleton, Root, scene.Meshes, scene.Materials);
                 }
 
                 SceneNode rootChildUp = new SceneNode(NodeType.CloseChild, 0, Root);
@@ -105,29 +110,34 @@ namespace SuperBMDLib.BMD
             FlatNodes.Add(new SceneNode(NodeType.Terminator, 0, Root));
         }
 
-        private void GetNodesRecursive(Rigging.Bone bone, List<Rigging.Bone> skeleton, SceneNode parent, List<Mesh> meshes)
+        private void GetNodesRecursive(Rigging.Bone bone, List<Rigging.Bone> skeleton, SceneNode parent, List<Mesh> meshes, List<Material> materials)
         {
             SceneNode node = new SceneNode(NodeType.Joint, skeleton.IndexOf(bone), parent);
             FlatNodes.Add(node);
 
             int downNodeCount = 0;
 
-            foreach (Mesh mesh in meshes)
+            for (int mat_index = 0; mat_index < materials.Count; mat_index++)
             {
-                if (mesh.BoneCount != 1 || mesh.Bones[0].Name != bone.Name)
-                    continue;
+                foreach (Mesh mesh in meshes)
+                {
+                    if (mesh.MaterialIndex != mat_index)
+                        continue;
+                    if (mesh.BoneCount != 1 || mesh.Bones[0].Name != bone.Name)
+                        continue;
 
-                SceneNode downNode1 = new SceneNode(NodeType.OpenChild, 0, Root);
-                SceneNode matNode = new SceneNode(NodeType.Material, mesh.MaterialIndex, Root);
-                SceneNode downNode2 = new SceneNode(NodeType.OpenChild, 0, Root);
-                SceneNode shapeNode = new SceneNode(NodeType.Shape, meshes.IndexOf(mesh), Root);
+                    SceneNode downNode1 = new SceneNode(NodeType.OpenChild, 0, Root);
+                    SceneNode matNode = new SceneNode(NodeType.Material, mesh.MaterialIndex, Root);
+                    SceneNode downNode2 = new SceneNode(NodeType.OpenChild, 0, Root);
+                    SceneNode shapeNode = new SceneNode(NodeType.Shape, meshes.IndexOf(mesh), Root);
 
-                FlatNodes.Add(downNode1);
-                FlatNodes.Add(matNode);
-                FlatNodes.Add(downNode2);
-                FlatNodes.Add(shapeNode);
+                    FlatNodes.Add(downNode1);
+                    FlatNodes.Add(matNode);
+                    FlatNodes.Add(downNode2);
+                    FlatNodes.Add(shapeNode);
 
-                downNodeCount += 2;
+                    downNodeCount += 2;
+                }
             }
 
             if (bone.Children.Count > 0)
@@ -137,7 +147,7 @@ namespace SuperBMDLib.BMD
 
                 foreach (Rigging.Bone child in bone.Children)
                 {
-                    GetNodesRecursive(child, skeleton, node, meshes);
+                    GetNodesRecursive(child, skeleton, node, meshes, materials);
                 }
 
                 SceneNode upNode = new SceneNode(NodeType.CloseChild, 0, parent);
