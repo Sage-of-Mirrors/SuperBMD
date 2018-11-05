@@ -64,9 +64,11 @@ namespace SuperBMDLib.BMD
 
             int downNodeCount = 0;
 
+            // First add objects that should be the direct children of the root bone.
+            // This includes any objects that are weighted to multiple bones, as well as objects weighted to only the root bone itself.
             for (int i = 0; i < scene.MeshCount; i++)
             {
-                if (scene.Meshes[i].BoneCount == 1)
+                if (scene.Meshes[i].BoneCount == 1 && scene.Meshes[i].Bones[0].Name != skeleton.FlatSkeleton[0].Name)
                     continue;
 
                 SceneNode downNode1 = new SceneNode(NodeType.OpenChild, 0, Root);
@@ -82,6 +84,7 @@ namespace SuperBMDLib.BMD
                 downNodeCount += 2;
             }
 
+            // Next add objects as children of specific bones, if those objects are weighted to only a single bone.
             if (skeleton.FlatSkeleton.Count > 1)
             {
                 foreach (Rigging.Bone bone in skeleton.SkeletonRoot.Children)
