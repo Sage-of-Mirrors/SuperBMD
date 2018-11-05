@@ -645,41 +645,99 @@ namespace SuperBMDLib.Materials
 
         private static byte[] DecodeCmpr(EndianBinaryReader stream, uint width, uint height)
         {
-            //Decode S3TC1
-            byte[] buffer = new byte[width * height * 4];
+            //4 bpp, 8 block width/height, block size 32 bytes, mini palettes in each block, RGB565 or transparent.
+            uint numBlocksW = (width + 7) / 8;
+            uint numBlocksH = (height + 7) / 8;
 
-            for (int y = 0; y < height / 4; y += 2)
+            byte[] decodedData = new byte[width * height * 4];
+
+            for (int yBlock = 0; yBlock < numBlocksH; yBlock++)
             {
-                for (int x = 0; x < width / 4; x += 2)
+                for (int xBlock = 0; xBlock < numBlocksW; xBlock++)
                 {
-                    for (int dy = 0; dy < 2; ++dy)
+                    for (int ySubBlock = 0; ySubBlock < 2; ySubBlock++)
                     {
-                        for (int dx = 0; dx < 2; ++dx)
+                        for (int xSubBlock = 0; xSubBlock < 2; xSubBlock++)
                         {
-                            if (4 * (x + dx) < width && 4 * (y + dy) < height)
+                            int subBlockWidth = (int)Math.Max(0, Math.Min(4, width - (xSubBlock * 4 + xBlock * 8)));
+                            int subBlockHeight = (int)Math.Max(0, Math.Min(4, height - (ySubBlock * 4 + yBlock * 8)));
+
+                            byte[] subBlockData = DecodeCmprSubBlock(stream);
+
+                            for (int pY = 0; pY < subBlockHeight; pY++)
                             {
-                                byte[] fileData = stream.ReadBytes(8);
-                                Buffer.BlockCopy(fileData, 0, buffer, (int)(8 * ((y + dy) * width / 4 + x + dx)), 8);
+                                int destX = xBlock * 8 + xSubBlock * 4;
+                                int destY = yBlock * 8 + ySubBlock * 4 + pY;
+                                if (destX >= width || destY >= height)
+                                    continue;
+
+                                int destOffset = (int)(destY * width + destX) *4;
+                                Buffer.BlockCopy(subBlockData, (int)(pY * 4 * 4), decodedData, destOffset, (int)(subBlockWidth*4));
                             }
                         }
                     }
                 }
             }
 
-            for (int i = 0; i < width * height / 2; i += 8)
-            {
-                // Micro swap routine needed
-                Swap(ref buffer[i], ref buffer[i + 1]);
-                Swap(ref buffer[i + 2], ref buffer[i + 3]);
+            return decodedData;
+        }
 
-                buffer[i + 4] = S3TC1ReverseByte(buffer[i + 4]);
-                buffer[i + 5] = S3TC1ReverseByte(buffer[i + 5]);
-                buffer[i + 6] = S3TC1ReverseByte(buffer[i + 6]);
-                buffer[i + 7] = S3TC1ReverseByte(buffer[i + 7]);
+        private static byte[] DecodeCmprSubBlock(EndianBinaryReader stream)
+        {
+            byte[] decodedData = new byte[4 * 4 * 4];
+
+            ushort color1 = stream.ReadUInt16();
+            ushort color2 = stream.ReadUInt16();
+            uint bits = stream.ReadUInt32();
+
+            byte[][] ColorTable = new byte[4][];
+            for (int i = 0; i < 4; i++)
+                ColorTable[i] = new byte[4];
+
+            RGB565ToRGBA8(color1, ref ColorTable[0], 0);
+            RGB565ToRGBA8(color2, ref ColorTable[1], 0);
+
+            if (color1 > color2)
+            {
+                ColorTable[2][0] = (byte)((2 * ColorTable[0][0] + ColorTable[1][0]) / 3);
+                ColorTable[2][1] = (byte)((2 * ColorTable[0][1] + ColorTable[1][1]) / 3);
+                ColorTable[2][2] = (byte)((2 * ColorTable[0][2] + ColorTable[1][2]) / 3);
+                ColorTable[2][3] = 0xFF;
+
+                ColorTable[3][0] = (byte)((ColorTable[0][0] + 2 * ColorTable[1][0]) / 3);
+                ColorTable[3][1] = (byte)((ColorTable[0][1] + 2 * ColorTable[1][1]) / 3);
+                ColorTable[3][2] = (byte)((ColorTable[0][2] + 2 * ColorTable[1][2]) / 3);
+                ColorTable[3][3] = 0xFF;
+            }
+            else
+            {
+                ColorTable[2][0] = (byte)((ColorTable[0][0] + ColorTable[1][0]) / 2);
+                ColorTable[2][1] = (byte)((ColorTable[0][1] + ColorTable[1][1]) / 2);
+                ColorTable[2][2] = (byte)((ColorTable[0][2] + ColorTable[1][2]) / 2);
+                ColorTable[2][3] = 0xFF;
+
+                ColorTable[3][0] = (byte)((ColorTable[0][0] + 2 * ColorTable[1][0]) / 3);
+                ColorTable[3][1] = (byte)((ColorTable[0][1] + 2 * ColorTable[1][1]) / 3);
+                ColorTable[3][2] = (byte)((ColorTable[0][2] + 2 * ColorTable[1][2]) / 3);
+                ColorTable[3][3] = 0x00;
             }
 
-            //Now decompress the DXT1 data within it.
-            return DecompressDxt1(buffer, width, height);
+            for (int iy = 0; iy < 4; ++iy)
+            {
+                for (int ix = 0; ix < 4; ++ix)
+                {
+                    int i = iy * 4 + ix;
+                    int bitOffset = (15 - i) * 2;
+                    int di = i * 4;
+                    int si = (int)((bits >> bitOffset) & 0x3);
+                    decodedData[di + 0] = ColorTable[si][0];
+                    decodedData[di + 1] = ColorTable[si][1];
+                    decodedData[di + 2] = ColorTable[si][2];
+                    decodedData[di + 3] = ColorTable[si][3];
+                }
+            }
+
+            return decodedData;
         }
 
         private static void Swap(ref byte b1, ref byte b2)
@@ -705,75 +763,6 @@ namespace SuperBMDLib.Materials
             byte b4 = (byte)(b & 0xC0);
 
             return (byte)((b1 << 6) | (b2 << 2) | (b3 >> 2) | (b4 >> 6));
-        }
-
-        private static byte[] DecompressDxt1(byte[] src, uint width, uint height)
-        {
-            uint dataOffset = 0;
-            byte[] finalData = new byte[width * height * 4];
-
-            for (int y = 0; y < height; y += 4)
-            {
-                for (int x = 0; x < width; x += 4)
-                {
-                    // Haha this is in little-endian (DXT1) so we have to swap the already swapped bytes.
-                    ushort color1 = Read16Swap(src, dataOffset);
-                    ushort color2 = Read16Swap(src, dataOffset + 2);
-                    uint bits = Read32Swap(src, dataOffset + 4);
-                    dataOffset += 8;
-
-                    byte[][] ColorTable = new byte[4][];
-                    for (int i = 0; i < 4; i++)
-                        ColorTable[i] = new byte[4];
-
-                    RGB565ToRGBA8(color1, ref ColorTable[0], 0);
-                    RGB565ToRGBA8(color2, ref ColorTable[1], 0);
-
-                    if (color1 > color2)
-                    {
-                        ColorTable[2][0] = (byte)((2 * ColorTable[0][0] + ColorTable[1][0] + 1) / 3);
-                        ColorTable[2][1] = (byte)((2 * ColorTable[0][1] + ColorTable[1][1] + 1) / 3);
-                        ColorTable[2][2] = (byte)((2 * ColorTable[0][2] + ColorTable[1][2] + 1) / 3);
-                        ColorTable[2][3] = 0xFF;
-
-                        ColorTable[3][0] = (byte)((ColorTable[0][0] + 2 * ColorTable[1][0] + 1) / 3);
-                        ColorTable[3][1] = (byte)((ColorTable[0][1] + 2 * ColorTable[1][1] + 1) / 3);
-                        ColorTable[3][2] = (byte)((ColorTable[0][2] + 2 * ColorTable[1][2] + 1) / 3);
-                        ColorTable[3][3] = 0xFF;
-                    }
-                    else
-                    {
-                        ColorTable[2][0] = (byte)((ColorTable[0][0] + ColorTable[1][0] + 1) / 2);
-                        ColorTable[2][1] = (byte)((ColorTable[0][1] + ColorTable[1][1] + 1) / 2);
-                        ColorTable[2][2] = (byte)((ColorTable[0][2] + ColorTable[1][2] + 1) / 2);
-                        ColorTable[2][3] = 0xFF;
-
-                        ColorTable[3][0] = (byte)((ColorTable[0][0] + 2 * ColorTable[1][0] + 1) / 3);
-                        ColorTable[3][1] = (byte)((ColorTable[0][1] + 2 * ColorTable[1][1] + 1) / 3);
-                        ColorTable[3][2] = (byte)((ColorTable[0][2] + 2 * ColorTable[1][2] + 1) / 3);
-                        ColorTable[3][3] = 0x00;
-                    }
-
-                    for (int iy = 0; iy < 4; ++iy)
-                    {
-                        for (int ix = 0; ix < 4; ++ix)
-                        {
-                            if (((x + ix) < width) && ((y + iy) < height))
-                            {
-                                int di = (int)(4 * ((y + iy) * width + x + ix));
-                                int si = (int)(bits & 0x3);
-                                finalData[di + 0] = ColorTable[si][0];
-                                finalData[di + 1] = ColorTable[si][1];
-                                finalData[di + 2] = ColorTable[si][2];
-                                finalData[di + 3] = ColorTable[si][3];
-                            }
-                            bits >>= 2;
-                        }
-                    }
-                }
-            }
-
-            return finalData;
         }
 
         private static byte[] DecodeIA8(EndianBinaryReader stream, uint width, uint height)
