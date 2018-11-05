@@ -143,9 +143,8 @@ namespace Chadsoft.CTools.Image
 
             for (int i = 0; i < block.Length; i++)
             {
-                result[i * 8 + 0] = result[i * 8 + 1] = result[i * 8 + 2] = (byte)((block[i] >> 4) * 0x11);
-                result[i * 8 + 4] = result[i * 8 + 5] = result[i * 8 + 6] = (byte)((block[i] & 0xF) * 0x11);
-                result[i * 8 + 3] = result[i * 8 + 7] = 0xff;
+                result[i * 8 + 0] = result[i * 8 + 1] = result[i * 8 + 2] = result[i * 8 + 3] = (byte)((block[i] >> 4) * 0x11);
+                result[i * 8 + 4] = result[i * 8 + 5] = result[i * 8 + 6] = result[i * 8 + 7] = (byte)((block[i] & 0xF) * 0x11);
             }
 
             return result;
@@ -158,8 +157,7 @@ namespace Chadsoft.CTools.Image
 
             for (int i = 0; i < block.Length; i++)
             {
-                result[i * 4 + 0] = result[i * 4 + 1] = result[i * 4 + 2] = block[i];
-                result[i * 4 + 3] = 0xff;
+                result[i * 4 + 0] = result[i * 4 + 1] = result[i * 4 + 2] = result[i * 4 + 3] = block[i];
             }
 
             return result;
