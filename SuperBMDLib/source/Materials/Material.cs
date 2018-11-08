@@ -378,5 +378,130 @@ namespace SuperBMDLib.Materials
             // At least in Wind Waker, every single model has 1 for this value regardless of how many color channel controls it has.
             ColorChannelControlsCount = 1;
         }
+
+        public static bool operator ==(Material left, Material right)
+        {
+            if (left.Flag != right.Flag)
+                return false;
+            if (left.CullMode != right.CullMode)
+                return false;
+            if (left.ColorChannelControlsCount != right.ColorChannelControlsCount)
+                return false;
+            if (left.NumTexGensCount != right.NumTexGensCount)
+                return false;
+            if (left.NumTevStagesCount != right.NumTevStagesCount)
+                return false;
+            if (left.ZCompLoc != right.ZCompLoc)
+                return false;
+            if (left.ZMode != right.ZMode)
+                return false;
+            if (left.Dither != right.Dither)
+                return false;
+
+            for (int i = 0; i < 2; i++)
+            {
+                if (left.MaterialColors[i] != right.MaterialColors[i])
+                    return false;
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                if (left.ChannelControls[i] != right.ChannelControls[i])
+                    return false;
+            }
+            for (int i = 0; i < 2; i++)
+            {
+                if (left.AmbientColors[i] != right.AmbientColors[i])
+                    return false;
+            }
+            for (int i = 0; i < 8; i++)
+            {
+                if (left.LightingColors[i] != right.LightingColors[i])
+                    return false;
+            }
+            for (int i = 0; i < 8; i++)
+            {
+                if (left.TexCoord1Gens[i] != right.TexCoord1Gens[i]) // TODO: does != actually work on these types of things?? might need custom operators
+                    return false;
+            }
+            for (int i = 0; i < 8; i++)
+            {
+                if (left.PostTexCoordGens[i] != right.PostTexCoordGens[i])
+                    return false;
+            }
+            for (int i = 0; i < 10; i++)
+            {
+                if (left.TexMatrix1[i] != right.TexMatrix1[i])
+                    return false;
+            }
+            for (int i = 0; i < 20; i++)
+            {
+                if (left.PostTexMatrix[i] != right.PostTexMatrix[i])
+                    return false;
+            }
+            for (int i = 0; i < 8; i++)
+            {
+                if (left.TextureNames[i] != right.TextureNames[i])
+                    return false;
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                if (left.KonstColors[i] != right.KonstColors[i])
+                    return false;
+            }
+            for (int i = 0; i < 16; i++)
+            {
+                if (left.ColorSels[i] != right.ColorSels[i])
+                    return false;
+            }
+            for (int i = 0; i < 16; i++)
+            {
+                if (left.AlphaSels[i] != right.AlphaSels[i])
+                    return false;
+            }
+            for (int i = 0; i < 16; i++)
+            {
+                if (left.TevOrders[i] != right.TevOrders[i])
+                    return false;
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                if (left.TevColors[i] != right.TevColors[i])
+                    return false;
+            }
+            for (int i = 0; i < 16; i++)
+            {
+                if (left.TevStages[i] != right.TevStages[i])
+                    return false;
+            }
+            for (int i = 0; i < 16; i++)
+            {
+                if (left.SwapModes[i] != right.SwapModes[i])
+                    return false;
+            }
+            for (int i = 0; i < 16; i++)
+            {
+                if (left.SwapTables[i] != right.SwapTables[i])
+                    return false;
+            }
+
+            if (left.FogInfo != right.FogInfo)
+                return false;
+            if (left.AlphCompare != right.AlphCompare)
+                return false;
+            if (left.BMode != right.BMode)
+                return false;
+            if (left.NBTScale != right.NBTScale)
+                return false;
+
+            return true;
+        }
+
+        public static bool operator !=(Material left, Material right)
+        {
+            if (left == right)
+                return false;
+            else
+               return true;
+        }
     }
 }

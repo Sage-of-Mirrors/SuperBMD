@@ -803,6 +803,33 @@ namespace SuperBMDLib.BMD
         {
             long start = writer.BaseStream.Position;
 
+            // Calculate what the unique materials are and update the duplicate remap indices list.
+            m_RemapIndices = new List<int>();
+            List<Material> uniqueMaterials = new List<Material>();
+            for (int i = 0; i < m_Materials.Count; i++)
+            {
+                Material mat = m_Materials[i];
+                int duplicateRemapIndex = -1;
+                for (int j = 0; j < i; j++)
+                {
+                    Material othermat = m_Materials[j];
+                    if (mat == othermat)
+                    {
+                        duplicateRemapIndex = uniqueMaterials.IndexOf(othermat);
+                        break;
+                    }
+                }
+                if (duplicateRemapIndex >= 0)
+                {
+                    m_RemapIndices.Add(duplicateRemapIndex);
+                }
+                else
+                {
+                    m_RemapIndices.Add(uniqueMaterials.Count);
+                    uniqueMaterials.Add(mat);
+                }
+            }
+
             writer.Write("MAT3".ToCharArray());
             writer.Write(0); // Placeholder for section offset
             writer.Write((short)m_RemapIndices.Count);
@@ -813,7 +840,7 @@ namespace SuperBMDLib.BMD
             for (int i = 0; i < 29; i++)
                 writer.Write(0);
 
-            bool[] writtenCheck = new bool[m_Materials.Count];
+            bool[] writtenCheck = new bool[uniqueMaterials.Count];
             List<string> names = m_MaterialNames;
 
             for (int i = 0; i < m_RemapIndices.Count; i++)
@@ -822,7 +849,7 @@ namespace SuperBMDLib.BMD
                     continue;
                 else
                 {
-                    WriteMaterialInitData(writer, m_Materials[m_RemapIndices[i]]);
+                    WriteMaterialInitData(writer, uniqueMaterials[m_RemapIndices[i]]);
                     writtenCheck[m_RemapIndices[i]] = true;
                 }
             }
