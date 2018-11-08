@@ -108,8 +108,8 @@ namespace SuperBMDLib
 
         public Model(Scene scene, Arguments args)
         {
-            ensureOneMaterialPerMesh(scene);
-            sortMeshesByObjectNames(scene);
+            EnsureOneMaterialPerMesh(scene);
+            SortMeshesByObjectNames(scene);
 
             VertexData = new VTX1(scene);
             Joints = new JNT1(scene, VertexData);
@@ -516,7 +516,7 @@ namespace SuperBMDLib
                 for (var i = 0; i < uniqueVertInfos.Count; i++)
                 {
                     Tuple<Vector3D, Vector3D?, List<Vector3D>> otherVertInfo = uniqueVertInfos[i];
-                    if (checkVertInfosAreDuplicates(vertInfo.Item1, vertInfo.Item2, vertInfo.Item3, otherVertInfo.Item1, otherVertInfo.Item2, otherVertInfo.Item3))
+                    if (CheckVertInfosAreDuplicates(vertInfo.Item1, vertInfo.Item2, vertInfo.Item3, otherVertInfo.Item1, otherVertInfo.Item2, otherVertInfo.Item3))
                     {
                         duplicateVertexIndex = i;
                         break;
@@ -587,7 +587,7 @@ namespace SuperBMDLib
             }
         }
 
-        private bool checkVertInfosAreDuplicates(Vector3D vert1, Vector3D? norm1, List<Vector3D> vert1TexCoords, Vector3D vert2, Vector3D? norm2, List<Vector3D> vert2TexCoords)
+        private bool CheckVertInfosAreDuplicates(Vector3D vert1, Vector3D? norm1, List<Vector3D> vert1TexCoords, Vector3D vert2, Vector3D? norm2, List<Vector3D> vert2TexCoords)
         {
             if (vert1 != vert2)
             {
@@ -613,7 +613,7 @@ namespace SuperBMDLib
             return true;
         }
 
-        private void sortMeshesByObjectNames(Scene scene)
+        private void SortMeshesByObjectNames(Scene scene)
         {
             // Sort meshes by their name instead of keeping the order they're in inside the file.
             // Specifically, natural sorting is used so that mesh-9 comes before mesh-10.
@@ -659,7 +659,7 @@ namespace SuperBMDLib
             }
         }
 
-        private void ensureOneMaterialPerMesh(Scene scene)
+        private void EnsureOneMaterialPerMesh(Scene scene)
         {
             foreach (Mesh mesh1 in scene.Meshes)
             {
