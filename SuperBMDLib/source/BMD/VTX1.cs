@@ -526,51 +526,14 @@ namespace SuperBMDLib.BMD
         }
 
         private void SetAssimpPositionAttribute(Assimp.Mesh mesh) {
-            List<Vector3> tempList = new List<Vector3>();
-
-            for (int vec = 0; vec < mesh.VertexCount; vec++) { 
-                tempList.Add(mesh.Vertices[vec].ToOpenTKVector3());
-            }
-
             if (!Attributes.CheckAttribute(GXVertexAttribute.Position))
-                Attributes.SetAttributeData(GXVertexAttribute.Position, tempList);
-            else
-            {
-                List<Vector3> attribData = (List<Vector3>)Attributes.GetAttributeData(GXVertexAttribute.Position);
-
-                foreach (Vector3 vec in tempList)
-                {
-                    if (!attribData.Contains(vec))
-                        attribData.Add(vec);
-                }
-
-                Attributes.SetAttributeData(GXVertexAttribute.Position, attribData);
-            }
+                Attributes.SetAttributeData(GXVertexAttribute.Position, new List<Vector3>());
         }
 
         private void SetAssimpNormalAttribute(Assimp.Mesh mesh)
         {
-            List<Vector3> tempList = new List<Vector3>();
-
-            for (int vec = 0; vec < mesh.Normals.Count; vec++)
-            {
-                tempList.Add(mesh.Normals[vec].ToOpenTKVector3());
-            }
-
             if (!Attributes.CheckAttribute(GXVertexAttribute.Normal))
-                Attributes.SetAttributeData(GXVertexAttribute.Normal, tempList);
-            else
-            {
-                List<Vector3> attribData = (List<Vector3>)Attributes.GetAttributeData(GXVertexAttribute.Normal);
-
-                foreach (Vector3 vec in tempList)
-                {
-                    if (!attribData.Contains(vec))
-                        attribData.Add(vec);
-                }
-
-                Attributes.SetAttributeData(GXVertexAttribute.Normal, attribData);
-            }
+                Attributes.SetAttributeData(GXVertexAttribute.Normal, new List<Vector3>());
         }
 
         private void SetAssimpColorAttribute(int channel, GXVertexAttribute colorAttrib, Assimp.Mesh mesh)

@@ -415,6 +415,8 @@ namespace SuperBMDLib.Geometry
                                         vert.SetAttributeIndex(Enums.GXVertexAttribute.Position, (uint)posData.IndexOf(transVec));
                                     }
                                     else {
+                                        if (!posData.Contains(vertPos))
+                                            posData.Add(vertPos);
                                         AttributeData.Positions.Add(vertPos);
 
                                         vert.SetAttributeIndex(Enums.GXVertexAttribute.Position, (uint)posData.IndexOf(vertPos));
@@ -428,6 +430,10 @@ namespace SuperBMDLib.Geometry
                                     {
                                         Matrix4 ibm = envelopes.InverseBindMatrices[curWeight.BoneIndices[0]];
                                         vertNrm = Vector3.TransformNormal(vertNrm, ibm);
+                                        if (!normData.Contains(vertNrm))
+                                            normData.Add(vertNrm);
+                                    } else
+                                    {
                                         if (!normData.Contains(vertNrm))
                                             normData.Add(vertNrm);
                                     }
@@ -598,6 +604,8 @@ namespace SuperBMDLib.Geometry
                                             vert.SetAttributeIndex(Enums.GXVertexAttribute.Position, (uint)posData.IndexOf(transVec));
                                         }
                                         else {
+                                            if (!posData.Contains(vertPos))
+                                                posData.Add(vertPos);
                                             AttributeData.Positions.Add(vertPos);
 
                                             vert.SetAttributeIndex(Enums.GXVertexAttribute.Position, (uint)posData.IndexOf(vertPos));
@@ -611,6 +619,10 @@ namespace SuperBMDLib.Geometry
                                         {
                                             Matrix4 ibm = envelopes.InverseBindMatrices[curWeight.BoneIndices[0]];
                                             vertNrm = Vector3.TransformNormal(vertNrm, ibm);
+                                            if (!normData.Contains(vertNrm))
+                                                normData.Add(vertNrm);
+                                        } else
+                                        {
                                             if (!normData.Contains(vertNrm))
                                                 normData.Add(vertNrm);
                                         }
