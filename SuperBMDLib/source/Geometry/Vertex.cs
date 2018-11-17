@@ -67,6 +67,37 @@ namespace SuperBMDLib.Geometry
             VertexWeight = new Weight();
         }
 
+        public Vertex(Vertex src)
+        {
+            // The position matrix index index is specific to the packet the vertex is in.
+            // So if copying a vertex across different packets, this value will be wrong and it needs to be recalculated manually.
+            PositionMatrixIDxIndex = src.PositionMatrixIDxIndex;
+
+            PositionIndex = src.PositionIndex;
+            NormalIndex = src.NormalIndex;
+            Color0Index = src.Color0Index;
+            Color1Index = src.Color1Index;
+            TexCoord0Index = src.TexCoord0Index;
+            TexCoord1Index = src.TexCoord1Index;
+            TexCoord2Index = src.TexCoord2Index;
+            TexCoord3Index = src.TexCoord3Index;
+            TexCoord4Index = src.TexCoord4Index;
+            TexCoord5Index = src.TexCoord5Index;
+            TexCoord6Index = src.TexCoord6Index;
+            TexCoord7Index = src.TexCoord7Index;
+
+            Tex0MtxIndex = src.Tex0MtxIndex;
+            Tex1MtxIndex = src.Tex1MtxIndex;
+            Tex2MtxIndex = src.Tex2MtxIndex;
+            Tex3MtxIndex = src.Tex3MtxIndex;
+            Tex4MtxIndex = src.Tex4MtxIndex;
+            Tex5MtxIndex = src.Tex5MtxIndex;
+            Tex6MtxIndex = src.Tex6MtxIndex;
+            Tex7MtxIndex = src.Tex7MtxIndex;
+
+            VertexWeight = src.VertexWeight;
+        }
+
         public uint GetAttributeIndex(GXVertexAttribute attribute)
         {
             switch (attribute)

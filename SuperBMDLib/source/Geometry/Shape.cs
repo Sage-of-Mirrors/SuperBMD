@@ -27,6 +27,9 @@ namespace SuperBMDLib.Geometry
         private Vector4[] m_PositionMatrices;
         private Vector4[] m_NormalMatrices;
 
+        // The maximum number of unique vertex weights that can be in a single shape packet without causing visual errors.
+        private const int MaxMatricesPerPacket = 10;
+
         public Shape()
         {
             MatrixType = 3;
@@ -263,16 +266,31 @@ namespace SuperBMDLib.Geometry
 
             //Console.WriteLine(String.Format("Done, {0} primitives", primlist.Count));
 
-            
 
-            // foreach (Face face in mesh.Faces)
+
+            Packet pack = new Packet();
+            List<Weight> packetWeights = new List<Weight>();
+            int numMatrices = 0;
             foreach (PrimitiveBrawl primbrawl in primlist) {
-                Packet pack = new Packet();
+                int numNewMatricesForFirstThreeVerts = 0;
+                if (!packetWeights.Contains(weights[primbrawl.Indices[0]]))
+                    numNewMatricesForFirstThreeVerts++;
+                if (!packetWeights.Contains(weights[primbrawl.Indices[1]]))
+                    numNewMatricesForFirstThreeVerts++;
+                if (!packetWeights.Contains(weights[primbrawl.Indices[2]]))
+                    numNewMatricesForFirstThreeVerts++;
+                if (numMatrices + numNewMatricesForFirstThreeVerts > MaxMatricesPerPacket)
+                {
+                    // We won't be able to fit even the first 3 vertices of this primitive without going over the matrix limit.
+                    // So we need to start a new packet.
+                    packetWeights.Clear();
+                    numMatrices = 0;
+                    Packets.Add(pack);
+                    pack = new Packet();
+                }
 
-                //Primitive prim = new Primitive(Enums.GXPrimitiveType.TriangleStrip);
+
                 Primitive prim = new Primitive((Enums.GXPrimitiveType)primbrawl.Type);
-                List<Weight> packetWeights = new List<Weight>();
-                int numMatrices = 0;
 
                 int currvert = -1;
                 int maxvert = primbrawl.Indices.Count-1;
@@ -282,92 +300,81 @@ namespace SuperBMDLib.Geometry
                     //Console.WriteLine("Doing Tristrip");
                     foreach (int vertIndex in primbrawl.Indices) {
                         currvert++;
-                        Weight vertWeight = weights[vertIndex]; 
+                        Weight vertWeight = weights[vertIndex];
 
                         int oldmat = numMatrices;
-                        if (!packetWeights.Contains(vertWeight)) {
-                            numMatrices += vertWeight.WeightCount;
+                        if (!packetWeights.Contains(vertWeight))
+                        {
+                            packetWeights.Add(vertWeight);
+                            numMatrices++;
                         }
 
                         //Console.WriteLine(String.Format("Added {0} matrices, is now {1}", numMatrices - oldmat, numMatrices));
 
                         // There are too many matrices, we need to create a new packet
-                        if (numMatrices > 10 && false) {
-                            //Console.WriteLine(String.Format("Breaking up because over the limit: {0}", numMatrices));
+                        if (numMatrices > MaxMatricesPerPacket) {
                             // If we break up and the resulting TriStrip becomes invalid,
-                            // then we need to handel those cases.
-                            if ((prim.PrimitiveType == Enums.GXPrimitiveType.TriangleStrip) && ((maxvert - currvert) < 2)) {
-                                Primitive newprim = new Primitive(Enums.GXPrimitiveType.Triangles);
-                                if (maxvert - currvert == 1) { // Only current and next vert is left
-                                                               // Duplicate the previous vertex to make a full triangle
-                                    Vertex prev = prim.Vertices[prim.Vertices.Count - 1];
+                            // then we need to handle those cases.
 
-                                    newprim.Vertices.Add(prev);
-                                }
-                                if (maxvert - currvert == 0) { // Only current vert is left
-                                                               // Duplicate previous two to make a full triangle
-                                    Vertex prev = prim.Vertices[prim.Vertices.Count - 2];
-                                    Vertex prev2 = prim.Vertices[prim.Vertices.Count - 1];
+                            //Console.WriteLine(String.Format("Breaking up because over the limit: {0}", numMatrices));
 
-                                    newprim.Vertices.Add(prev2);
-                                    newprim.Vertices.Add(prev);
-                                }
-
-                                /*if (prim.PrimitiveType == Enums.GXPrimitiveType.TriangleStrip) {
-                                    Debug.Assert(prim.Vertices.Count >= 3);
-                                }
-                                else if (prim.PrimitiveType == Enums.GXPrimitiveType.Triangles) {
-                                    Debug.Assert(prim.Vertices.Count % 3 == 0);
-                                }*/
-
-                                packetWeights.Clear();
-                                numMatrices = 0;
-                                pack.Primitives.Add(prim);
-                                Packets.Add(pack);
-
-                                prim = newprim;
+                            if (prim.PrimitiveType == Enums.GXPrimitiveType.TriangleStrip) {
+                                Debug.Assert(prim.Vertices.Count >= 3);
                             }
-                            else {
-                                /*if (prim.PrimitiveType == Enums.GXPrimitiveType.TriangleStrip) {
-                                    Debug.Assert(prim.Vertices.Count >= 3);
-                                }
-                                else if (prim.PrimitiveType == Enums.GXPrimitiveType.Triangles) {
-                                    Debug.Assert(prim.Vertices.Count % 3 == 0);
-                                }*/
-
-                                packetWeights.Clear();
-                                numMatrices = 0;
-                                pack.Primitives.Add(prim);
-                                Packets.Add(pack);
-
-                                prim = new Primitive((Enums.GXPrimitiveType)primbrawl.Type);
+                            else if (prim.PrimitiveType == Enums.GXPrimitiveType.Triangles) {
+                                Debug.Assert(prim.Vertices.Count % 3 == 0);
                             }
+                            pack.Primitives.Add(prim);
 
+
+                            Primitive newprim = new Primitive(Enums.GXPrimitiveType.TriangleStrip);
+                            Vertex prev3 = new Vertex(prim.Vertices[prim.Vertices.Count - 3]);
+                            Vertex prev2 = new Vertex(prim.Vertices[prim.Vertices.Count - 2]);
+                            Vertex prev = new Vertex(prim.Vertices[prim.Vertices.Count - 1]);
+                            bool isOdd = currvert % 2 != 0;
+                            if (isOdd)
+                            {
+                                // Need to preserve whether each vertex is even or odd inside the triangle strip.
+                                // Do this by adding an extra vertex from the previous packet to the start of this one.
+                                newprim.Vertices.Add(prev3);
+                            }
+                            newprim.Vertices.Add(prev2);
+                            newprim.Vertices.Add(prev);
+
+                            prim = newprim;
+
+                            packetWeights.Clear();
+                            numMatrices = 0;
+                            Packets.Add(pack);
+                            Packet oldPack = pack;
                             pack = new Packet();
 
                             // Calculate matrices for current packet in case we added vertices
                             foreach (Vertex vertex in prim.Vertices) {
-                                packetWeights.Add(vertex.VertexWeight);
-                                if (!packetWeights.Contains(vertWeight))
-                                    numMatrices += vertex.VertexWeight.WeightCount;
+                                if (!packetWeights.Contains(vertex.VertexWeight))
+                                {
+                                    packetWeights.Add(vertex.VertexWeight);
+                                    numMatrices++;
+                                }
+
+                                // Re-add the matrix index for the duplicated verts to the new packet.
+                                // And recalculate the matrix index index in each vert's attribute data.
+                                uint oldMatrixIndexIndex = vertex.GetAttributeIndex(Enums.GXVertexAttribute.PositionMatrixIdx);
+                                int matrixIndex = oldPack.MatrixIndices[(int)oldMatrixIndexIndex];
+
+                                if (!pack.MatrixIndices.Contains(matrixIndex))
+                                    pack.MatrixIndices.Add(matrixIndex);
+                                vertex.SetAttributeIndex(Enums.GXVertexAttribute.PositionMatrixIdx, (uint)pack.MatrixIndices.IndexOf(matrixIndex));
                             }
 
-                            packetWeights.Add(vertWeight);
-
                             if (!packetWeights.Contains(vertWeight))
-                                numMatrices += vertWeight.WeightCount;
-                        }
-                        // Matrix count is below 10, we can continue using the current packet
-                        else {
-                            if (!packetWeights.Contains(vertWeight))
+                            {
                                 packetWeights.Add(vertWeight);
+                                numMatrices++;
+                            }
                         }
-
-                        //int[] vertexIndexArray = new int[] { vert1Index, vert2Index, vert3Index };
-                        //Weight[] vertWeightArray = new Weight[] { vert1Weight, vert2Weight, vert3Weight };
 
                         Vertex vert = new Vertex();
-                        //int vertIndex = vertexIndexArray[i];
                         Weight curWeight = vertWeight;
 
                         vert.SetWeight(curWeight);
@@ -506,19 +513,28 @@ namespace SuperBMDLib.Geometry
                         int vert1Index = (int)primbrawl.Indices[j*3 + 0];
                         int vert2Index = (int)primbrawl.Indices[j*3 + 1];
                         int vert3Index = (int)primbrawl.Indices[j*3 + 2];
-                        Weight vert1Weight = weights[vert1Index];//new Weight();
-                        Weight vert2Weight = weights[vert2Index];//new Weight();
-                        Weight vert3Weight = weights[vert3Index];//new Weight();
+                        Weight vert1Weight = weights[vert1Index];
+                        Weight vert2Weight = weights[vert2Index];
+                        Weight vert3Weight = weights[vert3Index];
                         int oldcount = numMatrices;
                         if (!packetWeights.Contains(vert1Weight))
-                            numMatrices += vert1Weight.WeightCount;
+                        {
+                            packetWeights.Add(vert1Weight);
+                            numMatrices++;
+                        }
                         if (!packetWeights.Contains(vert2Weight))
-                            numMatrices += vert2Weight.WeightCount;
+                        {
+                            packetWeights.Add(vert2Weight);
+                            numMatrices++;
+                        }
                         if (!packetWeights.Contains(vert3Weight))
-                            numMatrices += vert1Weight.WeightCount;
+                        {
+                            packetWeights.Add(vert3Weight);
+                            numMatrices++;
+                        }
 
                         // There are too many matrices, we need to create a new packet
-                        if (numMatrices > 10) {
+                        if (numMatrices > MaxMatricesPerPacket) {
                             //Console.WriteLine(String.Format("Making new packet because previous one would have {0}", numMatrices));
                             //Console.WriteLine(oldcount);
                             pack.Primitives.Add(prim);
@@ -530,25 +546,21 @@ namespace SuperBMDLib.Geometry
                             packetWeights.Clear();
                             numMatrices = 0;
 
-                            packetWeights.Add(vert1Weight);
-                            packetWeights.Add(vert2Weight);
-                            packetWeights.Add(vert3Weight);
-
                             if (!packetWeights.Contains(vert1Weight))
-                                numMatrices += vert1Weight.WeightCount;
-                            if (!packetWeights.Contains(vert2Weight))
-                                numMatrices += vert2Weight.WeightCount;
-                            if (!packetWeights.Contains(vert3Weight))
-                                numMatrices += vert1Weight.WeightCount;
-                        }
-                        // Matrix count is below 10, we can continue using the current packet
-                        else {
-                            if (!packetWeights.Contains(vert1Weight))
+                            {
                                 packetWeights.Add(vert1Weight);
+                                numMatrices++;
+                            }
                             if (!packetWeights.Contains(vert2Weight))
+                            {
                                 packetWeights.Add(vert2Weight);
+                                numMatrices++;
+                            }
                             if (!packetWeights.Contains(vert3Weight))
+                            {
                                 packetWeights.Add(vert3Weight);
+                                numMatrices++;
+                            }
                         }
 
                         int[] vertexIndexArray = new int[] { vert1Index, vert2Index, vert3Index };
@@ -701,8 +713,9 @@ namespace SuperBMDLib.Geometry
                 }*/
                 //Console.WriteLine(String.Format("We had this many matrices: {0}", numMatrices));
                 pack.Primitives.Add(prim);
-                Packets.Add(pack);
             }
+            Packets.Add(pack);
+
             int mostmatrices = 0;
             if (true) {
                 List<Weight> packWeights = new List<Weight>();
@@ -714,7 +727,7 @@ namespace SuperBMDLib.Geometry
                         foreach (Vertex vert in prim.Vertices) {
                             if (!packWeights.Contains(vert.VertexWeight)) {
                                 packWeights.Add(vert.VertexWeight);
-                                matrices += vert.VertexWeight.WeightCount;
+                                matrices++;
                             }
                         }
                         
@@ -727,7 +740,7 @@ namespace SuperBMDLib.Geometry
                         }
                     }
                     if (matrices > mostmatrices) mostmatrices = matrices;
-                    //Debug.Assert(matrices <= 10);
+                    //Debug.Assert(matrices <= MaxMatricesPerPacket);
                     //Console.WriteLine(matrices);
                     packWeights.Clear();
                 }
