@@ -132,9 +132,9 @@ namespace SuperBMDLib.Geometry
                                 List<Vector3> posData = (List<Vector3>)vertData.GetAttributeData(Enums.GXVertexAttribute.Position);
                                 Vector3 vertPos = mesh.Vertices[vertIndex].ToOpenTKVector3();
 
-                                
+                                if (!posData.Contains(vertPos))
+                                    posData.Add(vertPos);
                                 AttributeData.Positions.Add(vertPos);
-
 
                                 vert.SetAttributeIndex(Enums.GXVertexAttribute.Position, (uint)posData.IndexOf(vertPos));
                                 break;
@@ -142,7 +142,8 @@ namespace SuperBMDLib.Geometry
                                 List<Vector3> normData = (List<Vector3>)vertData.GetAttributeData(Enums.GXVertexAttribute.Normal);
                                 Vector3 vertNrm = mesh.Normals[vertIndex].ToOpenTKVector3();
 
-                                
+                                if (!normData.Contains(vertNrm))
+                                    normData.Add(vertNrm);
                                 AttributeData.Normals.Add(vertNrm);
 
                                 vert.SetAttributeIndex(Enums.GXVertexAttribute.Normal, (uint)normData.IndexOf(vertNrm));
