@@ -1199,16 +1199,32 @@ namespace SuperBMDLib.Materials
                         pixelColorIndexes.Add(col, (byte)rawColorData.IndexOf(fullColor565));
                     break;
                 case PaletteFormats.RGB5A3:
-                    ushort r_53 = (ushort)(col.R >> 4);
-                    ushort g_53 = (ushort)(col.G >> 4);
-                    ushort b_53 = (ushort)(col.B >> 4);
-                    ushort a_53 = (ushort)(col.A >> 5);
-
                     ushort fullColor53 = 0;
-                    fullColor53 |= b_53;
-                    fullColor53 |= (ushort)(g_53 << 4);
-                    fullColor53 |= (ushort)(r_53 << 8);
-                    fullColor53 |= (ushort)(a_53 << 12);
+
+                    if (col.A == 255)
+                    {
+                        fullColor53 |= 0x8000;
+                        
+                        ushort r_53 = (ushort)(col.R >> 3);
+                        ushort g_53 = (ushort)(col.G >> 3);
+                        ushort b_53 = (ushort)(col.B >> 3);
+
+                        fullColor53 |= b_53;
+                        fullColor53 |= (ushort)(g_53 << 5);
+                        fullColor53 |= (ushort)(r_53 << 10);
+                    }
+                    else
+                    {
+                        ushort r_53 = (ushort)(col.R >> 4);
+                        ushort g_53 = (ushort)(col.G >> 4);
+                        ushort b_53 = (ushort)(col.B >> 4);
+                        ushort a_53 = (ushort)(col.A >> 5);
+
+                        fullColor53 |= b_53;
+                        fullColor53 |= (ushort)(g_53 << 4);
+                        fullColor53 |= (ushort)(r_53 << 8);
+                        fullColor53 |= (ushort)(a_53 << 12);
+                    }
 
                     if (!rawColorData.Contains(fullColor53))
                         rawColorData.Add(fullColor53);
