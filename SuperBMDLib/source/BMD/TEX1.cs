@@ -157,15 +157,20 @@ namespace SuperBMDLib.BMD
 
             foreach (BinaryTextureImage img in Textures)
             {
-                names.Add(img.Name);
-                img.WriteHeader(writer);
-
-                if (!image_palette_Data.ContainsKey(img.Name))
+                if (image_palette_Data.ContainsKey(img.Name))
+                {
+                    img.PaletteCount = (ushort)image_palette_Data[img.Name].Item2.Length;
+                    img.PalettesEnabled = (image_palette_Data[img.Name].Item2.Length > 0);
+                }
+                else
                 {
                     image_palette_Data.Add(img.Name, img.EncodeData());
                     imageDataOffsets.Add(img.Name, 0);
                     paletteDataOffsets.Add(img.Name, 0);
                 }
+
+                names.Add(img.Name);
+                img.WriteHeader(writer);
             }
 
             long curOffset = writer.BaseStream.Position;
