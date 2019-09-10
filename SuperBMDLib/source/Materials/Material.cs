@@ -95,18 +95,23 @@ namespace SuperBMDLib.Materials
 
             AlphCompare = new AlphaCompare(CompareType.Greater, 127, AlphaOp.And, CompareType.Always, 0);
             ZMode = new ZMode(true, CompareType.LEqual, true);
-            BMode = new BlendMode(Enums.BlendMode.None, BlendModeControl.SrcAlpha, BlendModeControl.InverseSrcAlpha, LogicOp.NoOp);
+            BMode = new BlendMode(Enums.BlendMode.Blend, BlendModeControl.SrcAlpha, BlendModeControl.InverseSrcAlpha, LogicOp.NoOp);
             NBTScale = new NBTScale(0, Vector3.Zero);
             FogInfo = new Fog(0, false, 0, 0, 0, 0, 0, new Color(0, 0, 0, 0), new float[10]);
         }
 
-        public void SetUpTev(bool hasTexture, bool hasVtxColor, int texIndex)
+        public void SetUpTev(bool hasTexture, bool hasVtxColor, int texIndex, string texName)
         {
+            Flag = 1;
             // Set up channel control 0 to use vertex colors, if they're present
             if (hasVtxColor)
             {
                 AddChannelControl(J3DColorChannelId.Color0, false, ColorSrc.Vertex, LightId.None, DiffuseFn.None, J3DAttenuationFn.None_0, ColorSrc.Register);
                 AddChannelControl(J3DColorChannelId.Alpha0, false, ColorSrc.Vertex, LightId.None, DiffuseFn.None, J3DAttenuationFn.None_0, ColorSrc.Register);
+            }
+            else {
+                AddChannelControl(J3DColorChannelId.Color0, false, ColorSrc.Register, LightId.None, DiffuseFn.Clamp, J3DAttenuationFn.Spec, ColorSrc.Register);
+                AddChannelControl(J3DColorChannelId.Alpha0, false, ColorSrc.Register, LightId.None, DiffuseFn.Clamp, J3DAttenuationFn.Spec, ColorSrc.Register);
             }
 
             // These settings are common to all the configurations we can use
@@ -190,9 +195,6 @@ namespace SuperBMDLib.Materials
                 AttenuationFunction = atten,
                 AmbientSrcColor = ambSrcColor
             };
-
-            if (ChannelControls[(int)id] == null)
-                ColorChannelControlsCount++;
 
             ChannelControls[(int)id] = control;
         }
@@ -372,11 +374,134 @@ namespace SuperBMDLib.Materials
                     NumTexGensCount++;
             }
 
+            // Note: Despite the name, this doesn't seem to control the number of color channel controls.
+            // At least in Wind Waker, every single model has 1 for this value regardless of how many color channel controls it has.
+            ColorChannelControlsCount = 1;
+        }
+
+        public static bool operator ==(Material left, Material right)
+        {
+            if (left.Flag != right.Flag)
+                return false;
+            if (left.CullMode != right.CullMode)
+                return false;
+            if (left.ColorChannelControlsCount != right.ColorChannelControlsCount)
+                return false;
+            if (left.NumTexGensCount != right.NumTexGensCount)
+                return false;
+            if (left.NumTevStagesCount != right.NumTevStagesCount)
+                return false;
+            if (left.ZCompLoc != right.ZCompLoc)
+                return false;
+            if (left.ZMode != right.ZMode)
+                return false;
+            if (left.Dither != right.Dither)
+                return false;
+
+            for (int i = 0; i < 2; i++)
+            {
+                if (left.MaterialColors[i] != right.MaterialColors[i])
+                    return false;
+            }
             for (int i = 0; i < 4; i++)
             {
-                if (ChannelControls[i] != null)
-                    ColorChannelControlsCount++;
+                if (left.ChannelControls[i] != right.ChannelControls[i])
+                    return false;
             }
+            for (int i = 0; i < 2; i++)
+            {
+                if (left.AmbientColors[i] != right.AmbientColors[i])
+                    return false;
+            }
+            for (int i = 0; i < 8; i++)
+            {
+                if (left.LightingColors[i] != right.LightingColors[i])
+                    return false;
+            }
+            for (int i = 0; i < 8; i++)
+            {
+                if (left.TexCoord1Gens[i] != right.TexCoord1Gens[i]) // TODO: does != actually work on these types of things?? might need custom operators
+                    return false;
+            }
+            for (int i = 0; i < 8; i++)
+            {
+                if (left.PostTexCoordGens[i] != right.PostTexCoordGens[i])
+                    return false;
+            }
+            for (int i = 0; i < 10; i++)
+            {
+                if (left.TexMatrix1[i] != right.TexMatrix1[i])
+                    return false;
+            }
+            for (int i = 0; i < 20; i++)
+            {
+                if (left.PostTexMatrix[i] != right.PostTexMatrix[i])
+                    return false;
+            }
+            for (int i = 0; i < 8; i++)
+            {
+                if (left.TextureNames[i] != right.TextureNames[i])
+                    return false;
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                if (left.KonstColors[i] != right.KonstColors[i])
+                    return false;
+            }
+            for (int i = 0; i < 16; i++)
+            {
+                if (left.ColorSels[i] != right.ColorSels[i])
+                    return false;
+            }
+            for (int i = 0; i < 16; i++)
+            {
+                if (left.AlphaSels[i] != right.AlphaSels[i])
+                    return false;
+            }
+            for (int i = 0; i < 16; i++)
+            {
+                if (left.TevOrders[i] != right.TevOrders[i])
+                    return false;
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                if (left.TevColors[i] != right.TevColors[i])
+                    return false;
+            }
+            for (int i = 0; i < 16; i++)
+            {
+                if (left.TevStages[i] != right.TevStages[i])
+                    return false;
+            }
+            for (int i = 0; i < 16; i++)
+            {
+                if (left.SwapModes[i] != right.SwapModes[i])
+                    return false;
+            }
+            for (int i = 0; i < 16; i++)
+            {
+                if (left.SwapTables[i] != right.SwapTables[i])
+                    return false;
+            }
+
+            if (left.FogInfo != right.FogInfo)
+                return false;
+            if (left.AlphCompare != right.AlphCompare)
+                return false;
+            if (left.BMode != right.BMode)
+                return false;
+            if (left.NBTScale != right.NBTScale)
+                return false;
+
+            return true;
+        }
+
+        public static bool operator !=(Material left, Material right)
+        {
+            if (left == right)
+                return false;
+            else
+               return true;
         }
     }
 }

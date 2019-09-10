@@ -7,6 +7,7 @@ using GameFormatReader.Common;
 using Assimp;
 using System.IO;
 using SuperBMDLib.BMD;
+using System.Text.RegularExpressions;
 
 namespace SuperBMDLib
 {
@@ -19,6 +20,7 @@ namespace SuperBMDLib
         public JNT1 Joints            { get; private set; }
         public SHP1 Shapes            { get; private set; }
         public MAT3 Materials         { get; private set; }
+        public MDL3 MatDisplayList    { get; private set; }
         public TEX1 Textures          { get; private set; }
 
         private int packetCount;
@@ -43,7 +45,15 @@ namespace SuperBMDLib
 
                 // AssImp adds dummy nodes for pivots from FBX, so we'll force them off
                 cont.SetConfig(new Assimp.Configs.FBXPreservePivotsConfig(false));
-                Assimp.Scene aiScene = cont.ImportFile(args.input_path, Assimp.PostProcessSteps.Triangulate);
+
+                Assimp.PostProcessSteps postprocess = Assimp.PostProcessSteps.Triangulate | Assimp.PostProcessSteps.JoinIdenticalVertices;
+                
+                if (args.tristrip_mode == "none") {
+                    // By not joining identical vertices, the Tri Strip algorithm we use cannot make tristrips, 
+                    // effectively disabling tri stripping
+                    postprocess = Assimp.PostProcessSteps.Triangulate; 
+                }
+                Assimp.Scene aiScene = cont.ImportFile(args.input_path, postprocess);
 
                 output = new Model(aiScene, args);
             }
@@ -98,6 +108,9 @@ namespace SuperBMDLib
 
         public Model(Scene scene, Arguments args)
         {
+            EnsureOneMaterialPerMesh(scene);
+            SortMeshesByObjectNames(scene);
+
             VertexData = new VTX1(scene);
             Joints = new JNT1(scene, VertexData);
             Textures = new TEX1(scene, args);
@@ -107,9 +120,13 @@ namespace SuperBMDLib
 
             PartialWeightData = new DRW1(scene, Joints.BoneNameIndices);
 
-            Shapes = SHP1.Create(scene, Joints.BoneNameIndices, VertexData.Attributes, SkinningEnvelopes, PartialWeightData, Joints);
+            Shapes = SHP1.Create(scene, Joints.BoneNameIndices, VertexData.Attributes, SkinningEnvelopes, PartialWeightData, args.tristrip_mode);
 
             Materials = new MAT3(scene, Textures, Shapes, args);
+
+            if (args.output_bdl)
+                MatDisplayList = new MDL3(Materials.m_Materials, Textures.Textures);
+
             Scenegraph = new INF1(scene, Joints);
 
             foreach (Geometry.Shape shape in Shapes.Shapes)
@@ -118,25 +135,34 @@ namespace SuperBMDLib
             vertexCount = VertexData.Attributes.Positions.Count;
         }
 
-        public void ExportBMD(string fileName)
+        public void ExportBMD(string fileName, bool isBDL)
         {
             string outDir = Path.GetDirectoryName(fileName);
             string fileNameNoExt = Path.GetFileNameWithoutExtension(fileName);
             fileNameNoExt = fileNameNoExt.Split('.')[0];
-            fileName = Path.Combine(outDir, fileNameNoExt + ".bmd");
-
-            if (File.Exists(fileName))
+            if (isBDL)
             {
-                fileName = Path.Combine(outDir, fileNameNoExt + "_2.bmd");
+                fileName = Path.Combine(outDir, fileNameNoExt + ".bdl");
+            } else
+            {
+                fileName = Path.Combine(outDir, fileNameNoExt + ".bmd");
             }
 
             using (FileStream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
             {
                 EndianBinaryWriter writer = new EndianBinaryWriter(stream, Endian.Big);
 
-                writer.Write("J3D2bmd3".ToCharArray());
+                if (isBDL)
+                    writer.Write("J3D2bdl4".ToCharArray());
+                else
+                    writer.Write("J3D2bmd3".ToCharArray());
+
                 writer.Write(0); // Placeholder for file size
-                writer.Write(8); // Number of sections; bmd has 8, bdl has 9
+
+                if (isBDL)
+                    writer.Write(9); // Number of sections; bmd has 8, bdl has 9
+                else
+                    writer.Write(8);
 
                 writer.Write("SuperBMD - Gamma".ToCharArray());
 
@@ -147,6 +173,10 @@ namespace SuperBMDLib
                 Joints.Write(writer);
                 Shapes.Write(writer);
                 Materials.Write(writer);
+
+                if (isBDL)
+                    MatDisplayList.Write(writer);
+
                 Textures.Write(writer);
 
                 writer.Seek(8, SeekOrigin.Begin);
@@ -156,6 +186,7 @@ namespace SuperBMDLib
 
         public void ExportAssImp(string fileName, string modelType, ExportSettings settings)
         {
+            fileName = Path.GetFullPath(fileName); // Get absolute path instead of relative
             string outDir = Path.GetDirectoryName(fileName);
             string fileNameNoExt = Path.GetFileNameWithoutExtension(fileName);
             fileName = Path.Combine(outDir, fileNameNoExt + ".dae");
@@ -168,24 +199,22 @@ namespace SuperBMDLib
             Shapes.FillScene(outScene, VertexData.Attributes, Joints.FlatSkeleton, SkinningEnvelopes.InverseBindMatrices);
             Scenegraph.FillScene(outScene, Joints.FlatSkeleton, settings.UseSkeletonRoot);
             Scenegraph.CorrectMaterialIndices(outScene, Materials);
+            Textures.DumpTextures(outDir);
 
-            if (SkinningEnvelopes.Weights.Count == 0)
+
+            foreach (Mesh mesh in outScene.Meshes)
             {
-                Assimp.Node geomNode = new Node(Path.GetFileNameWithoutExtension(fileName), outScene.RootNode);
-
-                for (int i = 0; i < Shapes.Shapes.Count; i++)
-                {
-                    geomNode.MeshIndices.Add(i);
-                }
-
-                outScene.RootNode.Children.Add(geomNode);
+                // Assimp has a JoinIdenticalVertices post process step, but we can't use that or the skinning info we manually add won't take it into account.
+                RemoveDuplicateVertices(mesh);
             }
+
 
             AssimpContext cont = new AssimpContext();
             cont.ExportFile(outScene, fileName, "collada", PostProcessSteps.ValidateDataStructure);
 
+
             //if (SkinningEnvelopes.Weights.Count == 0)
-                //return; // There's no skinning information, so we can stop here
+            //    return; // There's no skinning information, so we can stop here
 
             // Now we need to add some skinning info, since AssImp doesn't do it for some bizarre reason
 
@@ -351,10 +380,10 @@ namespace SuperBMDLib
                 Matrix4x4 ibm = bone.OffsetMatrix;
                 ibm.Transpose();
 
-                writer.WriteLine($"       {ibm.A1.ToString("F")} {ibm.A2.ToString("F")} {ibm.A3.ToString("F")} {ibm.A4.ToString("F")}");
-                writer.WriteLine($"       {ibm.B1.ToString("F")} {ibm.B2.ToString("F")} {ibm.B3.ToString("F")} {ibm.B4.ToString("F")}");
-                writer.WriteLine($"       {ibm.C1.ToString("F")} {ibm.C2.ToString("F")} {ibm.C3.ToString("F")} {ibm.C4.ToString("F")}");
-                writer.WriteLine($"       {ibm.D1.ToString("F")} {ibm.D2.ToString("F")} {ibm.D3.ToString("F")} {ibm.D4.ToString("F")}");
+                writer.WriteLine($"       {ibm.A1.ToString("G9")} {ibm.A2.ToString("G9")} {ibm.A3.ToString("G9")} {ibm.A4.ToString("G9")}");
+                writer.WriteLine($"       {ibm.B1.ToString("G9")} {ibm.B2.ToString("G9")} {ibm.B3.ToString("G9")} {ibm.B4.ToString("G9")}");
+                writer.WriteLine($"       {ibm.C1.ToString("G9")} {ibm.C2.ToString("G9")} {ibm.C3.ToString("G9")} {ibm.C4.ToString("G9")}");
+                writer.WriteLine($"       {ibm.D1.ToString("G9")} {ibm.D2.ToString("G9")} {ibm.D3.ToString("G9")} {ibm.D4.ToString("G9")}");
 
                 if (bone != mesh.Bones.Last())
                     writer.WriteLine("");
@@ -455,6 +484,193 @@ namespace SuperBMDLib
             writer.WriteLine("\n       </v>");
 
             writer.WriteLine($"      </vertex_weights>");
+        }
+
+        private void RemoveDuplicateVertices(Mesh mesh)
+        {
+            // Calculate which vertices are duplicates (based on their position, texture coordinates, and normals).
+            List<Tuple<Vector3D, Vector3D?, List<Vector3D>>> uniqueVertInfos = new List<Tuple<Vector3D, Vector3D?, List<Vector3D>>>();
+            int[] replaceVertexIDs = new int[mesh.Vertices.Count];
+            bool[] vertexIsUnique = new bool[mesh.Vertices.Count];
+            for (var origVertexID = 0; origVertexID < mesh.Vertices.Count; origVertexID++)
+            {
+                var coordsForVert = new List<Vector3D>();
+                for (var i = 0; i < mesh.TextureCoordinateChannelCount; i++)
+                {
+                    coordsForVert.Add(mesh.TextureCoordinateChannels[i][origVertexID]);
+                }
+
+                Vector3D? normal;
+                if (origVertexID < mesh.Normals.Count)
+                {
+                    normal = mesh.Normals[origVertexID];
+                } else
+                {
+                    normal = null;
+                }
+
+                var vertInfo = new Tuple<Vector3D, Vector3D?, List<Vector3D>>(mesh.Vertices[origVertexID], normal, coordsForVert);
+
+                // Determine if this vertex is a duplicate of a previously encountered vertex or not and if it is keep track of the new index
+                var duplicateVertexIndex = -1;
+                for (var i = 0; i < uniqueVertInfos.Count; i++)
+                {
+                    Tuple<Vector3D, Vector3D?, List<Vector3D>> otherVertInfo = uniqueVertInfos[i];
+                    if (CheckVertInfosAreDuplicates(vertInfo.Item1, vertInfo.Item2, vertInfo.Item3, otherVertInfo.Item1, otherVertInfo.Item2, otherVertInfo.Item3))
+                    {
+                        duplicateVertexIndex = i;
+                        break;
+                    }
+                }
+
+                if (duplicateVertexIndex == -1)
+                {
+                    vertexIsUnique[origVertexID] = true;
+                    uniqueVertInfos.Add(vertInfo);
+                    replaceVertexIDs[origVertexID] = uniqueVertInfos.Count - 1;
+                }
+                else
+                {
+                    vertexIsUnique[origVertexID] = false;
+                    replaceVertexIDs[origVertexID] = duplicateVertexIndex;
+                }
+            }
+
+            // Remove duplicate vertices, normals, and texture coordinates.
+            mesh.Vertices.Clear();
+            mesh.Normals.Clear();
+            // Need to preserve the channel count since it gets set to 0 when clearing all the channels
+            int origTexCoordChannelCount = mesh.TextureCoordinateChannelCount;
+            for (var i = 0; i < origTexCoordChannelCount; i++)
+            {
+                mesh.TextureCoordinateChannels[i].Clear();
+            }
+            foreach (Tuple<Vector3D, Vector3D?, List<Vector3D>> vertInfo in uniqueVertInfos)
+            {
+                mesh.Vertices.Add(vertInfo.Item1);
+                if (vertInfo.Item2 != null)
+                {
+                    mesh.Normals.Add(vertInfo.Item2.Value);
+                }
+                for (var i = 0; i < origTexCoordChannelCount; i++)
+                {
+                    var coord = vertInfo.Item3[i];
+                    mesh.TextureCoordinateChannels[i].Add(coord);
+                }
+            }
+
+            // Update vertex indices for the faces.
+            foreach (Face face in mesh.Faces)
+            {
+                for (var i = 0; i < face.IndexCount; i++)
+                {
+                    face.Indices[i] = replaceVertexIDs[face.Indices[i]];
+                }
+            }
+
+            // Update vertex indices for the bone vertex weights.
+            foreach (Bone bone in mesh.Bones)
+            {
+                List<VertexWeight> origVertexWeights = new List<VertexWeight>(bone.VertexWeights);
+                bone.VertexWeights.Clear();
+                for (var i = 0; i < origVertexWeights.Count; i++)
+                {
+                    VertexWeight origWeight = origVertexWeights[i];
+                    int origVertexID = origWeight.VertexID;
+                    if (!vertexIsUnique[origVertexID])
+                        continue;
+
+                    int newVertexID = replaceVertexIDs[origVertexID];
+                    VertexWeight newWeight = new VertexWeight(newVertexID, origWeight.Weight);
+                    bone.VertexWeights.Add(newWeight);
+                }
+            }
+        }
+
+        private bool CheckVertInfosAreDuplicates(Vector3D vert1, Vector3D? norm1, List<Vector3D> vert1TexCoords, Vector3D vert2, Vector3D? norm2, List<Vector3D> vert2TexCoords)
+        {
+            if (vert1 != vert2)
+            {
+                // Position is different
+                return false;
+            }
+
+            if (norm1 != norm2)
+            {
+                // Normals are different
+                return false;
+            }
+
+            for (var i = 0; i < vert1TexCoords.Count; i++)
+            {
+                if (vert1TexCoords[i] != vert2TexCoords[i])
+                {
+                    // Texture coordinate is different
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private void SortMeshesByObjectNames(Scene scene)
+        {
+            // Sort meshes by their name instead of keeping the order they're in inside the file.
+            // Specifically, natural sorting is used so that mesh-9 comes before mesh-10.
+
+            List<string> meshNames = new List<string>();
+            int maxNumberLength = 0;
+            foreach (Node node in scene.RootNode.Children)
+            {
+                if (node.HasMeshes)
+                {
+                    int currMaxNumberLength = node.Name.SelectMany(i => Regex.Matches(node.Name, @"\d+").Cast<Match>().Select(m => m.Value.Length)).DefaultIfEmpty(0).Max();
+                    if (currMaxNumberLength > maxNumberLength)
+                    {
+                        maxNumberLength = currMaxNumberLength;
+                    }
+                    for (int i = 0; i < node.MeshCount; i++)
+                    {
+                        meshNames.Add(node.Name);
+                    }
+                }
+            }
+
+            if (meshNames.Count != scene.Meshes.Count)
+            {
+                throw new Exception($"Number of meshes ({scene.Meshes.Count}) is not the same as the number of mesh objects ({meshNames.Count}); cannot sort.\nMesh objects: {String.Join(", ", meshNames)}\nMeshes: {String.Join(", ", scene.Meshes.Select(mesh => mesh.Name))}");
+            }
+
+            // Pad the numbers in mesh names with 0s.
+            List<string> meshNamesPadded = new List<string>();
+            foreach (string meshName in meshNames)
+            {
+                meshNamesPadded.Add(Regex.Replace(meshName, @"\d+", m => m.Value.PadLeft(maxNumberLength, '0')));
+            }
+
+            // Use Array.Sort to sort the meshes by the order of their object names.
+            var meshNamesArray = meshNamesPadded.ToArray();
+            var meshesArray = scene.Meshes.ToArray();
+            Array.Sort(meshNamesArray, meshesArray);
+
+            for (int i = 0; i < scene.Meshes.Count; i++)
+            {
+                scene.Meshes[i] = meshesArray[i];
+            }
+        }
+
+        private void EnsureOneMaterialPerMesh(Scene scene)
+        {
+            foreach (Mesh mesh1 in scene.Meshes)
+            {
+                foreach (Mesh mesh2 in scene.Meshes)
+                {
+                    if (mesh1.Name == mesh2.Name && mesh1.MaterialIndex != mesh2.MaterialIndex)
+                    {
+                        throw new Exception($"Mesh \"{mesh1.Name}\" has more than one material assigned to it. Currently only one material per mesh is supported.");
+                    }
+                }
+            }
         }
     }
 }

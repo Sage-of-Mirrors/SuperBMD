@@ -13,8 +13,8 @@ namespace SuperBMDLib.Geometry
     {
         private List<GXVertexAttribute> m_Attributes;
 
-        public List<Vector3> Positions { get; private set; }
-        public List<Vector3> Normals { get; private set; }
+        public List<Vector3> Positions;
+        public List<Vector3> Normals;
         public List<Color> Color_0 { get; private set; }
         public List<Color> Color_1 { get; private set; }
         public List<Vector2> TexCoord_0 { get; private set; }
@@ -25,6 +25,16 @@ namespace SuperBMDLib.Geometry
         public List<Vector2> TexCoord_5 { get; private set; }
         public List<Vector2> TexCoord_6 { get; private set; }
         public List<Vector2> TexCoord_7 { get; private set; }
+
+        public void flipAxis() {
+            for (int i = 0; i < Positions.Count; i++) {
+                Vector3 vec = Positions[i];
+                float tmp = vec.Y;
+                vec.Y = vec.Z;
+                vec.Z = tmp;
+                Positions[i] = vec;
+            }
+        }
 
         public VertexData()
         {

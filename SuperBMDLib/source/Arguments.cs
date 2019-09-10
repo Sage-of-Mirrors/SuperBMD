@@ -14,7 +14,7 @@ namespace SuperBMDLib
         public string texheaders_path;
         public string tristrip_mode;
         public bool rotate_model;
-        public bool fix_normals;
+        public bool output_bdl;
 
         /// <summary>
         /// Initializes a new Arguments instance from the arguments passed in to SuperBMD.
@@ -28,49 +28,63 @@ namespace SuperBMDLib
             texheaders_path = "";
             tristrip_mode = "static";
             rotate_model = false;
-            fix_normals = true;
+            output_bdl = false;
 
             for (int i = 0; i < args.Length; i++)
             {
-                if (i + 1 >= args.Length)
-                    throw new Exception("The parameters were malformed.");
-
                 switch (args[i])
                 {
                     case "-i":
                     case "--input":
+                        if (i + 1 >= args.Length)
+                            throw new Exception("The parameters were malformed.");
+
                         input_path = args[i + 1];
+                        i++;
                         break;
                     case "-o":
                     case "--output":
+                        if (i + 1 >= args.Length)
+                            throw new Exception("The parameters were malformed.");
+
                         output_path = args[i + 1];
+                        i++;
                         break;
                     case "-m":
                     case "--materialPresets":
+                        if (i + 1 >= args.Length)
+                            throw new Exception("The parameters were malformed.");
+
                         materials_path = args[i + 1];
+                        i++;
                         break;
                     case "-x":
                     case "--texHeaders":
+                        if (i + 1 >= args.Length)
+                            throw new Exception("The parameters were malformed.");
+
                         texheaders_path = args[i + 1];
+                        i++;
                         break;
                     case "-t":
                     case "--tristrip":
+                        if (i + 1 >= args.Length)
+                            throw new Exception("The parameters were malformed.");
+
                         tristrip_mode = args[i + 1].ToLower();
+                        i++;
                         break;
                     case "-r":
                     case "--rotate":
                         rotate_model = true;
                         break;
-                    case "-f":
-                    case "--fixNormals":
-                        fix_normals = false;
+                    case "-b":
+                    case "--bdl":
+                        output_bdl = true;
                         break;
                     default:
                         throw new Exception($"Unknown parameter \"{ args[i] }\"");
                 }
-
-                // Increment the counter to skip to the next parameter
-                i++;
             }
 
             ValidateArgs();

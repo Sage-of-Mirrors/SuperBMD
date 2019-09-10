@@ -140,6 +140,7 @@ namespace SuperBMDLib.BMD
                         m_AmbientColorBlock = ColorIO.Load(reader, sectionOffset, sectionSize);
                         break;
                     case Mat3OffsetIndex.LightData:
+                        m_LightingColorBlock = ColorIO.Load(reader, sectionOffset, sectionSize);
                         break;
                     case Mat3OffsetIndex.TexGenCount:
                         NumTexGensBlock = new List<byte>();
@@ -263,7 +264,7 @@ namespace SuperBMDLib.BMD
             m_Materials = new List<Material>();
             for (int i = 0; i <= highestMatIndex; i++)
             {
-                LoadInitData(reader);
+                LoadInitData(reader, m_RemapIndices[i]);
             }
 
             reader.BaseStream.Seek(offset + mat3Size, System.IO.SeekOrigin.Begin);
@@ -280,7 +281,7 @@ namespace SuperBMDLib.BMD
             m_Materials = matCopies;
         }
 
-        private void LoadInitData(EndianBinaryReader reader)
+        private void LoadInitData(EndianBinaryReader reader, int matindex)
         {
             Material mat = new Material();
 
@@ -306,7 +307,7 @@ namespace SuperBMDLib.BMD
             if (matColorIndex != -1)
                 mat.MaterialColors[1] = m_MaterialColorBlock[matColorIndex];
 
-            for (int i = 0; i < mat.ColorChannelControlsCount; i++)
+            for (int i = 0; i < 4; i++)
             {
                 int chanIndex = reader.ReadInt16();
                 if (chanIndex == -1)
@@ -314,8 +315,6 @@ namespace SuperBMDLib.BMD
                 else
                     mat.ChannelControls[i] = m_ChannelControlBlock[chanIndex];
             }
-
-            reader.Skip((4 - mat.ColorChannelControlsCount) * 2);
 
             int ambColorIndex = reader.ReadInt16();
             if (ambColorIndex != -1)
@@ -338,8 +337,11 @@ namespace SuperBMDLib.BMD
                 int texGenIndex = reader.ReadInt16();
                 if (texGenIndex == -1)
                     continue;
-                else
+                else if (texGenIndex < m_TexCoord1GenBlock.Count)
                     mat.TexCoord1Gens[i] = m_TexCoord1GenBlock[texGenIndex];
+                else
+                    Console.WriteLine(String.Format("Warning for material {0} i={2}, TexCoord1GenBlock index out of range: {1}",
+                                                    mat.Name, texGenIndex, i));
             }
 
             for (int i = 0; i < 8; i++)
@@ -365,8 +367,11 @@ namespace SuperBMDLib.BMD
                 int texMatIndex = reader.ReadInt16();
                 if (texMatIndex == -1)
                     continue;
-                //else
-                    //mat.PostTexMatrix[i] = m_TexMatrix2Block[texMatIndex];
+                else if (texMatIndex < m_TexMatrix2Block.Count)
+                    mat.PostTexMatrix[i] = m_TexMatrix2Block[texMatIndex];
+                else
+                    Console.WriteLine(String.Format("Warning for material {0}, TexMatrix2Block index out of range: {1}",
+                                                    mat.Name, texMatIndex));
             }
 
             for (int i = 0; i < 8; i++)
@@ -436,7 +441,7 @@ namespace SuperBMDLib.BMD
             for (int i = 0; i < 16; i++)
             {
                 int tevSwapModeTableIndex = reader.ReadInt16();
-                if ((tevSwapModeTableIndex < 0) || (tevSwapModeTableIndex > m_SwapTableBlock.Count))
+                if ((tevSwapModeTableIndex < 0) || (tevSwapModeTableIndex >= m_SwapTableBlock.Count))
                     continue;
                 else
                 {
@@ -516,6 +521,10 @@ namespace SuperBMDLib.BMD
 
                 while (!materialNamesWithoutParentheses.Contains(test))
                 {
+                    if (test.Length <= 1)
+                    {
+                        throw new Exception($"Mesh \"{scene.Meshes[i].Name}\" has a material named \"{meshMat.Name.Replace("-material", "")}\" which was not found in materials.json.");
+                    }
                     test = test.Substring(1);
                 }
 
@@ -541,13 +550,14 @@ namespace SuperBMDLib.BMD
 
                 bool hasVtxColor0 = shapes.Shapes[i].AttributeData.CheckAttribute(GXVertexAttribute.Color0);
                 int texIndex = -1;
+                string texName = null;
                 if (meshMat.HasTextureDiffuse)
                 {
-                    string texName = Path.GetFileNameWithoutExtension(meshMat.TextureDiffuse.FilePath);
+                    texName = Path.GetFileNameWithoutExtension(meshMat.TextureDiffuse.FilePath);
                     texIndex = textures.Textures.IndexOf(textures[texName]);
                 }
 
-                bmdMaterial.SetUpTev(meshMat.HasTextureDiffuse, hasVtxColor0, texIndex);
+                bmdMaterial.SetUpTev(meshMat.HasTextureDiffuse, hasVtxColor0, texIndex, texName);
 
                 m_Materials.Add(bmdMaterial);
                 m_RemapIndices.Add(i);
@@ -793,6 +803,33 @@ namespace SuperBMDLib.BMD
         {
             long start = writer.BaseStream.Position;
 
+            // Calculate what the unique materials are and update the duplicate remap indices list.
+            m_RemapIndices = new List<int>();
+            List<Material> uniqueMaterials = new List<Material>();
+            for (int i = 0; i < m_Materials.Count; i++)
+            {
+                Material mat = m_Materials[i];
+                int duplicateRemapIndex = -1;
+                for (int j = 0; j < i; j++)
+                {
+                    Material othermat = m_Materials[j];
+                    if (mat == othermat)
+                    {
+                        duplicateRemapIndex = uniqueMaterials.IndexOf(othermat);
+                        break;
+                    }
+                }
+                if (duplicateRemapIndex >= 0)
+                {
+                    m_RemapIndices.Add(duplicateRemapIndex);
+                }
+                else
+                {
+                    m_RemapIndices.Add(uniqueMaterials.Count);
+                    uniqueMaterials.Add(mat);
+                }
+            }
+
             writer.Write("MAT3".ToCharArray());
             writer.Write(0); // Placeholder for section offset
             writer.Write((short)m_RemapIndices.Count);
@@ -803,7 +840,7 @@ namespace SuperBMDLib.BMD
             for (int i = 0; i < 29; i++)
                 writer.Write(0);
 
-            bool[] writtenCheck = new bool[m_Materials.Count];
+            bool[] writtenCheck = new bool[uniqueMaterials.Count];
             List<string> names = m_MaterialNames;
 
             for (int i = 0; i < m_RemapIndices.Count; i++)
@@ -812,7 +849,7 @@ namespace SuperBMDLib.BMD
                     continue;
                 else
                 {
-                    WriteMaterialInitData(writer, m_Materials[m_RemapIndices[i]]);
+                    WriteMaterialInitData(writer, uniqueMaterials[m_RemapIndices[i]]);
                     writtenCheck[m_RemapIndices[i]] = true;
                 }
             }
@@ -1173,7 +1210,8 @@ namespace SuperBMDLib.BMD
 
             for (int i = 0; i < 8; i++)
             {
-                if (m_LightingColorBlock.Count != 0)
+                //if (m_LightingColorBlock.Count != 0)
+                if (mat.LightingColors[i] != null)
                     writer.Write((short)m_LightingColorBlock.IndexOf(mat.LightingColors[i].Value));
                 else
                     writer.Write((short)-1);

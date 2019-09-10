@@ -130,7 +130,8 @@ namespace SuperBMDLib.BMD
             reader.BaseStream.Seek(offset + shp1Size, System.IO.SeekOrigin.Begin);
         }
 
-        private SHP1(Assimp.Scene scene, VertexData vertData, Dictionary<string, int> boneNames, EVP1 envelopes, DRW1 partialWeight, List<Rigging.Bone> skeleton)
+        private SHP1(   Assimp.Scene scene, VertexData vertData, Dictionary<string, int> boneNames, 
+                        EVP1 envelopes, DRW1 partialWeight, string tristrip_mode = "static")
         {
             Shapes = new List<Shape>();
             RemapTable = new List<int>();
@@ -141,7 +142,8 @@ namespace SuperBMDLib.BMD
                 meshShape.SetDescriptorAttributes(mesh, boneNames.Count);
 
                 if (boneNames.Count > 1)
-                    meshShape.ProcessVerticesWithWeights(mesh, vertData, boneNames, envelopes, partialWeight, skeleton);
+                    meshShape.ProcessVerticesWithWeights(   mesh, vertData, boneNames, envelopes, 
+                                                            partialWeight, tristrip_mode == "all");
                 else
                 {
                     meshShape.ProcessVerticesWithoutWeights(mesh, vertData);
@@ -158,9 +160,10 @@ namespace SuperBMDLib.BMD
             return new SHP1(reader, offset);
         }
 
-        public static SHP1 Create(Scene scene, Dictionary<string, int> boneNames, VertexData vertData, EVP1 evp1, DRW1 drw1, JNT1 jnt1)
+        public static SHP1 Create(  Scene scene, Dictionary<string, int> boneNames, VertexData vertData, 
+                                    EVP1 evp1, DRW1 drw1, string tristrip_mode = "static")
         {
-            SHP1 shp1 = new SHP1(scene, vertData, boneNames, evp1, drw1, jnt1.FlatSkeleton);
+            SHP1 shp1 = new SHP1(scene, vertData, boneNames, evp1, drw1, tristrip_mode);
 
             return shp1;
         }
@@ -271,30 +274,30 @@ namespace SuperBMDLib.BMD
                                         vertVec = new Vector3D(trans.X, trans.Y, trans.Z);
                                     }
                                 }
-                                /*else
-                                {
-                                    Matrix4 finalMatrix = Matrix4.Zero;
-
-                                    for (int m = 0; m < vert.VertexWeight.WeightCount; m++)
-                                    {
-                                        Matrix4 sm1 = inverseBindMatrices[vert.VertexWeight.BoneIndices[m]];
-                                        //sm1.Transpose();
-                                        Matrix4 sm2 = flatSkeleton[vert.VertexWeight.BoneIndices[m]].TransformationMatrix;
-                                        //sm2.Transpose();
-
-                                        finalMatrix += Matrix4.Mult(sm1, vert.VertexWeight.Weights[m]);
-                                    }
-
-                                    Vector4 final = Vector4.Transform(openTKVec, finalMatrix);
-
-                                    vertVec = new Vector3D(final.X, final.Y, final.Z);
-                                }*/
 
                                 mesh.Vertices.Add(vertVec);
 
                                 if (curShape.Descriptor.CheckAttribute(GXVertexAttribute.Normal))
                                 {
-                                    mesh.Normals.Add(vertData.Normals[(int)vert.NormalIndex].ToVector3D());
+                                    OpenTK.Vector3 nrmVec = vertData.Normals[(int)vert.NormalIndex];
+                                    OpenTK.Vector4 openTKNrm = new Vector4(nrmVec.X, nrmVec.Y, nrmVec.Z, 1);
+                                    Vector3D vertNrm = new Vector3D(nrmVec.X, nrmVec.Y, nrmVec.Z);
+
+                                    if (vert.VertexWeight.WeightCount == 1)
+                                    {
+                                        if (inverseBindMatrices.Count > vert.VertexWeight.BoneIndices[0])
+                                        {
+                                            Matrix4 test = inverseBindMatrices[vert.VertexWeight.BoneIndices[0]].Inverted();
+                                            vertNrm = Vector3.TransformNormalInverse(nrmVec, test).ToVector3D();
+                                        }
+                                        else
+                                        {
+                                            Vector4 trans = OpenTK.Vector4.Transform(openTKNrm, flatSkeleton[vert.VertexWeight.BoneIndices[0]].TransformationMatrix);
+                                            vertNrm = new Vector3D(trans.X, trans.Y, trans.Z);
+                                        }
+                                    }
+
+                                    mesh.Normals.Add(vertNrm);
                                 }
 
                                 if (curShape.Descriptor.CheckAttribute(GXVertexAttribute.Color0))

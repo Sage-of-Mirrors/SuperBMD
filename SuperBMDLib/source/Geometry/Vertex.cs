@@ -25,6 +25,15 @@ namespace SuperBMDLib.Geometry
         public uint TexCoord6Index { get; private set; }
         public uint TexCoord7Index { get; private set; }
 
+        public uint Tex0MtxIndex { get; private set; }
+        public uint Tex1MtxIndex { get; private set; }
+        public uint Tex2MtxIndex { get; private set; }
+        public uint Tex3MtxIndex { get; private set; }
+        public uint Tex4MtxIndex { get; private set; }
+        public uint Tex5MtxIndex { get; private set; }
+        public uint Tex6MtxIndex { get; private set; }
+        public uint Tex7MtxIndex { get; private set; }
+
         public uint PositionMatrixIndex { get; set; }
         public uint NormalMatrixIndex { get; set; }
 
@@ -46,7 +55,47 @@ namespace SuperBMDLib.Geometry
             TexCoord6Index = uint.MaxValue;
             TexCoord7Index = uint.MaxValue;
 
+            Tex0MtxIndex = uint.MaxValue;
+            Tex1MtxIndex = uint.MaxValue;
+            Tex2MtxIndex = uint.MaxValue;
+            Tex3MtxIndex = uint.MaxValue;
+            Tex4MtxIndex = uint.MaxValue;
+            Tex5MtxIndex = uint.MaxValue;
+            Tex6MtxIndex = uint.MaxValue;
+            Tex7MtxIndex = uint.MaxValue;
+
             VertexWeight = new Weight();
+        }
+
+        public Vertex(Vertex src)
+        {
+            // The position matrix index index is specific to the packet the vertex is in.
+            // So if copying a vertex across different packets, this value will be wrong and it needs to be recalculated manually.
+            PositionMatrixIDxIndex = src.PositionMatrixIDxIndex;
+
+            PositionIndex = src.PositionIndex;
+            NormalIndex = src.NormalIndex;
+            Color0Index = src.Color0Index;
+            Color1Index = src.Color1Index;
+            TexCoord0Index = src.TexCoord0Index;
+            TexCoord1Index = src.TexCoord1Index;
+            TexCoord2Index = src.TexCoord2Index;
+            TexCoord3Index = src.TexCoord3Index;
+            TexCoord4Index = src.TexCoord4Index;
+            TexCoord5Index = src.TexCoord5Index;
+            TexCoord6Index = src.TexCoord6Index;
+            TexCoord7Index = src.TexCoord7Index;
+
+            Tex0MtxIndex = src.Tex0MtxIndex;
+            Tex1MtxIndex = src.Tex1MtxIndex;
+            Tex2MtxIndex = src.Tex2MtxIndex;
+            Tex3MtxIndex = src.Tex3MtxIndex;
+            Tex4MtxIndex = src.Tex4MtxIndex;
+            Tex5MtxIndex = src.Tex5MtxIndex;
+            Tex6MtxIndex = src.Tex6MtxIndex;
+            Tex7MtxIndex = src.Tex7MtxIndex;
+
+            VertexWeight = src.VertexWeight;
         }
 
         public uint GetAttributeIndex(GXVertexAttribute attribute)
@@ -79,8 +128,24 @@ namespace SuperBMDLib.Geometry
                     return TexCoord6Index;
                 case GXVertexAttribute.Tex7:
                     return TexCoord7Index;
+                case GXVertexAttribute.Tex0Mtx:
+                    return Tex0MtxIndex;
+                case GXVertexAttribute.Tex1Mtx:
+                    return Tex1MtxIndex;
+                case GXVertexAttribute.Tex2Mtx:
+                    return Tex2MtxIndex;
+                case GXVertexAttribute.Tex3Mtx:
+                    return Tex3MtxIndex;
+                case GXVertexAttribute.Tex4Mtx:
+                    return Tex4MtxIndex;
+                case GXVertexAttribute.Tex5Mtx:
+                    return Tex5MtxIndex;
+                case GXVertexAttribute.Tex6Mtx:
+                    return Tex6MtxIndex;
+                case GXVertexAttribute.Tex7Mtx:
+                    return Tex7MtxIndex;
                 default:
-                    throw new ArgumentException("attribute");
+                    throw new ArgumentException(String.Format("attribute {0}", attribute));
             }
         }
 
@@ -127,8 +192,32 @@ namespace SuperBMDLib.Geometry
                 case GXVertexAttribute.Tex7:
                     TexCoord7Index = index;
                     break;
+                case GXVertexAttribute.Tex0Mtx:
+                    Tex0MtxIndex = index;
+                    break;
+                case GXVertexAttribute.Tex1Mtx:
+                    Tex1MtxIndex = index;
+                    break;
+                case GXVertexAttribute.Tex2Mtx:
+                    Tex2MtxIndex = index;
+                    break;
+                case GXVertexAttribute.Tex3Mtx:
+                    Tex3MtxIndex = index;
+                    break;
+                case GXVertexAttribute.Tex4Mtx:
+                    Tex4MtxIndex = index;
+                    break;
+                case GXVertexAttribute.Tex5Mtx:
+                    Tex5MtxIndex = index;
+                    break;
+                case GXVertexAttribute.Tex6Mtx:
+                    Tex6MtxIndex = index;
+                    break;
+                case GXVertexAttribute.Tex7Mtx:
+                    Tex7MtxIndex = index;
+                    break;
                 default:
-                    throw new ArgumentException("attribute");
+                    throw new ArgumentException(String.Format("attribute {0}", attribute));
             }
         }
 

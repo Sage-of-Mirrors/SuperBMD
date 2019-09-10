@@ -78,8 +78,7 @@ namespace SuperBMDLib.BMD
 
                 if (full_img_path == "")
                 {
-                    Console.WriteLine($"Could not find texture \"{ name_without_ext }\". It will not be imported.");
-                    continue;
+                    throw new Exception($"Could not find texture \"{ name_without_ext }\".");
                 }
 
                 tex.LoadImageFromDisk(full_img_path);
@@ -117,7 +116,7 @@ namespace SuperBMDLib.BMD
 
         public void DumpTextures(string directory)
         {
-            if (!System.IO.Directory.Exists(directory))
+            if (!System.IO.Directory.Exists(directory) && directory != "")
                 System.IO.Directory.CreateDirectory(directory);
 
             foreach (BinaryTextureImage tex in Textures)

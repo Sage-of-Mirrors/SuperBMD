@@ -74,9 +74,6 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="TgaLib, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\TgaLib.1.0.1\lib\net461\TgaLib.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\Resources.Designer.cs">
@@ -90,7 +87,26 @@
     <Compile Include="source\BMD\INF1.cs" />
     <Compile Include="source\BMD\JNT1.cs" />
     <Compile Include="source\BMD\MAT3.cs" />
+    <Compile Include="source\BMD\MDL3.cs" />
     <Compile Include="source\ExportSettings.cs" />
+    <Compile Include="source\Geometry\TriStrip\CacheSimulator.cs" />
+    <Compile Include="source\Geometry\TriStrip\Deque\Deque.cs" />
+    <Compile Include="source\Geometry\TriStrip\Deque\GenericDeque.cs" />
+    <Compile Include="source\Geometry\TriStrip\Deque\GenericDeque.Enumerator.cs" />
+    <Compile Include="source\Geometry\TriStrip\Deque\GenericDeque.Node.cs" />
+    <Compile Include="source\Geometry\TriStrip\Deque\GenericDeque.Synchronized.cs" />
+    <Compile Include="source\Geometry\TriStrip\Deque\GenericTester.cs" />
+    <Compile Include="source\Geometry\TriStrip\Deque\Tester.cs" />
+    <Compile Include="source\Geometry\TriStrip\GraphArray.cs" />
+    <Compile Include="source\Geometry\TriStrip\HeapArray.cs" />
+    <Compile Include="source\Geometry\TriStrip\Policy.cs" />
+    <Compile Include="source\Geometry\TriStrip\TriStripper.cs" />
+    <Compile Include="source\Geometry\TriStrip\Types.cs" />
+    <Compile Include="source\Materials\Mdl\BPCommand.cs" />
+    <Compile Include="source\Materials\Mdl\BPRegisters.cs" />
+    <Compile Include="source\Materials\Mdl\MdlEntry.cs" />
+    <Compile Include="source\Materials\Mdl\XFCommand.cs" />
+    <Compile Include="source\Materials\Mdl\XFRegisters.cs" />
     <Compile Include="source\Model.cs" />
     <Compile Include="source\BMD\SHP1.cs" />
     <Compile Include="source\BMD\TEX1.cs" />

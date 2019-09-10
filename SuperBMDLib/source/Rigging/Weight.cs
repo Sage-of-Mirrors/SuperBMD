@@ -44,6 +44,51 @@ namespace SuperBMDLib.Rigging
             return comp.GetHashCode(this);
         }
 
+        // Reorder the weights by their bone indices.
+        // This is so that two weights that are identical except for having the bones in a different order are properly considered duplicates.
+        public void reorderBones()
+        {
+            if (WeightCount < 2) return;
+
+            // Use Array.Sort to simultaneously sort the bone indices and the weights by the same order as the bone indices.
+            var weightsArray = Weights.ToArray();
+            var boneIndicesArray = BoneIndices.ToArray();
+            Array.Sort(boneIndicesArray, weightsArray);
+
+            Weights = weightsArray.ToList();
+            BoneIndices = boneIndicesArray.ToList();
+        }
+
+        public void reduceWeights() {
+            float totalweight = 0;
+
+            if (WeightCount <= 3) return;
+
+            List<Tuple<float, int>> weightpairs = new List<Tuple<float, int>>();
+
+            for (int i = 0; i < WeightCount; i++) {
+                weightpairs.Add(Tuple.Create<float, int>(Weights[i], BoneIndices[i]));
+            }
+
+            weightpairs.Sort((x, y) => y.Item1.CompareTo(x.Item1));
+            
+            for (int i = 0; i < 3; i++) {
+                totalweight += weightpairs[i].Item1;
+            }
+
+            float leftoverweight = 1 - totalweight;
+
+            WeightCount = 3;
+            Weights = new List<float>();
+            BoneIndices = new List<int>();
+
+            for (int i = 0; i < 3; i++) {
+                Tuple<float, int> weightpair = weightpairs[i];
+                Weights.Add((float)(weightpair.Item1 + leftoverweight / 3.0));
+                BoneIndices.Add(weightpair.Item2);
+            }
+        }
+
         public void Transform(List<Bone> skeleton)
         {
             FinalTransformation = Matrix4.Zero;
