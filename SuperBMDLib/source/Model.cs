@@ -620,21 +620,7 @@ namespace SuperBMDLib
 
             List<string> meshNames = new List<string>();
             int maxNumberLength = 0;
-            foreach (Node node in scene.RootNode.Children)
-            {
-                if (node.HasMeshes)
-                {
-                    int currMaxNumberLength = node.Name.SelectMany(i => Regex.Matches(node.Name, @"\d+").Cast<Match>().Select(m => m.Value.Length)).DefaultIfEmpty(0).Max();
-                    if (currMaxNumberLength > maxNumberLength)
-                    {
-                        maxNumberLength = currMaxNumberLength;
-                    }
-                    for (int i = 0; i < node.MeshCount; i++)
-                    {
-                        meshNames.Add(node.Name);
-                    }
-                }
-            }
+            GetMeshNamesRecursive(scene.RootNode, meshNames, ref maxNumberLength);
 
             if (meshNames.Count != scene.Meshes.Count)
             {
@@ -656,6 +642,30 @@ namespace SuperBMDLib
             for (int i = 0; i < scene.Meshes.Count; i++)
             {
                 scene.Meshes[i] = meshesArray[i];
+            }
+        }
+        
+        private void GetMeshNamesRecursive(Node parentNode, List<string> meshNames, ref int maxNumberLength)
+        {
+            foreach (Node node in parentNode.Children)
+            {
+                if (node.HasMeshes)
+                {
+                    int currMaxNumberLength = node.Name.SelectMany(i => Regex.Matches(node.Name, @"\d+").Cast<Match>().Select(m => m.Value.Length)).DefaultIfEmpty(0).Max();
+                    if (currMaxNumberLength > maxNumberLength)
+                    {
+                        maxNumberLength = currMaxNumberLength;
+                    }
+                    for (int i = 0; i < node.MeshCount; i++)
+                    {
+                        meshNames.Add(node.Name);
+                    }
+                }
+                
+                if (node.Children.Count > 0)
+                {
+                  GetMeshNamesRecursive(node, meshNames, ref maxNumberLength);
+                }
             }
         }
 
