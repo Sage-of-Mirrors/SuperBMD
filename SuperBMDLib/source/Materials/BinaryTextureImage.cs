@@ -163,7 +163,7 @@ namespace SuperBMDLib.Materials
 
         public BinaryTextureImage()
         {
-
+            MipMapCount = 1;
         }
 
         public BinaryTextureImage(string name)
