@@ -5,11 +5,13 @@ This API uses the Open Asset Import Library (AssImp). A list of supported model 
 
 # Usage
 
-The UnitTest program can be used to convert models to the BMD format.
+SuperBMD.exe can be used to convert models to the BMD/BDL formats, or to convert BMD/BDL models to the DAE format.
 
-To convert a model, drag it onto the executable or run the program via command line:
+The program must be run via the command line. Some example commands are below:
 
-`SuperBMD.exe <model path>`
+`SuperBMD.exe -i <in BMD path> -o <out DAE path>`
+
+`SuperBMD.exe -i <in model path> -o <out BDL path> -x <path to tex_headers.json> -m <path to materials.json> --tristrip all --bdl`
 
 ## Notes
 ### Modeling
