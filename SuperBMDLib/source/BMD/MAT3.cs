@@ -466,6 +466,8 @@ namespace SuperBMDLib.BMD
 
             if (args.materials_path != "")
                 LoadFromJson(scene, textures, shapes, args.materials_path);
+            else if (args.generate_map_materials)
+                GenerateMapMaterials(scene, textures, shapes);
             else
                 LoadFromScene(scene, textures, shapes);
 
@@ -541,6 +543,33 @@ namespace SuperBMDLib.BMD
             }
         }
 
+        private void GenerateMapMaterials(Assimp.Scene scene, TEX1 textures, SHP1 shapes)
+        {
+            for (int mat_index = 0; mat_index < scene.MaterialCount; mat_index++)
+            {
+                var mesh = scene.Meshes.Find(m => m.MaterialIndex == mat_index);
+                int meshIndex = scene.Meshes.IndexOf(mesh);
+
+                Assimp.Material meshMat = scene.Materials[mesh.MaterialIndex];
+                Materials.Material bmdMaterial = new Material();
+
+                bool hasVtxColor0 = shapes.Shapes[meshIndex].AttributeData.CheckAttribute(GXVertexAttribute.Color0);
+                int texIndex = -1;
+                string texName = null;
+                if (meshMat.HasTextureDiffuse)
+                {
+                    texName = Path.GetFileNameWithoutExtension(meshMat.TextureDiffuse.FilePath);
+                    texIndex = textures.Textures.IndexOf(textures[texName]);
+                }
+
+                bmdMaterial.SetUpTevForMaps(meshMat.HasTextureDiffuse, hasVtxColor0, texIndex, texName);
+
+                m_Materials.Add(bmdMaterial);
+                m_RemapIndices.Add(mat_index);
+                m_MaterialNames.Add(meshMat.Name);
+            }
+        }
+
         private void LoadFromScene(Assimp.Scene scene, TEX1 textures, SHP1 shapes)
         {
             for (int mat_index = 0; mat_index < scene.MaterialCount; mat_index++)
@@ -574,7 +603,7 @@ namespace SuperBMDLib.BMD
 
             m_RemapIndices = new List<int>();
             m_MaterialNames = new List<string>();
-
+            
             m_IndirectTexBlock = new List<IndirectTexturing>();
             m_CullModeBlock = new List<CullMode>();
             m_MaterialColorBlock = new List<Color>();
@@ -779,9 +808,9 @@ namespace SuperBMDLib.BMD
                 {
                     int texIndex = mat.TextureIndices[0];
                     //texIndex = m_TexRemapBlock[texIndex];
-                    string texFilename = textures[texIndex].Name + ".png";
+                    string texPath = Path.Combine(fileDir, textures[texIndex].Name + ".png");
 
-                    Assimp.TextureSlot tex = new Assimp.TextureSlot(texFilename, Assimp.TextureType.Diffuse, 0,
+                    Assimp.TextureSlot tex = new Assimp.TextureSlot(texPath, Assimp.TextureType.Diffuse, 0,
                         Assimp.TextureMapping.FromUV, 0, 1.0f, Assimp.TextureOperation.Add,
                         textures[texIndex].WrapS.ToAssImpWrapMode(), textures[texIndex].WrapT.ToAssImpWrapMode(), 0);
 
