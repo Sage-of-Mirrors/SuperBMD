@@ -513,7 +513,7 @@ namespace SuperBMDLib.BMD
             for (int i = 0; i < scene.MeshCount; i++)
             {
                 Assimp.Material meshMat = scene.Materials[scene.Meshes[i].MaterialIndex];
-                string test = meshMat.Name.Replace("-material", "");
+                string matName = meshMat.Name.Replace("-material", "");
 
                 List<string> materialNamesWithoutParentheses = new List<string>();
                 foreach (string materialName in m_MaterialNames)
@@ -521,18 +521,18 @@ namespace SuperBMDLib.BMD
                     materialNamesWithoutParentheses.Add(materialName.Replace("(", "_").Replace(")", "_"));
                 }
 
-                while (!materialNamesWithoutParentheses.Contains(test))
+                while (!materialNamesWithoutParentheses.Contains(matName))
                 {
-                    if (test.Length <= 1)
+                    if (matName.Length <= 1)
                     {
                         throw new Exception($"Mesh \"{scene.Meshes[i].Name}\" has a material named \"{meshMat.Name.Replace("-material", "")}\" which was not found in materials.json.");
                     }
-                    test = test.Substring(1);
+                    matName = matName.Substring(1);
                 }
 
                 for (int j = 0; j < m_Materials.Count; j++)
                 {
-                    if (test == materialNamesWithoutParentheses[j])
+                    if (matName == materialNamesWithoutParentheses[j])
                     {
                         scene.Meshes[i].MaterialIndex = j;
                         break;
