@@ -9,6 +9,7 @@ using SuperBMDLib.Geometry.Enums;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System.Text.RegularExpressions;
 
 namespace SuperBMDLib.BMD
 {
@@ -474,6 +475,38 @@ namespace SuperBMDLib.BMD
             FillMaterialDataBlocks();
         }
 
+        public int GetMaterialIndexFromMaterialName(string matName)
+        {
+            for (int i = 0; i < m_Materials.Count; i++)
+            {
+                if (matName == m_MaterialNames[i])
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        public int GetMaterialIndexFromSanitizedMaterialName(string sanitizedMatName)
+        {
+            List<string> allSanitizedMatNames = new List<string>();
+            foreach (string materialName in m_MaterialNames)
+            {
+                allSanitizedMatNames.Add(materialName.Replace("(", "_").Replace(")", "_"));
+            }
+
+            for (int i = 0; i < m_Materials.Count; i++)
+            {
+                if (sanitizedMatName == allSanitizedMatNames[i])
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
         private void LoadFromJson(Assimp.Scene scene, TEX1 textures, SHP1 shapes, string json_path)
         {
             JsonSerializer serial = new JsonSerializer();
@@ -513,31 +546,36 @@ namespace SuperBMDLib.BMD
             for (int i = 0; i < scene.MeshCount; i++)
             {
                 Assimp.Material meshMat = scene.Materials[scene.Meshes[i].MaterialIndex];
-                string matName = meshMat.Name.Replace("-material", "");
 
-                List<string> materialNamesWithoutParentheses = new List<string>();
-                foreach (string materialName in m_MaterialNames)
-                {
-                    materialNamesWithoutParentheses.Add(materialName.Replace("(", "_").Replace(")", "_"));
-                }
+                int matIndex = GetMaterialIndexFromMaterialName(meshMat.Name);
 
-                while (!materialNamesWithoutParentheses.Contains(matName))
+                if (matIndex == -1)
                 {
-                    if (matName.Length <= 1)
+                    // None of material names in materials.json are an exact match.
+                    // Try checking if this is a legacy model from an older version of SuperBMD where the material names were sanitized.
+                    Regex reg = new Regex("^m(\\d+)([^\"]+)");
+                    Match match = reg.Match(meshMat.Name);
+                    if (match.Success)
                     {
-                        throw new Exception($"Mesh \"{scene.Meshes[i].Name}\" has a material named \"{meshMat.Name.Replace("-material", "")}\" which was not found in materials.json.");
-                    }
-                    matName = matName.Substring(1);
-                }
-
-                for (int j = 0; j < m_Materials.Count; j++)
-                {
-                    if (matName == materialNamesWithoutParentheses[j])
-                    {
-                        scene.Meshes[i].MaterialIndex = j;
-                        break;
+                        int tmpMatIndex = Int32.Parse(match.Groups[1].Value);
+                        string tmpSanitizedMatName = match.Groups[2].Value;
+                        if (tmpMatIndex >= 0 && tmpMatIndex < m_Materials.Count)
+                        {
+                            string possibleMatName = m_Materials[tmpMatIndex].Name;
+                            if (tmpSanitizedMatName == possibleMatName.Replace("(", "_").Replace(")", "_"))
+                            {
+                                matIndex = tmpMatIndex;
+                            }
+                        }
                     }
                 }
+
+                if (matIndex == -1)
+                {
+                    throw new Exception($"Mesh \"{scene.Meshes[i].Name}\" has a material named \"{meshMat.Name}\" which was not found in materials.json.");
+                }
+
+                scene.Meshes[i].MaterialIndex = matIndex;
 
                 //m_RemapIndices[i] = scene.Meshes[i].MaterialIndex;
             }

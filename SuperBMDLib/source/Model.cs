@@ -238,14 +238,14 @@ namespace SuperBMDLib
                 }
                 else if (line.Contains("<material id=\""))
                 {
-                    Regex reg = new Regex("^    <material id=\"(m(\\d+)[^\"]+)\" name=\"[^\"]+\">$");
+                    Regex reg = new Regex("^    <material id=\"([^\"]+)\" name=\"[^\"]+\">$");
                     Match match = reg.Match(line);
                     if (match.Success)
                     {
-                        string mat_id = match.Groups[1].Value;
-                        int mat_index = Int32.Parse(match.Groups[2].Value);
+                        string mat_name_sanitized = match.Groups[1].Value;
+                        int mat_index = Materials.GetMaterialIndexFromSanitizedMaterialName(mat_name_sanitized);
                         string mat_name = Materials.m_Materials[mat_index].Name;
-                        string matLine = $"    <material id=\"{mat_id}\" name=\"{mat_name}\">";
+                        string matLine = $"    <material id=\"{mat_name_sanitized}\" name=\"{mat_name}\">";
                         test.WriteLine(matLine);
                     }
                     else
@@ -264,7 +264,7 @@ namespace SuperBMDLib
                         test.WriteLine("        <skeleton>#skeleton_root</skeleton>");
                         test.WriteLine("        <bind_material>");
                         test.WriteLine("         <technique_common>");
-                        test.WriteLine($"          <instance_material symbol=\"m{mesh.MaterialIndex}{ Materials.m_Materials[mesh.MaterialIndex].Name }\" target=\"#m{mesh.MaterialIndex}{ Materials.m_Materials[mesh.MaterialIndex].Name.Replace("(","_").Replace(")","_") }\" />");
+                        test.WriteLine($"          <instance_material symbol=\"{ Materials.m_Materials[mesh.MaterialIndex].Name }\" target=\"#{ Materials.m_Materials[mesh.MaterialIndex].Name.Replace("(", "_").Replace(")", "_") }\" />");
                         test.WriteLine("         </technique_common>");
                         test.WriteLine("        </bind_material>");
                         test.WriteLine("       </instance_controller>");
