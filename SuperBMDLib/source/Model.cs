@@ -254,23 +254,6 @@ namespace SuperBMDLib
                     }
                     test.Flush();
                 }
-                else if (line.Contains("<node"))
-                {
-                    string[] testLn = line.Split('\"');
-                    string name = testLn[3];
-
-                    if (Joints.FlatSkeleton.Exists(x => x.Name == name))
-                    {
-                        string jointLine = line.Replace(">", $" sid=\"{ name }\" type=\"JOINT\">");
-                        test.WriteLine(jointLine);
-                        test.Flush();
-                    }
-                    else
-                    {
-                        test.WriteLine(line);
-                        test.Flush();
-                    }
-                }
                 else if (line.Contains("</visual_scene>"))
                 {
                     foreach (Mesh mesh in outScene.Meshes)
@@ -291,12 +274,6 @@ namespace SuperBMDLib
                     }
 
                     test.WriteLine(line);
-                    test.Flush();
-                }
-                else if (line.Contains("<matrix"))
-                {
-                    string matLine = line.Replace("<matrix>", "<matrix sid=\"matrix\">");
-                    test.WriteLine(matLine);
                     test.Flush();
                 }
                 else
