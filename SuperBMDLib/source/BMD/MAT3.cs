@@ -846,9 +846,9 @@ namespace SuperBMDLib.BMD
                 {
                     int texIndex = mat.TextureIndices[0];
                     //texIndex = m_TexRemapBlock[texIndex];
-                    string texPath = Path.Combine(fileDir, textures[texIndex].Name + ".png");
+                    string texFilename = textures[texIndex].Name + ".png";
 
-                    Assimp.TextureSlot tex = new Assimp.TextureSlot(texPath, Assimp.TextureType.Diffuse, 0,
+                    Assimp.TextureSlot tex = new Assimp.TextureSlot(texFilename, Assimp.TextureType.Diffuse, 0,
                         Assimp.TextureMapping.FromUV, 0, 1.0f, Assimp.TextureOperation.Add,
                         textures[texIndex].WrapS.ToAssImpWrapMode(), textures[texIndex].WrapT.ToAssImpWrapMode(), 0);
 
