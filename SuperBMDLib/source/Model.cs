@@ -236,6 +236,29 @@ namespace SuperBMDLib
                     test.WriteLine(line);
                     test.Flush();
                 }
+                else if (line.Contains("<node"))
+                {
+                    Regex reg = new Regex("^( +)<node id=\"([^\"]+)\" +name=\"[^\"]+\" +type=\"NODE\">$");
+                    Match match = reg.Match(line);
+
+                    if (match.Success)
+                    {
+                        string indentation = match.Groups[1].Value;
+                        string joint_name = match.Groups[2].Value;
+                        if (Joints.FlatSkeleton.Exists(x => x.Name == joint_name))
+                        {
+                            string jointLine = indentation + $"<node id=\"{joint_name}\" name=\"{joint_name}\" sid=\"{joint_name}\" type=\"JOINT\">";
+                            test.WriteLine(jointLine);
+                        } else
+                        {
+                            test.WriteLine(line);
+                        }
+                    } else
+                    {
+                        test.WriteLine(line);
+                    }
+                    test.Flush();
+                }
                 else if (line.Contains("<material id=\""))
                 {
                     Regex reg = new Regex("^    <material id=\"([^\"]+)\" name=\"[^\"]+\">$");
