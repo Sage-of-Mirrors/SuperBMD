@@ -697,6 +697,13 @@ namespace SuperBMDLib
             List<int> usedMaterialIndexes = new List<int>();
             foreach (Mesh mesh1 in scene.Meshes)
             {
+                if (mesh1.Faces.Any(x => x.Indices.Count < 3))
+                {
+                    // Loose vertex/edge. These are handled weirdly by Assimp and put in separate meshes.
+                    // We don't want a misleading error message here, so skip it in this function, and raise a different error elsewhere.
+                    continue;
+                }
+
                 foreach (Mesh mesh2 in scene.Meshes)
                 {
                     if (mesh1.Name == mesh2.Name && mesh1.MaterialIndex != mesh2.MaterialIndex)
