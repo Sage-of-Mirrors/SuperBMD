@@ -32,6 +32,12 @@ namespace SuperBMDLib
 
             for (int i = 0; i < args.Length; i++)
             {
+				if (args[0].EndsWith(".bmd") || args[0].EndsWith(".bdl"))
+					input_path = args[0];
+                else
+                    if (i + 1 >= args.Length)
+                    throw new Exception("The parameters were malformed.")
+
                 switch (args[i])
                 {
                     case "-i":
@@ -82,8 +88,6 @@ namespace SuperBMDLib
                     case "--bdl":
                         output_bdl = true;
                         break;
-                    default:
-                        throw new Exception($"Unknown parameter \"{ args[i] }\"");
                 }
             }
 
