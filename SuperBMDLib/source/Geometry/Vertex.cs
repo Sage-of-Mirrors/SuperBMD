@@ -221,5 +221,10 @@ namespace SuperBMDLib.Geometry
                     throw new ArgumentException("vertex input type");
             }
         }
+
+        public override string ToString()
+        {
+            return $"{ PositionMatrixIDxIndex }";
+        }
     }
 }

@@ -84,6 +84,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="source\Animation\BCK\BCK.cs" />
+    <Compile Include="source\Animation\Track.cs" />
     <Compile Include="source\Arguments.cs" />
     <Compile Include="source\BMD\DRW1.cs" />
     <Compile Include="source\BMD\EVP1.cs" />
@@ -182,6 +184,7 @@
     <Compile Include="source\Util\Color32.cs" />
     <Compile Include="source\Util\J3DUtility.cs" />
     <Compile Include="source\Util\JsonUtility.cs" />
+    <Compile Include="source\Util\QuaternionExtensions.cs" />
     <Compile Include="source\Util\StreamUtility.cs" />
     <Compile Include="source\Util\VectorUtility.cs" />
     <Compile Include="source\Util\WrapModeUtility.cs" />

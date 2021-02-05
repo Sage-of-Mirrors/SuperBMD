@@ -54,9 +54,9 @@ namespace SuperBMDLib.Rigging
 
             Vector3 rotFull = new Vector3(xConvRot * (float)(Math.PI / 180f), yConvRot * (float)(Math.PI / 180f), zConvRot * (float)(Math.PI / 180f));
 
-            m_Rotation = Quaternion.FromAxisAngle(new Vector3(0, 0, 1), rotFull.Z) *
-                         Quaternion.FromAxisAngle(new Vector3(0, 1, 0), rotFull.Y) *
-                         Quaternion.FromAxisAngle(new Vector3(1, 0, 0), rotFull.X);
+            m_Rotation = Quaternion.Identity; /*Quaternion.FromAxisAngle(new Vector3(0, 1, 0), rotFull.Y) *
+                         Quaternion.FromAxisAngle(new Vector3(0, 0, 1), rotFull.Z) *
+                         Quaternion.FromAxisAngle(new Vector3(1, 0, 0), rotFull.X);*/
 
             reader.SkipInt16();
 

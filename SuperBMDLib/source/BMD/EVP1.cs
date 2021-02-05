@@ -158,7 +158,14 @@ namespace SuperBMDLib.BMD
         public void SetInverseBindMatrices(List<Rigging.Bone> flatSkel)
         {
             if (InverseBindMatrices.Count == 0)
+            {
+                foreach (Rigging.Bone b in flatSkel)
+                {
+                    b.SetInverseBindMatrix(Matrix4.Identity);
+                }
+
                 return;
+            }
 
             for (int i = 0; i < flatSkel.Count; i++)
             {

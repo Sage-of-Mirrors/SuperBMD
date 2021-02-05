@@ -26,6 +26,10 @@ namespace SuperBMDLib.Rigging
         {
             Weights.Add(weight);
             BoneIndices.Add(boneIndex);
+            if (boneIndex > 0)
+            {
+
+            }
             WeightCount++;
         }
 

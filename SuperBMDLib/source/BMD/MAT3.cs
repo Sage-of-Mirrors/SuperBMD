@@ -508,16 +508,16 @@ namespace SuperBMDLib.BMD
                 Assimp.Material meshMat = scene.Materials[scene.Meshes[i].MaterialIndex];
                 string test = meshMat.Name.Replace("-material", "");
 
-                if (test.Contains("_"))
+                /*if (test.Contains("_"))
                 {
                     string[] without_underscores = test.Split('_');
                     test = $"{ without_underscores[0] }({ without_underscores[1] })";
-                }
+                }*/
 
-                while (!m_MaterialNames.Contains(test))
+                /*while (!m_MaterialNames.Contains(test))
                 {
                     test = test.Substring(1);
-                }
+                }*/
 
                 for (int j = 0; j < m_Materials.Count; j++)
                 {

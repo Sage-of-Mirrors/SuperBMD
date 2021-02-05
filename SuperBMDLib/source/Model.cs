@@ -7,6 +7,7 @@ using GameFormatReader.Common;
 using Assimp;
 using System.IO;
 using SuperBMDLib.BMD;
+using SuperBMDLib.Animation;
 
 namespace SuperBMDLib
 {
@@ -20,6 +21,8 @@ namespace SuperBMDLib
         public SHP1 Shapes            { get; private set; }
         public MAT3 Materials         { get; private set; }
         public TEX1 Textures          { get; private set; }
+
+        public List<BCK> BCKAnims { get; private set; }
 
         private int packetCount;
         private int vertexCount;
@@ -53,6 +56,8 @@ namespace SuperBMDLib
 
         public Model(EndianBinaryReader reader, Arguments args)
         {
+            BCKAnims = new List<BCK>();
+
             int j3d2Magic = reader.ReadInt32();
             int modelMagic = reader.ReadInt32();
 
@@ -98,6 +103,8 @@ namespace SuperBMDLib
 
         public Model(Scene scene, Arguments args)
         {
+            BCKAnims = new List<BCK>();
+
             VertexData = new VTX1(scene);
             Joints = new JNT1(scene, VertexData);
             Textures = new TEX1(scene, args);
@@ -116,6 +123,12 @@ namespace SuperBMDLib
                 packetCount += shape.Packets.Count;
 
             vertexCount = VertexData.Attributes.Positions.Count;
+
+            if (scene.AnimationCount > 0)
+            {
+                foreach (Assimp.Animation anm in scene.Animations)
+                    BCKAnims.Add(new BCK(anm, Joints.FlatSkeleton));
+            }
         }
 
         public void ExportBMD(string fileName)
@@ -152,6 +165,20 @@ namespace SuperBMDLib
                 writer.Seek(8, SeekOrigin.Begin);
                 writer.Write((int)writer.BaseStream.Length);
             }
+
+            if (BCKAnims.Count > 0)
+            {
+                for (int i = 0; i < BCKAnims.Count; i++)
+                {
+                    string bck_name = Path.Combine(outDir, "anim_" + i + ".bck");
+
+                    using (FileStream strm = new FileStream(bck_name, FileMode.Create, FileAccess.Write))
+                    {
+                        EndianBinaryWriter bck_writer = new EndianBinaryWriter(strm, Endian.Big);
+                        BCKAnims[i].Write(bck_writer);
+                    }
+                }
+            }
         }
 
         public void ExportAssImp(string fileName, string modelType, ExportSettings settings)
@@ -169,7 +196,7 @@ namespace SuperBMDLib
             Scenegraph.FillScene(outScene, Joints.FlatSkeleton, settings.UseSkeletonRoot);
             Scenegraph.CorrectMaterialIndices(outScene, Materials);
 
-            if (SkinningEnvelopes.Weights.Count == 0)
+            /*if (SkinningEnvelopes.Weights.Count == 0)
             {
                 Assimp.Node geomNode = new Node(Path.GetFileNameWithoutExtension(fileName), outScene.RootNode);
 
@@ -179,7 +206,7 @@ namespace SuperBMDLib
                 }
 
                 outScene.RootNode.Children.Add(geomNode);
-            }
+            }*/
 
             AssimpContext cont = new AssimpContext();
             cont.ExportFile(outScene, fileName, "collada", PostProcessSteps.ValidateDataStructure);
