@@ -36,7 +36,7 @@ namespace SuperBMDLib
 					input_path = args[0];
                 else
                     if (i + 1 >= args.Length)
-                    throw new Exception("The parameters were malformed.")
+                    throw new Exception("The parameters were malformed.");
 
                 switch (args[i])
                 {
