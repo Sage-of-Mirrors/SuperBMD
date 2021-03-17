@@ -600,7 +600,7 @@ namespace SuperBMDLib.BMD
                     texIndex = textures.Textures.IndexOf(textures[texName]);
                 }
 
-                bmdMaterial.SetUpTevForMaps(meshMat.HasTextureDiffuse, hasVtxColor0, texIndex, texName);
+                bmdMaterial.SetUpTevForMaps(meshMat.HasTextureDiffuse, hasVtxColor0, texIndex, texName, meshMat.Opacity);
 
                 m_Materials.Add(bmdMaterial);
                 m_RemapIndices.Add(mat_index);

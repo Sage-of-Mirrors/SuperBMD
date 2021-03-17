@@ -186,7 +186,7 @@ namespace SuperBMDLib.Materials
             AddTevStage(stageParams);
         }
 
-        public void SetUpTevForMaps(bool hasTexture, bool hasVtxColor, int texIndex, string texName)
+        public void SetUpTevForMaps(bool hasTexture, bool hasVtxColor, int texIndex, string texName, float opacity)
         {
             // We need both vertex colors and textures to do map lighting.
             if (!hasVtxColor || !hasTexture)
@@ -195,11 +195,20 @@ namespace SuperBMDLib.Materials
                 return;
             }
 
+            bool IsTranslucent = opacity < 1.0f;
+
             Flag = 1;
+            if (IsTranslucent)
+            {
+                Flag = 4;
+            }
 
             ChannelControls[0] = null;
             AddChannelControl(J3DColorChannelId.Color0, false, ColorSrc.Vertex, LightId.None, DiffuseFn.Clamp, J3DAttenuationFn.Spec, ColorSrc.Register);
             AddChannelControl(J3DColorChannelId.Alpha0, false, ColorSrc.Vertex, LightId.None, DiffuseFn.Clamp, J3DAttenuationFn.Spec, ColorSrc.Register);
+
+            AddChannelControl(J3DColorChannelId.Color1, true, ColorSrc.Register, LightId.None, DiffuseFn.Signed, J3DAttenuationFn.None_0, ColorSrc.Register);
+            AddChannelControl(J3DColorChannelId.Alpha1, false, ColorSrc.Register, LightId.None, DiffuseFn.Clamp, J3DAttenuationFn.None_2, ColorSrc.Register);
 
             AddChannelControl(J3DColorChannelId.Color1, true, ColorSrc.Register, LightId.None, DiffuseFn.Signed, J3DAttenuationFn.None_0, ColorSrc.Register);
             AddChannelControl(J3DColorChannelId.Alpha1, false, ColorSrc.Register, LightId.None, DiffuseFn.Clamp, J3DAttenuationFn.None_2, ColorSrc.Register);
@@ -255,11 +264,38 @@ namespace SuperBMDLib.Materials
                 AlphaRegId = TevRegisterId.TevPrev,
             };
 
+            TevStageParameters third_stage = new TevStageParameters
+            {
+                ColorInA = CombineColorInput.Zero,
+                ColorInB = CombineColorInput.Zero,
+                ColorInC = CombineColorInput.Zero,
+                ColorInD = CombineColorInput.ColorPrev,
+
+                ColorOp = TevOp.Add,
+                ColorBias = TevBias.Zero,
+                ColorScale = TevScale.Scale_1,
+                ColorClamp = true,
+                ColorRegId = TevRegisterId.TevPrev,
+
+                AlphaInA = CombineAlphaInput.Zero,
+                AlphaInB = CombineAlphaInput.Konst,
+                AlphaInC = CombineAlphaInput.AlphaPrev,
+                AlphaInD = CombineAlphaInput.Zero,
+
+                AlphaOp = TevOp.Add,
+                AlphaBias = TevBias.Zero,
+                AlphaScale = TevScale.Scale_1,
+                AlphaClamp = true,
+                AlphaRegId = TevRegisterId.TevPrev,
+            };
+
             AddTevStage(first_stage);
             AddTevStage(second_stage);
+            AddTevStage(third_stage);
 
             TevOrders[0] = null;
             AddTevOrder(TexCoordId.TexCoord0, TexMapId.TexMap0, GXColorChannelId.Color0A0);
+            AddTevOrder(TexCoordId.TexCoord0, TexMapId.TexMap0, GXColorChannelId.ColorNull);
             AddTevOrder(TexCoordId.TexCoord0, TexMapId.TexMap0, GXColorChannelId.ColorNull);
 
             AddTexGen(TexGenType.Matrix2x4, TexGenSrc.Tex0, Enums.TexMatrix.Identity);
@@ -270,15 +306,19 @@ namespace SuperBMDLib.Materials
 
             SwapModes[0] = new TevSwapMode(0, 0);
             SwapModes[1] = new TevSwapMode(0, 0);
+            SwapModes[2] = new TevSwapMode(0, 0);
 
             SwapTables[0] = new TevSwapModeTable(0, 1, 2, 3);
             SwapTables[1] = new TevSwapModeTable(0, 1, 2, 3);
+            SwapTables[2] = new TevSwapModeTable(0, 1, 2, 3);
 
             ColorSels[0] = KonstColorSel.KCSel_K0;
             ColorSels[1] = KonstColorSel.KCSel_K0;
+            ColorSels[2] = KonstColorSel.KCSel_K0;
 
             AlphaSels[0] = KonstAlphaSel.KASel_K0_A;
             AlphaSels[1] = KonstAlphaSel.KASel_K3_A;
+            AlphaSels[2] = KonstAlphaSel.KASel_K2_A;
 
             TevColors[0] = new Color(0, 0, 0, 1);
             TevColors[1] = new Color(1, 1, 1, 1);
@@ -287,7 +327,7 @@ namespace SuperBMDLib.Materials
 
             KonstColors[0] = new Color(1, 1, 1, 1);
             KonstColors[1] = new Color(1, 1, 1, 1);
-            KonstColors[2] = new Color(1, 1, 1, 1);
+            KonstColors[2] = new Color(1, 1, 1, opacity);
             KonstColors[3] = new Color(1, 1, 1, 1);
 
             MaterialColors[0] = new Color(0.8f, 0.8f, 0.8f, 1.0f);
@@ -296,12 +336,21 @@ namespace SuperBMDLib.Materials
             AmbientColors[0] = new Color(0.196078435f, 0.196078435f, 0.196078435f, 0.196078435f);
             AmbientColors[1] = new Color(0, 0, 0, 0);
 
-            ZMode = new ZMode(true, CompareType.LEqual, true);
-            BMode = new BlendMode(Enums.BlendMode.None, BlendModeControl.One, BlendModeControl.Zero, LogicOp.Copy);
-            AlphCompare = new AlphaCompare(CompareType.Always, 0, AlphaOp.Or, CompareType.Always, 0);
+            ZMode = new ZMode(true, CompareType.LEqual, !IsTranslucent);
+
+            if (IsTranslucent)
+            {
+                BMode = new BlendMode(Enums.BlendMode.Blend, BlendModeControl.SrcAlpha, BlendModeControl.InverseSrcAlpha, LogicOp.Copy);
+                AlphCompare = new AlphaCompare(CompareType.Always, 0, AlphaOp.Or, CompareType.Always, 0);
+            }
+            else
+            {
+                BMode = new BlendMode(Enums.BlendMode.Blend, BlendModeControl.SrcAlpha, BlendModeControl.InverseSrcAlpha, LogicOp.NoOp);
+                AlphCompare = new AlphaCompare(CompareType.GEqual, 128, AlphaOp.And, CompareType.LEqual, 255);
+            }
 
             CullMode = CullMode.Back;
-            ZCompLoc = true;
+            ZCompLoc = IsTranslucent;
             Dither = true;
         }
 
