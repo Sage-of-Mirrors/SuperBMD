@@ -108,8 +108,13 @@ namespace SuperBMDLib
 
         public Model(Scene scene, Arguments args)
         {
-            EnsureOneMaterialPerMesh(scene);
+            EnsureOneMaterialPerMeshAndOneMeshPerMaterial(scene);
             SortMeshesByObjectNames(scene);
+
+            if (args.rotate_model)
+            {
+                RotateModel(scene);
+            }
 
             VertexData = new VTX1(scene);
             Joints = new JNT1(scene, VertexData);
@@ -233,20 +238,44 @@ namespace SuperBMDLib
                 }
                 else if (line.Contains("<node"))
                 {
-                    string[] testLn = line.Split('\"');
-                    string name = testLn[3];
+                    Regex reg = new Regex("^( +)<node id=\"([^\"]+)\" +name=\"[^\"]+\" +type=\"NODE\">$");
+                    Match match = reg.Match(line);
 
-                    if (Joints.FlatSkeleton.Exists(x => x.Name == name))
+                    if (match.Success)
                     {
-                        string jointLine = line.Replace(">", $" sid=\"{ name }\" type=\"JOINT\">");
-                        test.WriteLine(jointLine);
-                        test.Flush();
+                        string indentation = match.Groups[1].Value;
+                        string joint_name = match.Groups[2].Value;
+                        if (Joints.FlatSkeleton.Exists(x => x.Name == joint_name))
+                        {
+                            string jointLine = indentation + $"<node id=\"{joint_name}\" name=\"{joint_name}\" sid=\"{joint_name}\" type=\"JOINT\">";
+                            test.WriteLine(jointLine);
+                        } else
+                        {
+                            test.WriteLine(line);
+                        }
+                    } else
+                    {
+                        test.WriteLine(line);
+                    }
+                    test.Flush();
+                }
+                else if (line.Contains("<material id=\""))
+                {
+                    Regex reg = new Regex("^    <material id=\"([^\"]+)\" name=\"[^\"]+\">$");
+                    Match match = reg.Match(line);
+                    if (match.Success)
+                    {
+                        string mat_name_sanitized = match.Groups[1].Value;
+                        int mat_index = Materials.GetMaterialIndexFromSanitizedMaterialName(mat_name_sanitized);
+                        string mat_name = Materials.m_Materials[mat_index].Name;
+                        string matLine = $"    <material id=\"{mat_name_sanitized}\" name=\"{mat_name}\">";
+                        test.WriteLine(matLine);
                     }
                     else
                     {
                         test.WriteLine(line);
-                        test.Flush();
                     }
+                    test.Flush();
                 }
                 else if (line.Contains("</visual_scene>"))
                 {
@@ -258,7 +287,7 @@ namespace SuperBMDLib
                         test.WriteLine("        <skeleton>#skeleton_root</skeleton>");
                         test.WriteLine("        <bind_material>");
                         test.WriteLine("         <technique_common>");
-                        test.WriteLine($"          <instance_material symbol=\"m{mesh.MaterialIndex}{ Materials.m_Materials[mesh.MaterialIndex].Name }\" target=\"#m{mesh.MaterialIndex}{ Materials.m_Materials[mesh.MaterialIndex].Name.Replace("(","_").Replace(")","_") }\" />");
+                        test.WriteLine($"          <instance_material symbol=\"{ Materials.m_Materials[mesh.MaterialIndex].Name }\" target=\"#{ Materials.m_Materials[mesh.MaterialIndex].Name.Replace("(", "_").Replace(")", "_") }\" />");
                         test.WriteLine("         </technique_common>");
                         test.WriteLine("        </bind_material>");
                         test.WriteLine("       </instance_controller>");
@@ -268,12 +297,6 @@ namespace SuperBMDLib
                     }
 
                     test.WriteLine(line);
-                    test.Flush();
-                }
-                else if (line.Contains("<matrix"))
-                {
-                    string matLine = line.Replace("<matrix>", "<matrix sid=\"matrix\">");
-                    test.WriteLine(matLine);
                     test.Flush();
                 }
                 else
@@ -669,16 +692,77 @@ namespace SuperBMDLib
             }
         }
 
-        private void EnsureOneMaterialPerMesh(Scene scene)
+        private void EnsureOneMaterialPerMeshAndOneMeshPerMaterial(Scene scene)
         {
+            List<int> usedMaterialIndexes = new List<int>();
             foreach (Mesh mesh1 in scene.Meshes)
             {
+                if (mesh1.Faces.Any(x => x.Indices.Count < 3))
+                {
+                    // Loose vertex/edge. These are handled weirdly by Assimp and put in separate meshes.
+                    // We don't want a misleading error message here, so skip it in this function, and raise a different error elsewhere.
+                    continue;
+                }
+
                 foreach (Mesh mesh2 in scene.Meshes)
                 {
                     if (mesh1.Name == mesh2.Name && mesh1.MaterialIndex != mesh2.MaterialIndex)
                     {
                         throw new Exception($"Mesh \"{mesh1.Name}\" has more than one material assigned to it. Currently only one material per mesh is supported.");
                     }
+                }
+
+                if (usedMaterialIndexes.Contains(mesh1.MaterialIndex))
+                {
+                    throw new Exception($"Material \"{scene.Materials[mesh1.MaterialIndex].Name}\" is used by more than one mesh. Each mesh must have a unique material. Try merging meshes that share a material.");
+                }
+                usedMaterialIndexes.Add(mesh1.MaterialIndex);
+            }
+        }
+
+        private void RotateModel(Scene scene)
+        {
+            Assimp.Node root = null;
+            for (int i = 0; i < scene.RootNode.ChildCount; i++)
+            {
+                if (scene.RootNode.Children[i].Name.ToLowerInvariant() == "skeleton_root")
+                {
+                    if (scene.RootNode.Children[i].ChildCount == 0)
+                    {
+                        throw new System.Exception("skeleton_root has no children! If you are making a rigged model, make sure skeleton_root contains the root of your skeleton.");
+                    }
+                    root = scene.RootNode.Children[i].Children[0];
+                    break;
+                }
+            }
+
+            Matrix4x4 rotate = Matrix4x4.FromRotationX((float)(-(1 / 2.0) * Math.PI));
+            Matrix4x4 rotateinv = rotate;
+            rotateinv.Inverse();
+
+
+            foreach (Mesh mesh in scene.Meshes)
+            {
+                if (root != null)
+                {
+                    foreach (Assimp.Bone bone in mesh.Bones)
+                    {
+                        bone.OffsetMatrix = rotateinv * bone.OffsetMatrix;
+                    }
+                }
+
+                for (int i = 0; i < mesh.VertexCount; i++)
+                {
+                    Vector3D vertex = mesh.Vertices[i];
+                    vertex.Set(vertex.X, vertex.Z, -vertex.Y);
+                    mesh.Vertices[i] = vertex;
+                }
+                for (int i = 0; i < mesh.Normals.Count; i++)
+                {
+                    Vector3D norm = mesh.Normals[i];
+                    norm.Set(norm.X, norm.Z, -norm.Y);
+
+                    mesh.Normals[i] = norm;
                 }
             }
         }

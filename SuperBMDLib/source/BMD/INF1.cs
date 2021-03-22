@@ -169,6 +169,7 @@ namespace SuperBMDLib.BMD
             SceneNode lastNode = Root;
 
             Node curAssRoot = new Node(flatSkeleton[0].Name, root);
+            curAssRoot.Transform = flatSkeleton[0].TransformationMatrix.ToMatrix4x4();
             Node lastAssNode = curAssRoot;
             root.Children.Add(curAssRoot);
 

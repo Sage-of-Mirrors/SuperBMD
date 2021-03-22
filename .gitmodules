@@ -1,0 +1,4 @@
+[submodule "GameFormatReader"]
+	path = GameFormatReader
+	url = https://github.com/LagoLunatic/GameFormatReader.git
+	branch = master
