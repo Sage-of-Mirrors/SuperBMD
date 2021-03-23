@@ -23,6 +23,7 @@ namespace SuperBMDLib.Animation
 
     public class BCK
     {
+        public string Name { get; private set; }
         public LoopMode LoopMode;
         public byte RotationFrac;
         public short Duration;
@@ -31,6 +32,7 @@ namespace SuperBMDLib.Animation
 
         public BCK(Assimp.Animation src_anim, List<Rigging.Bone> bone_list)
         {
+            Name = src_anim.Name;
             LoopMode = LoopMode.Loop;
             RotationFrac = 0;
             Duration = (short)(src_anim.DurationInTicks * 30.0f);
@@ -42,7 +44,7 @@ namespace SuperBMDLib.Animation
                 Assimp.NodeAnimationChannel node = src_anim.NodeAnimationChannels.Find(x => x.NodeName == bone_list[i].Name);
 
                 if (node == null)
-                    Tracks[i] = Track.Identity();
+                    Tracks[i] = Track.Identity(bone_list[i].TransformationMatrix, Duration);
                 else
                     Tracks[i] = GenerateTrack(node, bone_list[i]);
             }
@@ -87,8 +89,6 @@ namespace SuperBMDLib.Animation
                 Assimp.VectorKey current_key = keys[i];
                 Vector3 value = new Vector3(current_key.Value.X, current_key.Value.Y, current_key.Value.Z);
 
-                value = Vector3.TransformPosition(value, bone.TransformationMatrix.Inverted());
-
                 x_track[i].Key = value.X;
                 x_track[i].Time = (float)current_key.Time;
 
@@ -112,7 +112,6 @@ namespace SuperBMDLib.Animation
             {
                 Assimp.QuaternionKey current_key = keys[i];
                 Quaternion value = new Quaternion(current_key.Value.X, current_key.Value.Y, current_key.Value.Z, current_key.Value.W);
-
                 Vector3 quat_as_vec = QuaternionExtensions.ToEulerAngles(value);
 
                 x_track[i].Key = quat_as_vec.X;
@@ -138,8 +137,6 @@ namespace SuperBMDLib.Animation
             {
                 Assimp.VectorKey current_key = keys[i];
                 Vector3 value = new Vector3(current_key.Value.X, current_key.Value.Y, current_key.Value.Z);
-
-                value *= bone.TransformationMatrix.ExtractScale();
 
                 x_track[i].Key = value.X;
                 x_track[i].Time = (float)current_key.Time;

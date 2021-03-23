@@ -170,7 +170,7 @@ namespace SuperBMDLib
             {
                 for (int i = 0; i < BCKAnims.Count; i++)
                 {
-                    string bck_name = Path.Combine(outDir, "anim_" + i + ".bck");
+                    string bck_name = BCKAnims[i].Name != "" ? Path.Combine(outDir, $"{ BCKAnims[i].Name }.bck") : Path.Combine(outDir, $"anim_{ i }.bck");
 
                     using (FileStream strm = new FileStream(bck_name, FileMode.Create, FileAccess.Write))
                     {
