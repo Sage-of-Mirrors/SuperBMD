@@ -416,6 +416,17 @@ namespace SuperBMDLib.Materials
             writer.Write((int)0);
         }
 
+        public bool NeedsPalettes()
+        {
+            if (Format == TextureFormats.C4)
+                return true;
+            if (Format == TextureFormats.C8)
+                return true;
+            if (Format == TextureFormats.C14X2)
+                return true;
+            return false;
+        }
+
         #region Decoding
         private static byte[] DecodeData(EndianBinaryReader stream, uint width, uint height, TextureFormats format, Palette imagePalette, PaletteFormats paletteFormat)
         {

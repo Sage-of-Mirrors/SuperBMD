@@ -156,6 +156,12 @@ namespace SuperBMDLib.BMD
 
             foreach (BinaryTextureImage img in Textures)
             {
+                var firstImgWithName = Textures.Find(x => x.Name == img.Name);
+                if (img.Format != firstImgWithName.Format)
+                    throw new Exception($"Texture \"{ img.Name }\" has multiple headers with conflicting image formats.");
+                if (img.NeedsPalettes() && img.PaletteFormat != firstImgWithName.PaletteFormat)
+                    throw new Exception($"Texture \"{ img.Name }\" has multiple headers with conflicting palette formats.");
+
                 if (image_palette_Data.ContainsKey(img.Name))
                 {
                     img.PaletteCount = (ushort)image_palette_Data[img.Name].Item2.Length;
