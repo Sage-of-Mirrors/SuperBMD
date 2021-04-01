@@ -350,8 +350,33 @@ namespace SuperBMDLib.Materials
             }
 
             CullMode = CullMode.Back;
-            ZCompLoc = IsTranslucent;
+            ZCompLoc = false;
             Dither = true;
+
+            FogInfo = new Fog()
+            {
+                Type = 2,
+                Enable = false,
+                Center = 320,
+                StartZ = 10000.0f,
+                EndZ = 20000.0f,
+                NearZ = 5.0f,
+                FarZ = 50000.0f,
+                Color = new Color(1, 1, 1, 1),
+                RangeAdjustmentTable = new float[]
+                {
+                    1.0f,
+                    1.00390625f,
+                    1.01171875f,
+                    1.0234375f,
+                    1.03515625f,
+                    1.05078125f,
+                    1.0703125f,
+                    1.08984375f,
+                    1.11328125f,
+                    1.140625f
+                }
+            };
         }
 
         public void AddChannelControl(J3DColorChannelId id, bool enable, ColorSrc MatSrcColor, LightId litId, DiffuseFn diffuse, J3DAttenuationFn atten, ColorSrc ambSrcColor)
