@@ -572,6 +572,13 @@ namespace SuperBMDLib.BMD
 
                 if (matIndex == -1)
                 {
+                    // The material name isn't exported by a new or old version of SuperBMD.
+                    // In this case it might be exported by new SuperBMD, but then sanitized by Blender 2.79 (e.g. "ear(5)" -> "ear_5_").
+                    matIndex = GetMaterialIndexFromSanitizedMaterialName(meshMat.Name);
+                }
+
+                if (matIndex == -1)
+                {
                     throw new Exception($"Mesh \"{scene.Meshes[i].Name}\" has a material named \"{meshMat.Name}\" which was not found in materials.json.");
                 }
 
