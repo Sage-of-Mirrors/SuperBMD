@@ -466,7 +466,7 @@ namespace SuperBMDLib.Materials.Mdl
                     continue;
                 }
 
-                XFCommand posMatricesCommand = new XFCommand((XFRegister)(0x0078 + i * 12));
+                XFCommand posMatricesCommand = new XFCommand(XFRegister.SETTEXMTX0 + i * 12);
 
                 int scaleX = BitConverter.ToInt32(BitConverter.GetBytes(matrix.Scale.X), 0);
                 int scaleY = BitConverter.ToInt32(BitConverter.GetBytes(matrix.Scale.Y), 0);
