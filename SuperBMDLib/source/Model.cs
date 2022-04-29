@@ -53,7 +53,36 @@ namespace SuperBMDLib
                     // effectively disabling tri stripping
                     postprocess = Assimp.PostProcessSteps.Triangulate; 
                 }
-                Assimp.Scene aiScene = cont.ImportFile(args.input_path, postprocess);
+
+                // Manually fix some aspects of the .dae file that Assimp.NET cannot properly import.
+                StreamReader dae = File.OpenText(args.input_path);
+                StreamWriter fixed_dae = new StreamWriter(args.input_path + ".tmp");
+
+                while (!dae.EndOfStream)
+                {
+                    string line = dae.ReadLine();
+
+                    if (line == "              <param name=\"A\" type=\"float\"/>")
+                    {
+                        // Alpha component of a vertex color.
+                        // Skip writing this, since the old version of Assimp used by Assimp.NET cannot read it properly.
+                        // Instead of reading the alpha channel, it sets the red channel to the alpha value, and then sets the alpha channel to 1.
+                        // Assimp issue: https://github.com/assimp/assimp/issues/1417
+                    }
+                    else
+                    {
+                        fixed_dae.WriteLine(line);
+                        fixed_dae.Flush();
+                    }
+                }
+
+                fixed_dae.Close();
+                dae.Close();
+
+                Assimp.Scene aiScene = cont.ImportFile(args.input_path + ".tmp", postprocess);
+
+                // Delete the temporary fixed file after it has been imported.
+                File.Delete(args.input_path + ".tmp");
 
                 output = new Model(aiScene, args);
             }
