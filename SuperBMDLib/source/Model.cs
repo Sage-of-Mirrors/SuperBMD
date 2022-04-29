@@ -511,12 +511,22 @@ namespace SuperBMDLib
 
         private void RemoveDuplicateVertices(Mesh mesh)
         {
-            // Calculate which vertices are duplicates (based on their position, texture coordinates, and normals).
-            List<Tuple<Vector3D, Vector3D?, List<Vector3D>>> uniqueVertInfos = new List<Tuple<Vector3D, Vector3D?, List<Vector3D>>>();
+            // Calculate which vertices are duplicates (based on their position, texture coordinates, normals, and color).
+            List<
+                Tuple<Vector3D, Vector3D?, List<Vector3D>, List<Color4D>>
+                > uniqueVertInfos = new List<
+                                            Tuple<Vector3D, Vector3D?, List<Vector3D>, List<Color4D>>
+                                            >();
             int[] replaceVertexIDs = new int[mesh.Vertices.Count];
             bool[] vertexIsUnique = new bool[mesh.Vertices.Count];
             for (var origVertexID = 0; origVertexID < mesh.Vertices.Count; origVertexID++)
             {
+                var colorsForVert = new List<Color4D>();
+                for (var i = 0; i < mesh.VertexColorChannelCount; i++)
+                {
+                    colorsForVert.Add(mesh.VertexColorChannels[i][origVertexID]);
+                }
+
                 var coordsForVert = new List<Vector3D>();
                 for (var i = 0; i < mesh.TextureCoordinateChannelCount; i++)
                 {
@@ -532,14 +542,18 @@ namespace SuperBMDLib
                     normal = null;
                 }
 
-                var vertInfo = new Tuple<Vector3D, Vector3D?, List<Vector3D>>(mesh.Vertices[origVertexID], normal, coordsForVert);
+                var vertInfo = new Tuple<
+                    Vector3D, Vector3D?, List<Vector3D>, List<Color4D>
+                    >(mesh.Vertices[origVertexID], normal, coordsForVert, colorsForVert);
 
                 // Determine if this vertex is a duplicate of a previously encountered vertex or not and if it is keep track of the new index
                 var duplicateVertexIndex = -1;
                 for (var i = 0; i < uniqueVertInfos.Count; i++)
                 {
-                    Tuple<Vector3D, Vector3D?, List<Vector3D>> otherVertInfo = uniqueVertInfos[i];
-                    if (CheckVertInfosAreDuplicates(vertInfo.Item1, vertInfo.Item2, vertInfo.Item3, otherVertInfo.Item1, otherVertInfo.Item2, otherVertInfo.Item3))
+                    Tuple<Vector3D, Vector3D?, List<Vector3D>, List<Color4D>> otherVertInfo = uniqueVertInfos[i];
+                    if (CheckVertInfosAreDuplicates(
+                        vertInfo.Item1, vertInfo.Item2, vertInfo.Item3, vertInfo.Item4,
+                        otherVertInfo.Item1, otherVertInfo.Item2, otherVertInfo.Item3, otherVertInfo.Item4))
                     {
                         duplicateVertexIndex = i;
                         break;
@@ -559,16 +573,21 @@ namespace SuperBMDLib
                 }
             }
 
-            // Remove duplicate vertices, normals, and texture coordinates.
+            // Remove duplicate vertices, normals, texture coordinates, and colors.
             mesh.Vertices.Clear();
             mesh.Normals.Clear();
-            // Need to preserve the channel count since it gets set to 0 when clearing all the channels
+            // Need to preserve the channel counts since they gets set to 0 when clearing all the channels
             int origTexCoordChannelCount = mesh.TextureCoordinateChannelCount;
             for (var i = 0; i < origTexCoordChannelCount; i++)
             {
                 mesh.TextureCoordinateChannels[i].Clear();
             }
-            foreach (Tuple<Vector3D, Vector3D?, List<Vector3D>> vertInfo in uniqueVertInfos)
+            int origColorChannelCount = mesh.VertexColorChannelCount;
+            for (var i = 0; i < origColorChannelCount; i++)
+            {
+                mesh.VertexColorChannels[i].Clear();
+            }
+            foreach (Tuple<Vector3D, Vector3D?, List<Vector3D>, List<Color4D>> vertInfo in uniqueVertInfos)
             {
                 mesh.Vertices.Add(vertInfo.Item1);
                 if (vertInfo.Item2 != null)
@@ -579,6 +598,11 @@ namespace SuperBMDLib
                 {
                     var coord = vertInfo.Item3[i];
                     mesh.TextureCoordinateChannels[i].Add(coord);
+                }
+                for (var i = 0; i < origColorChannelCount; i++)
+                {
+                    var color = vertInfo.Item4[i];
+                    mesh.VertexColorChannels[i].Add(color);
                 }
             }
 
@@ -610,7 +634,8 @@ namespace SuperBMDLib
             }
         }
 
-        private bool CheckVertInfosAreDuplicates(Vector3D vert1, Vector3D? norm1, List<Vector3D> vert1TexCoords, Vector3D vert2, Vector3D? norm2, List<Vector3D> vert2TexCoords)
+        private bool CheckVertInfosAreDuplicates(Vector3D vert1, Vector3D? norm1, List<Vector3D> vert1TexCoords, List<Color4D> vert1Colors,
+                                                Vector3D vert2, Vector3D? norm2, List<Vector3D> vert2TexCoords, List<Color4D> vert2Colors)
         {
             if (vert1 != vert2)
             {
@@ -629,6 +654,15 @@ namespace SuperBMDLib
                 if (vert1TexCoords[i] != vert2TexCoords[i])
                 {
                     // Texture coordinate is different
+                    return false;
+                }
+            }
+
+            for (var i = 0; i < vert1Colors.Count; i++)
+            {
+                if (vert1Colors[i] != vert2Colors[i])
+                {
+                    // Color is different
                     return false;
                 }
             }
