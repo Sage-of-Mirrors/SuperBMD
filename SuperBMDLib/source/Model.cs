@@ -89,7 +89,6 @@ namespace SuperBMDLib
             SkipMDL3(reader);
             Textures          = new TEX1(reader, (int)reader.BaseStream.Position);
             Materials.SetTextureNames(Textures);
-            Materials.DumpMaterials(Path.GetDirectoryName(args.input_path));
 
             foreach (Geometry.Shape shape in Shapes.Shapes)
                 packetCount += shape.Packets.Count;
@@ -204,6 +203,7 @@ namespace SuperBMDLib
             Shapes.FillScene(outScene, VertexData.Attributes, Joints.FlatSkeleton, SkinningEnvelopes.InverseBindMatrices);
             Scenegraph.FillScene(outScene, Joints.FlatSkeleton, settings.UseSkeletonRoot);
             Scenegraph.CorrectMaterialIndices(outScene, Materials);
+            Materials.DumpMaterials(outDir);
             Textures.DumpTextures(outDir);
 
 
