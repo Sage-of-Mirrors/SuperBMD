@@ -640,7 +640,7 @@ namespace SuperBMDLib.Materials.Mdl
 
                 chanControlArg.SetBits((int)chanCtrl.MaterialSrcColor, 0, 1);
                 chanControlArg.SetFlag(chanCtrl.Enable, 1);
-                chanControlArg.SetBits((int)chanCtrl.LitMask, 2, 4);
+                chanControlArg.SetBits((int)chanCtrl.LitMask & 0x0F, 2, 4);
                 chanControlArg.SetBits((int)chanCtrl.AmbientSrcColor, 6, 1);
 
                 if (chanCtrl.AttenuationFunction == J3DAttenuationFn.None_0)
