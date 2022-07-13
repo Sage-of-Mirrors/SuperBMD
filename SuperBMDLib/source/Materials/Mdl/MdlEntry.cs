@@ -523,31 +523,31 @@ namespace SuperBMDLib.Materials.Mdl
                     case TexGenType.Bump5:
                     case TexGenType.Bump6:
                     case TexGenType.Bump7:
-                        texGenArg.SetBits(1, 4, 2);
+                        texGenArg.SetBits(1, 4, 3);
                         texGenArg.SetBits(texgen.Source - TexGenSrc.Tex0, 12, 3);
                         texGenArg.SetBits(texgen.Type - TexGenType.Bump0, 15, 3);
-                        texGenArg.SetBits(5, 7, 3);
+                        texGenArg.SetBits(5, 7, 5);
                         break;
                     case TexGenType.SRTG:
-                        texGenArg.SetBits(2, 7, 3);
+                        texGenArg.SetBits(2, 7, 5);
                         if (texgen.Source == TexGenSrc.Color0)
                         {
-                            texGenArg.SetBits(2, 4, 2);
+                            texGenArg.SetBits(2, 4, 3);
                         }
                         else if (texgen.Source == TexGenSrc.Color1)
                         {
-                            texGenArg.SetBits(3, 4, 2);
+                            texGenArg.SetBits(3, 4, 3);
                         }
                         break;
                     default:
-                        texGenArg.SetBits(0, 4, 2);
+                        texGenArg.SetBits(0, 4, 3);
                         if (texgen.Source == TexGenSrc.Position || texgen.Source == TexGenSrc.Normal)
                         {
-                            texGenArg.SetBits((int)texgen.Source, 7, 3);
+                            texGenArg.SetBits((int)texgen.Source, 7, 5);
                         }
                         else
                         {
-                            texGenArg.SetBits((int)texgen.Source + 1, 7, 3);
+                            texGenArg.SetBits((int)texgen.Source + 1, 7, 5);
                         }
                         break;
                 }
