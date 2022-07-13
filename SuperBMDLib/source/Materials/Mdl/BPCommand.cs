@@ -26,6 +26,8 @@ namespace SuperBMDLib.Materials.Mdl
         /// <param name="size">Number of bits to modify</param>
         public void SetBits(int value, int offset, int size)
         {
+            if (value < 0 || value >= (1 << size))
+                throw new Exception($"Cannot insert value {value} with shift {offset} and size {size} into BP register 0x{((int)Register).ToString("X2")}: Not enough bits.");
             Value = Value & (int)(~((0xFFFFFFFF >> (32 - size)) << offset) & 0xFFFFFFFF) | (value << offset);
         }
 
