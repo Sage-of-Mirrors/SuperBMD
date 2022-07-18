@@ -53,7 +53,36 @@ namespace SuperBMDLib
                     // effectively disabling tri stripping
                     postprocess = Assimp.PostProcessSteps.Triangulate; 
                 }
-                Assimp.Scene aiScene = cont.ImportFile(args.input_path, postprocess);
+
+                // Manually fix some aspects of the .dae file that Assimp.NET cannot properly import.
+                StreamReader dae = File.OpenText(args.input_path);
+                StreamWriter fixed_dae = new StreamWriter(args.input_path + ".tmp");
+
+                while (!dae.EndOfStream)
+                {
+                    string line = dae.ReadLine();
+
+                    if (line == "              <param name=\"A\" type=\"float\"/>")
+                    {
+                        // Alpha component of a vertex color.
+                        // Skip writing this, since the old version of Assimp used by Assimp.NET cannot read it properly.
+                        // Instead of reading the alpha channel, it sets the red channel to the alpha value, and then sets the alpha channel to 1.
+                        // Assimp issue: https://github.com/assimp/assimp/issues/1417
+                    }
+                    else
+                    {
+                        fixed_dae.WriteLine(line);
+                        fixed_dae.Flush();
+                    }
+                }
+
+                fixed_dae.Close();
+                dae.Close();
+
+                Assimp.Scene aiScene = cont.ImportFile(args.input_path + ".tmp", postprocess);
+
+                // Delete the temporary fixed file after it has been imported.
+                File.Delete(args.input_path + ".tmp");
 
                 output = new Model(aiScene, args);
             }
@@ -89,7 +118,6 @@ namespace SuperBMDLib
             SkipMDL3(reader);
             Textures          = new TEX1(reader, (int)reader.BaseStream.Position);
             Materials.SetTextureNames(Textures);
-            Materials.DumpMaterials(Path.GetDirectoryName(args.input_path));
 
             foreach (Geometry.Shape shape in Shapes.Shapes)
                 packetCount += shape.Packets.Count;
@@ -108,8 +136,13 @@ namespace SuperBMDLib
 
         public Model(Scene scene, Arguments args)
         {
-            EnsureOneMaterialPerMesh(scene);
+            EnsureOneMaterialPerMeshAndOneMeshPerMaterial(scene);
             SortMeshesByObjectNames(scene);
+
+            if (args.rotate_model)
+            {
+                RotateModel(scene);
+            }
 
             VertexData = new VTX1(scene);
             Joints = new JNT1(scene, VertexData);
@@ -199,6 +232,7 @@ namespace SuperBMDLib
             Shapes.FillScene(outScene, VertexData.Attributes, Joints.FlatSkeleton, SkinningEnvelopes.InverseBindMatrices);
             Scenegraph.FillScene(outScene, Joints.FlatSkeleton, settings.UseSkeletonRoot);
             Scenegraph.CorrectMaterialIndices(outScene, Materials);
+            Materials.DumpMaterials(outDir);
             Textures.DumpTextures(outDir);
 
 
@@ -233,20 +267,44 @@ namespace SuperBMDLib
                 }
                 else if (line.Contains("<node"))
                 {
-                    string[] testLn = line.Split('\"');
-                    string name = testLn[3];
+                    Regex reg = new Regex("^( +)<node id=\"([^\"]+)\" +name=\"[^\"]+\" +type=\"NODE\">$");
+                    Match match = reg.Match(line);
 
-                    if (Joints.FlatSkeleton.Exists(x => x.Name == name))
+                    if (match.Success)
                     {
-                        string jointLine = line.Replace(">", $" sid=\"{ name }\" type=\"JOINT\">");
-                        test.WriteLine(jointLine);
-                        test.Flush();
+                        string indentation = match.Groups[1].Value;
+                        string joint_name = match.Groups[2].Value;
+                        if (Joints.FlatSkeleton.Exists(x => x.Name == joint_name))
+                        {
+                            string jointLine = indentation + $"<node id=\"{joint_name}\" name=\"{joint_name}\" sid=\"{joint_name}\" type=\"JOINT\">";
+                            test.WriteLine(jointLine);
+                        } else
+                        {
+                            test.WriteLine(line);
+                        }
+                    } else
+                    {
+                        test.WriteLine(line);
+                    }
+                    test.Flush();
+                }
+                else if (line.Contains("<material id=\""))
+                {
+                    Regex reg = new Regex("^    <material id=\"([^\"]+)\" name=\"[^\"]+\">$");
+                    Match match = reg.Match(line);
+                    if (match.Success)
+                    {
+                        string mat_name_sanitized = match.Groups[1].Value;
+                        int mat_index = Materials.GetMaterialIndexFromSanitizedMaterialName(mat_name_sanitized);
+                        string mat_name = Materials.m_Materials[mat_index].Name;
+                        string matLine = $"    <material id=\"{mat_name_sanitized}\" name=\"{mat_name}\">";
+                        test.WriteLine(matLine);
                     }
                     else
                     {
                         test.WriteLine(line);
-                        test.Flush();
                     }
+                    test.Flush();
                 }
                 else if (line.Contains("</visual_scene>"))
                 {
@@ -258,7 +316,7 @@ namespace SuperBMDLib
                         test.WriteLine("        <skeleton>#skeleton_root</skeleton>");
                         test.WriteLine("        <bind_material>");
                         test.WriteLine("         <technique_common>");
-                        test.WriteLine($"          <instance_material symbol=\"m{mesh.MaterialIndex}{ Materials.m_Materials[mesh.MaterialIndex].Name }\" target=\"#m{mesh.MaterialIndex}{ Materials.m_Materials[mesh.MaterialIndex].Name.Replace("(","_").Replace(")","_") }\" />");
+                        test.WriteLine($"          <instance_material symbol=\"{ Materials.m_Materials[mesh.MaterialIndex].Name }\" target=\"#{ Materials.m_Materials[mesh.MaterialIndex].Name.Replace("(", "_").Replace(")", "_") }\" />");
                         test.WriteLine("         </technique_common>");
                         test.WriteLine("        </bind_material>");
                         test.WriteLine("       </instance_controller>");
@@ -268,12 +326,6 @@ namespace SuperBMDLib
                     }
 
                     test.WriteLine(line);
-                    test.Flush();
-                }
-                else if (line.Contains("<matrix"))
-                {
-                    string matLine = line.Replace("<matrix>", "<matrix sid=\"matrix\">");
-                    test.WriteLine(matLine);
                     test.Flush();
                 }
                 else
@@ -488,12 +540,22 @@ namespace SuperBMDLib
 
         private void RemoveDuplicateVertices(Mesh mesh)
         {
-            // Calculate which vertices are duplicates (based on their position, texture coordinates, and normals).
-            List<Tuple<Vector3D, Vector3D?, List<Vector3D>>> uniqueVertInfos = new List<Tuple<Vector3D, Vector3D?, List<Vector3D>>>();
+            // Calculate which vertices are duplicates (based on their position, texture coordinates, normals, and color).
+            List<
+                Tuple<Vector3D, Vector3D?, List<Vector3D>, List<Color4D>>
+                > uniqueVertInfos = new List<
+                                            Tuple<Vector3D, Vector3D?, List<Vector3D>, List<Color4D>>
+                                            >();
             int[] replaceVertexIDs = new int[mesh.Vertices.Count];
             bool[] vertexIsUnique = new bool[mesh.Vertices.Count];
             for (var origVertexID = 0; origVertexID < mesh.Vertices.Count; origVertexID++)
             {
+                var colorsForVert = new List<Color4D>();
+                for (var i = 0; i < mesh.VertexColorChannelCount; i++)
+                {
+                    colorsForVert.Add(mesh.VertexColorChannels[i][origVertexID]);
+                }
+
                 var coordsForVert = new List<Vector3D>();
                 for (var i = 0; i < mesh.TextureCoordinateChannelCount; i++)
                 {
@@ -509,14 +571,18 @@ namespace SuperBMDLib
                     normal = null;
                 }
 
-                var vertInfo = new Tuple<Vector3D, Vector3D?, List<Vector3D>>(mesh.Vertices[origVertexID], normal, coordsForVert);
+                var vertInfo = new Tuple<
+                    Vector3D, Vector3D?, List<Vector3D>, List<Color4D>
+                    >(mesh.Vertices[origVertexID], normal, coordsForVert, colorsForVert);
 
                 // Determine if this vertex is a duplicate of a previously encountered vertex or not and if it is keep track of the new index
                 var duplicateVertexIndex = -1;
                 for (var i = 0; i < uniqueVertInfos.Count; i++)
                 {
-                    Tuple<Vector3D, Vector3D?, List<Vector3D>> otherVertInfo = uniqueVertInfos[i];
-                    if (CheckVertInfosAreDuplicates(vertInfo.Item1, vertInfo.Item2, vertInfo.Item3, otherVertInfo.Item1, otherVertInfo.Item2, otherVertInfo.Item3))
+                    Tuple<Vector3D, Vector3D?, List<Vector3D>, List<Color4D>> otherVertInfo = uniqueVertInfos[i];
+                    if (CheckVertInfosAreDuplicates(
+                        vertInfo.Item1, vertInfo.Item2, vertInfo.Item3, vertInfo.Item4,
+                        otherVertInfo.Item1, otherVertInfo.Item2, otherVertInfo.Item3, otherVertInfo.Item4))
                     {
                         duplicateVertexIndex = i;
                         break;
@@ -536,16 +602,21 @@ namespace SuperBMDLib
                 }
             }
 
-            // Remove duplicate vertices, normals, and texture coordinates.
+            // Remove duplicate vertices, normals, texture coordinates, and colors.
             mesh.Vertices.Clear();
             mesh.Normals.Clear();
-            // Need to preserve the channel count since it gets set to 0 when clearing all the channels
+            // Need to preserve the channel counts since they gets set to 0 when clearing all the channels
             int origTexCoordChannelCount = mesh.TextureCoordinateChannelCount;
             for (var i = 0; i < origTexCoordChannelCount; i++)
             {
                 mesh.TextureCoordinateChannels[i].Clear();
             }
-            foreach (Tuple<Vector3D, Vector3D?, List<Vector3D>> vertInfo in uniqueVertInfos)
+            int origColorChannelCount = mesh.VertexColorChannelCount;
+            for (var i = 0; i < origColorChannelCount; i++)
+            {
+                mesh.VertexColorChannels[i].Clear();
+            }
+            foreach (Tuple<Vector3D, Vector3D?, List<Vector3D>, List<Color4D>> vertInfo in uniqueVertInfos)
             {
                 mesh.Vertices.Add(vertInfo.Item1);
                 if (vertInfo.Item2 != null)
@@ -556,6 +627,11 @@ namespace SuperBMDLib
                 {
                     var coord = vertInfo.Item3[i];
                     mesh.TextureCoordinateChannels[i].Add(coord);
+                }
+                for (var i = 0; i < origColorChannelCount; i++)
+                {
+                    var color = vertInfo.Item4[i];
+                    mesh.VertexColorChannels[i].Add(color);
                 }
             }
 
@@ -587,7 +663,8 @@ namespace SuperBMDLib
             }
         }
 
-        private bool CheckVertInfosAreDuplicates(Vector3D vert1, Vector3D? norm1, List<Vector3D> vert1TexCoords, Vector3D vert2, Vector3D? norm2, List<Vector3D> vert2TexCoords)
+        private bool CheckVertInfosAreDuplicates(Vector3D vert1, Vector3D? norm1, List<Vector3D> vert1TexCoords, List<Color4D> vert1Colors,
+                                                Vector3D vert2, Vector3D? norm2, List<Vector3D> vert2TexCoords, List<Color4D> vert2Colors)
         {
             if (vert1 != vert2)
             {
@@ -606,6 +683,15 @@ namespace SuperBMDLib
                 if (vert1TexCoords[i] != vert2TexCoords[i])
                 {
                     // Texture coordinate is different
+                    return false;
+                }
+            }
+
+            for (var i = 0; i < vert1Colors.Count; i++)
+            {
+                if (vert1Colors[i] != vert2Colors[i])
+                {
+                    // Color is different
                     return false;
                 }
             }
@@ -669,16 +755,77 @@ namespace SuperBMDLib
             }
         }
 
-        private void EnsureOneMaterialPerMesh(Scene scene)
+        private void EnsureOneMaterialPerMeshAndOneMeshPerMaterial(Scene scene)
         {
+            List<int> usedMaterialIndexes = new List<int>();
             foreach (Mesh mesh1 in scene.Meshes)
             {
+                if (mesh1.Faces.Any(x => x.Indices.Count < 3))
+                {
+                    // Loose vertex/edge. These are handled weirdly by Assimp and put in separate meshes.
+                    // We don't want a misleading error message here, so skip it in this function, and raise a different error elsewhere.
+                    continue;
+                }
+
                 foreach (Mesh mesh2 in scene.Meshes)
                 {
                     if (mesh1.Name == mesh2.Name && mesh1.MaterialIndex != mesh2.MaterialIndex)
                     {
                         throw new Exception($"Mesh \"{mesh1.Name}\" has more than one material assigned to it. Currently only one material per mesh is supported.");
                     }
+                }
+
+                if (usedMaterialIndexes.Contains(mesh1.MaterialIndex))
+                {
+                    throw new Exception($"Material \"{scene.Materials[mesh1.MaterialIndex].Name}\" is used by more than one mesh. Each mesh must have a unique material. Try merging meshes that share a material.");
+                }
+                usedMaterialIndexes.Add(mesh1.MaterialIndex);
+            }
+        }
+
+        private void RotateModel(Scene scene)
+        {
+            Assimp.Node root = null;
+            for (int i = 0; i < scene.RootNode.ChildCount; i++)
+            {
+                if (scene.RootNode.Children[i].Name.ToLowerInvariant() == "skeleton_root")
+                {
+                    if (scene.RootNode.Children[i].ChildCount == 0)
+                    {
+                        throw new System.Exception("skeleton_root has no children! If you are making a rigged model, make sure skeleton_root contains the root of your skeleton.");
+                    }
+                    root = scene.RootNode.Children[i].Children[0];
+                    break;
+                }
+            }
+
+            Matrix4x4 rotate = Matrix4x4.FromRotationX((float)(-(1 / 2.0) * Math.PI));
+            Matrix4x4 rotateinv = rotate;
+            rotateinv.Inverse();
+
+
+            foreach (Mesh mesh in scene.Meshes)
+            {
+                if (root != null)
+                {
+                    foreach (Assimp.Bone bone in mesh.Bones)
+                    {
+                        bone.OffsetMatrix = rotateinv * bone.OffsetMatrix;
+                    }
+                }
+
+                for (int i = 0; i < mesh.VertexCount; i++)
+                {
+                    Vector3D vertex = mesh.Vertices[i];
+                    vertex.Set(vertex.X, vertex.Z, -vertex.Y);
+                    mesh.Vertices[i] = vertex;
+                }
+                for (int i = 0; i < mesh.Normals.Count; i++)
+                {
+                    Vector3D norm = mesh.Normals[i];
+                    norm.Set(norm.X, norm.Z, -norm.Y);
+
+                    mesh.Normals[i] = norm;
                 }
             }
         }

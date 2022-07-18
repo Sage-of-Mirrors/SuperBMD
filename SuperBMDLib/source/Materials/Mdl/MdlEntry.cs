@@ -466,7 +466,7 @@ namespace SuperBMDLib.Materials.Mdl
                     continue;
                 }
 
-                XFCommand posMatricesCommand = new XFCommand((XFRegister)(0x0078 + i * 12));
+                XFCommand posMatricesCommand = new XFCommand(XFRegister.SETTEXMTX0 + i * 12);
 
                 int scaleX = BitConverter.ToInt32(BitConverter.GetBytes(matrix.Scale.X), 0);
                 int scaleY = BitConverter.ToInt32(BitConverter.GetBytes(matrix.Scale.Y), 0);
@@ -523,31 +523,31 @@ namespace SuperBMDLib.Materials.Mdl
                     case TexGenType.Bump5:
                     case TexGenType.Bump6:
                     case TexGenType.Bump7:
-                        texGenArg.SetBits(1, 4, 2);
+                        texGenArg.SetBits(1, 4, 3);
                         texGenArg.SetBits(texgen.Source - TexGenSrc.Tex0, 12, 3);
                         texGenArg.SetBits(texgen.Type - TexGenType.Bump0, 15, 3);
-                        texGenArg.SetBits(5, 7, 3);
+                        texGenArg.SetBits(5, 7, 5);
                         break;
                     case TexGenType.SRTG:
-                        texGenArg.SetBits(2, 7, 3);
+                        texGenArg.SetBits(2, 7, 5);
                         if (texgen.Source == TexGenSrc.Color0)
                         {
-                            texGenArg.SetBits(2, 4, 2);
+                            texGenArg.SetBits(2, 4, 3);
                         }
                         else if (texgen.Source == TexGenSrc.Color1)
                         {
-                            texGenArg.SetBits(3, 4, 2);
+                            texGenArg.SetBits(3, 4, 3);
                         }
                         break;
                     default:
-                        texGenArg.SetBits(0, 4, 2);
+                        texGenArg.SetBits(0, 4, 3);
                         if (texgen.Source == TexGenSrc.Position || texgen.Source == TexGenSrc.Normal)
                         {
-                            texGenArg.SetBits((int)texgen.Source, 7, 3);
+                            texGenArg.SetBits((int)texgen.Source, 7, 5);
                         }
                         else
                         {
-                            texGenArg.SetBits((int)texgen.Source + 1, 7, 3);
+                            texGenArg.SetBits((int)texgen.Source + 1, 7, 5);
                         }
                         break;
                 }
@@ -640,7 +640,7 @@ namespace SuperBMDLib.Materials.Mdl
 
                 chanControlArg.SetBits((int)chanCtrl.MaterialSrcColor, 0, 1);
                 chanControlArg.SetFlag(chanCtrl.Enable, 1);
-                chanControlArg.SetBits((int)chanCtrl.LitMask, 2, 4);
+                chanControlArg.SetBits((int)chanCtrl.LitMask & 0x0F, 2, 4);
                 chanControlArg.SetBits((int)chanCtrl.AmbientSrcColor, 6, 1);
 
                 if (chanCtrl.AttenuationFunction == J3DAttenuationFn.None_0)

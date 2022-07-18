@@ -249,8 +249,8 @@ namespace SuperBMDLib.Materials
 
             if (File.Exists(texPath))
             {
-                texData = new Bitmap(texture.FilePath);
-                Name = Path.GetFileNameWithoutExtension(texture.FilePath);
+                texData = new Bitmap(texPath);
+                Name = Path.GetFileNameWithoutExtension(texPath);
             }
             else
             {
@@ -261,7 +261,7 @@ namespace SuperBMDLib.Materials
                 if (!File.Exists(texPath))
                 {
                     Console.WriteLine($"Cannot find texture { fileName }. Using a checkboard texture instead...");
-                    texData = new Bitmap(SuperBMDLib.Properties.Resources.default_checker);
+                    texData = new Bitmap(SuperBMD.Properties.Resources.default_checker);
                     Name = Path.GetFileNameWithoutExtension(texPath);
                 }
                 else
@@ -414,6 +414,17 @@ namespace SuperBMDLib.Materials
 
             // This is a placeholder for ImageDataOffset
             writer.Write((int)0);
+        }
+
+        public bool NeedsPalettes()
+        {
+            if (Format == TextureFormats.C4)
+                return true;
+            if (Format == TextureFormats.C8)
+                return true;
+            if (Format == TextureFormats.C14X2)
+                return true;
+            return false;
         }
 
         #region Decoding
